@@ -446,11 +446,11 @@ var_labels <- c("LandBuiltupArea"="Urban",
 scen_labels <-c("SSP1"="SSP1",
                 "SSP2"="SSP2",
                 "SSP3"="SSP3",
-                "SSP1_20"="SSP1-1.5C",
-                "SSP2_20"="SSP2-1.5C",
-                "SSP1_450"="SSP1-2C",
-                "SSP2_450"="SSP2-2C",
-                "SSP3_550"="SSP3-2C")
+                "SSP1_20"="SSP1-1.9 W/m²",
+                "SSP2_20"="SSP2-1.9 W/m²",
+                "SSP1_450"="SSP1-2.6 W/m²",
+                "SSP2_450"="SSP2-2.6 W/m²",
+                "SSP3_550"="SSP3-3.4 W/m²")
 reg_labels <- c("BRA" = "Brazil",
                 "CAN" = "Canada",
                 "CEU" = "Central Europe",
@@ -821,7 +821,7 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 # png("output/Rev1/Fig1.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigLandFrac))
 # dev.off()
-##
+# #
 # png("output/Rev1/Fig2.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigPrim))
 # dev.off()
@@ -837,7 +837,7 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 # png("output/Rev1/Fig6.png", width=6*ppi, height=5*ppi, res=ppi, bg="white")
 # print(plot(FigBioSupFinal))
 # dev.off()
-# # 
+# #
 # png("output/Rev1/Fig7.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigBioFeed))
 # dev.off()
@@ -845,11 +845,11 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 # png("output/Rev1/Fig8.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigBioRegion))
 # dev.off()
-# # 
+# #
 # png("output/Rev1/Fig9.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigLUCBio))
 # dev.off()
-#
+# 
 # png("output/Rev1/FigA1.png", width=6*ppi, height=7.5*ppi, res=ppi)
 # print(plot(FigClim))
 # dev.off()

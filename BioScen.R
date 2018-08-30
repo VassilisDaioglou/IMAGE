@@ -755,7 +755,7 @@ FigForcing<-ggplot(data=subset(SSP.Clim2, Year>2010&REGION=="World"&Variable=="F
   scale_shape_manual(values=c(1,2,3,4),
                      name ="Climate Target",
                      breaks=c("20","450","550","Baseline"),
-                     labels=c("1.5C (RCP1.9)","2C (RCP2.6)","2C (RCP3.4)","Baseline")) +
+                     labels=c("1.9 W/m²","2.6 W/m²","3.4 W/m²","Baseline")) +
   facet_grid(.~ScenID, scales="free_x")
 FigForcing
 
@@ -778,7 +778,7 @@ FigTemp<-ggplot(data=subset(SSP.Clim2, Year>2010&REGION=="World"&Variable=="Temp
   scale_shape_manual(values=c(1,2,3,4),
                      name ="Climate Target",
                      breaks=c("20","450","550","Baseline"),
-                     labels=c("1.5C (RCP1.9)","2C (RCP2.6)","2C (RCP3.4)","Baseline")) +
+                     labels=c("1.9 W/m²","2.6 W/m²","3.4 W/m²","Baseline")) +
   facet_grid(.~ScenID, scales="free_x")
 FigTemp
 
@@ -801,7 +801,7 @@ FigCtax<-ggplot(data=subset(SSP.Clim2, Year>2010&REGION=="World"&Variable=="Pric
   scale_shape_manual(values=c(1,2,3,4),
                      name ="Climate Target",
                      breaks=c("20","450","550","Baseline"),
-                     labels=c("1.5C (RCP1.9)","2C (RCP2.6)","2C (RCP3.4)","Baseline")) +
+                     labels=c("1.9 W/m²","2.6 W/m²","3.4 W/m²","Baseline")) +
   facet_grid(.~ScenID, scales="free_x")
 FigCtax
 

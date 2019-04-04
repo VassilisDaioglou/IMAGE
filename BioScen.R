@@ -28,8 +28,8 @@ IMAGERegion = as.data.frame(rbind(c(1,"CAN"),c(2,"USA"),c(3,"MEX"),c(4,"RCAM"),c
 
 # ---- INPUTS: IMAGE ----
 # set directory path 
-#setwd("~/disks/y/ontwapps/Timer/Users/Vassilis/Projects - documents/SDG/Edward/R-Scripts/")
-setwd("~/disks/y/ontwapps/Timer/Users/Vassilis/Papers/6. Synthesis/For Submission/Data Processing - R")
+# setwd("~/disks/y/ontwapps/Timer/Users/Vassilis/Papers/6. Synthesis/For Submission/Data Processing - R")
+setwd("C:/Users/Asus/Documents/GitHub/Biomass_SSP_Scenarios")
 
 # Read Data File
 SSP1=read.xlsx("data/SSP1.xls", sheetIndex=1)
@@ -49,7 +49,10 @@ SSP[] <- lapply(SSP, as.character)
 SSP=melt(SSP, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(SSP)[6] <-"Year"
 SSP$Year = as.numeric(substr(SSP$Year, start=2, stop=5))
-SSP$value = as.numeric(substr(SSP$value, start=1, stop=5))
+SSP$value = as.numeric(substr(SSP$value, start=1, stop = 20)) ; # This and the next line is needed in order to convert very small IMAGE outputs expressed as negative exponential into decimals.
+trunc <- function(x, ..., prec = 0) base::trunc(x * 10^prec, ...) / 10^prec
+SSP$value = trunc(SSP$value, prec=4)
+
 SSP$Model <- NULL
 
 # ---- INPUTS: TIMER ----
@@ -406,6 +409,7 @@ Yields.R$ScenOrder = factor(Yields.R$SCENARIO, levels=c("SSP1","SSP1_450","SSP1_
 # write.xlsx(SSP.Emis1, file="output/SSP_Results.xlsx", sheetName="Emissions", append=TRUE, row.names=FALSE, showNA = TRUE)
 # write.xlsx(SSP.Clim1, file="output/SSP_Results.xlsx", sheetName="Climate Effects", append=TRUE, row.names=FALSE, showNA = TRUE)
 # write.xlsx(SSP.Socio, file="output/SSP_Results.xlsx", sheetName="Socio-Economics", append=TRUE, row.names=FALSE, showNA = TRUE)
+# write.xlsx(SSP.BioP, file="output/SSP_BiomassProduction.xlsx", sheetName="Primary Biomass Production", row.names=FALSE, showNA = TRUE)
 #
 rm(SSP.Land1,SSP.Prim1,SSP.BioS1,SSP.Emis1,SSP.Clim1)
 #
@@ -814,10 +818,10 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 #
 # ---- OUTPUT: FIGURES FOR DRAFT ----
 # FIGURE 1 ONLY BASELINES
-# png("output/Rev1/Fig1_old.png", width=6*ppi, height=2*ppi, res=ppi)
-# print(plot(FigLandFrac))
-# dev.off()
-# FIGURE 1 ALL SCENARIOS
+png("output/Rev1/Fig1_old.png", width=6*ppi, height=2*ppi, res=ppi)
+print(plot(FigLandFrac))
+dev.off()
+## FIGURE 1 ALL SCENARIOS
 # png("output/Rev1/Fig1.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigLandFrac))
 # dev.off()

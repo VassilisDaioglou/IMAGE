@@ -49,7 +49,8 @@ SSP[] <- lapply(SSP, as.character)
 SSP=melt(SSP, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(SSP)[6] <-"Year"
 SSP$Year = as.numeric(substr(SSP$Year, start=2, stop=5))
-SSP$value = as.numeric(substr(SSP$value, start=1, stop = 20)) ; # This and the next line is needed in order to convert very small IMAGE outputs expressed as negative exponential into decimals.
+# The following three lines convert very small IMAGE outputs (expressed as negative exponentials) into decimals. Otherwise first digits are selected ignoring the exponential
+SSP$value = as.numeric(substr(SSP$value, start=1, stop = 20)) ; 
 trunc <- function(x, ..., prec = 0) base::trunc(x * 10^prec, ...) / 10^prec
 SSP$value = trunc(SSP$value, prec=4)
 
@@ -818,46 +819,46 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 #
 # ---- OUTPUT: FIGURES FOR DRAFT ----
 # FIGURE 1 ONLY BASELINES
-png("output/Rev1/Fig1_old.png", width=6*ppi, height=2*ppi, res=ppi)
-print(plot(FigLandFrac))
-dev.off()
+# png("output/Rev1/Fig1_old.png", width=6*ppi, height=2*ppi, res=ppi)
+# print(plot(FigLandFrac))
+# dev.off()
 ## FIGURE 1 ALL SCENARIOS
-# png("output/Rev1/Fig1.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig1.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigLandFrac))
 # dev.off()
 # #
-# png("output/Rev1/Fig2.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig2.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigPrim))
 # dev.off()
 # 
-# png("output/Rev1/Fig3.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig3.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigEmis))
 # dev.off()
 # 
-# png("output/Rev1/Fig4.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig4.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigBioSec))
 # dev.off()
 # #
-# png("output/Rev1/Fig6.png", width=6*ppi, height=5*ppi, res=ppi, bg="white")
+# png("output/Fig6.png", width=6*ppi, height=5*ppi, res=ppi, bg="white")
 # print(plot(FigBioSupFinal))
 # dev.off()
 # #
-# png("output/Rev1/Fig7.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig7.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigBioFeed))
 # dev.off()
 # 
-# png("output/Rev1/Fig8.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig8.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigBioRegion))
 # dev.off()
 # #
-# png("output/Rev1/Fig9.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/Fig9.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigLUCBio))
 # dev.off()
 # 
-# png("output/Rev1/FigA1.png", width=6*ppi, height=7.5*ppi, res=ppi)
+# png("output/FigA1.png", width=6*ppi, height=7.5*ppi, res=ppi)
 # print(plot(FigClim))
 # dev.off()
 # 
-# png("output/Rev1/FigA2.png", width=6*ppi, height=4*ppi, res=ppi)
+# png("output/FigA2.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigYields))
 # dev.off()

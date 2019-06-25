@@ -55,6 +55,14 @@ Yield_MAIZE_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 7, startRow=4)
 LandHa_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 8, startRow=4)
 Yield_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 9, startRow=4)
 
+# Residues available potential
+ResPot=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 10, startRow=4)
+
+# ---- CLEAN: Residues ----
+ResPot=subset(ResPot, select=c(t,class_.27))
+colnames(ResPot)[1:2] <- c("YEAR","Potential_GJ")
+ResPot$Potential_EJ = ResPot$Potential_GJ/1e9
+#
 # ---- CLEAN: Yield-Supply ----
 # Clean, arrange and merge files
 PotGJ_NoConst$SCENARIO <- "NoConstraints"
@@ -176,6 +184,7 @@ SUGAR_Cat_Sorted$CumLand_MHa <- SUGAR_Cat_Sorted$CumLand_MHa / 1e6
 DATA_Land = rbind(WOODY_Cat_Sorted,SUGAR_Cat_Sorted,MAIZE_Cat_Sorted,NWOOD_Cat_Sorted)
 DATA_Land$ScenOrder = factor(DATA_Land$SCENARIO, levels=c("NoConstraints","NoAbandoned","NoBioReserve","NoDegraded","NoWetLand","NoWaterShort","NoAll"))
 DATA_Land = subset(DATA_Land, !Yield_GJHa==0)
+DATA_Land$CumPot_EJ_Res = DATA_Land$CumPot_EJ + ResPot$Potential_EJ[ResPot$YEAR==2100]
 
 rm(LandHa_WOODY_Cat,LandHa_SUGAR_Cat,LandHa_MAIZE_Cat,LandHa_NWOOD_Cat)
 rm(Yield_WOODY_Cat,Yield_SUGAR_Cat,Yield_MAIZE_Cat,Yield_NWOOD_Cat)
@@ -227,10 +236,11 @@ YieldSup
 # ---- FIG: Land-Supply Curves ----
 DATA_Land = subset(DATA_Land, !SCENARIO=="NoDegraded")
 
-LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ, colour=ScenOrder, fill=ScenOrder)) + 
+LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=ScenOrder, fill=ScenOrder)) + 
   geom_line(size=0.3)+
+  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==2100], linetype='Residues'),size = 0.3, colour='black') +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
-  # ylim(0,150) +
+  ylim(0,220) +
   # Text
   theme_bw() +
   theme(text= element_text(size=6, face="plain"), axis.text.x = element_text(angle=66, size=6, hjust=1), axis.text.y = element_text(size=6)) +
@@ -245,6 +255,10 @@ LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ, colour=ScenOrde
                       labels=c("No Land Constraints","Excl. (future) Abandoned Lands","Excl. Biodiversity Reserves",
                                "Excl. Wetlands","Excl. Water-short Areas","Excl. All of the Above")
   ) +
+  # Specifically for residues
+  scale_linetype_manual(name = "Other Biomass:", values = 2, 
+                        guide = guide_legend(override.aes = list(color = 'black'))) +
+  
   facet_grid(. ~ CROP, labeller=labeller(ScenOrder=scen_labels),scales="free_y") +
   theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
 LandSup

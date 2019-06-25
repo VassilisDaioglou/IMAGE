@@ -113,8 +113,8 @@ colnames(Yield_MAIZE_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","
 colnames(Yield_NWOOD_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 
 LandHa_WOODY_Cat = subset(LandHa_WOODY_Cat, YEAR==2100&!REGION==27)
-LandHa_MAIZE_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
-LandHa_SUGAR_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
+LandHa_MAIZE_Cat = subset(LandHa_MAIZE_Cat, YEAR==2100&!REGION==27)
+LandHa_SUGAR_Cat = subset(LandHa_SUGAR_Cat, YEAR==2100&!REGION==27)
 LandHa_NWOOD_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
 Yield_WOODY_Cat = subset(Yield_WOODY_Cat, YEAR==2100&!REGION==27)
 Yield_MAIZE_Cat = subset(Yield_MAIZE_Cat, YEAR==2100&!REGION==27)
@@ -225,9 +225,10 @@ YieldSup
 
 # #
 # ---- FIG: Land-Supply Curves ----
+DATA_Land = subset(DATA_Land, !SCENARIO=="NoDegraded")
 
 LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ, colour=ScenOrder, fill=ScenOrder)) + 
-  geom_line(size=0.5)+
+  geom_line(size=0.3)+
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   # ylim(0,150) +
   # Text
@@ -238,31 +239,25 @@ LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ, colour=ScenOrde
   ylab(expression(paste("Potential - ",EJ[Prim],"/yr",""))) +
   xlab("Land Use - MHa") +
   # Legend
-  scale_colour_manual(values=c("black","red","forestgreen","orange","blue","cyan","firebrick"),
+  scale_colour_manual(values=c("black","red","forestgreen","blue","cyan","firebrick"),
                       name ="Land Constraint:",
-                      breaks=c("NoConstraints","NoAbandoned","NoBioReserve","NoDegraded","NoWetLand","NoWaterShort","NoAll"),
-                      labels=c("No Land Constraints","Excl. (future) Abandoned Lands","Excl. Degraded lands","Excl. Biodiversity Reserves",
+                      breaks=c("NoConstraints","NoAbandoned","NoBioReserve","NoWetLand","NoWaterShort","NoAll"),
+                      labels=c("No Land Constraints","Excl. (future) Abandoned Lands","Excl. Biodiversity Reserves",
                                "Excl. Wetlands","Excl. Water-short Areas","Excl. All of the Above")
   ) +
-  # scale_linetype_manual(values=c("twodash","solid"),
-  #                       name ="Agricultural Commodity:",
-  #                       breaks=c("AgriProdFood","AgriProdEnergyCrops"),
-  #                       labels=c("Food","Energy Crops")
-  # ) +
   facet_grid(. ~ CROP, labeller=labeller(ScenOrder=scen_labels),scales="free_y") +
   theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
 LandSup
 
 # #
-
 # # ---- OUTPUTS ----
 # png(file = "output/hARPER/Yield_Supply.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
 # plot(YieldSup)
 # dev.off()
 # 
-png(file = "output/Harper/Land_Supply.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
-plot(LandSup)
-dev.off()
+# png(file = "output/Harper/Land_Supply.png", width = 6*ppi, height = 2*ppi, units = "px", res = ppi)
+# plot(LandSup)
+# dev.off()
 # 
 
 

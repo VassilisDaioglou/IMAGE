@@ -26,28 +26,34 @@ options(java.parameters = "-Xmx8000m")
 # set directory path 
 setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
 # Read Data Files for Yield-supply curves
-PotGJ_NoConst=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_NoConst", startRow=4)
-PotGJ_Aban=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_Aban", startRow=4)
-PotGJ_BioRes=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_BioRes", startRow=4)
-PotGJ_Degr=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_Degr", startRow=4)
-PotGJ_WaterSh=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_WaterSh", startRow=4)
-PotGJ_WetLand=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_WetLand", startRow=4)
-PotGJ_All=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="BioPotGJCrop_All", startRow=4)
+PotGJ_NoConst=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 2, startRow=4)
+PotGJ_Aban=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 4, startRow=4)
+PotGJ_BioRes=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 6, startRow=4)
+PotGJ_Degr=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 8, startRow=4)
+PotGJ_WaterSh=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 10, startRow=4)
+PotGJ_WetLand=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 12, startRow=4)
+PotGJ_All=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 14, startRow=4)
 
-YieldAgg_NoConst=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_NoConst", startRow=4)
-YieldAgg_Aban=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_Aban", startRow=4)
-YieldAgg_BioRes=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_BioRes", startRow=4)
-YieldAgg_Degr=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_Degr", startRow=4)
-YieldAgg_WaterSh=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_WaterSh", startRow=4)
-YieldAgg_WetLand=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_WetLand", startRow=4)
-YieldAgg_All=read.xlsx("data/Harper/BioI2TData.xlsx", sheetName="YieldAgg_All", startRow=4)
+YieldAgg_NoConst=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 3, startRow=4)
+YieldAgg_Aban=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 5, startRow=4)
+YieldAgg_BioRes=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 7, startRow=4)
+YieldAgg_Degr=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 9, startRow=4)
+YieldAgg_WaterSh=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 11, startRow=4)
+YieldAgg_WetLand=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 13, startRow=4)
+YieldAgg_All=read.xlsx("data/Harper/BioI2TData.xlsx", sheet = 15, startRow=4)
 
 # Data files for land-supply curves
-LandHa_WOODY_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 4, startRow=4)
-LandHa_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 2, startRow=4)
+LandHa_WOODY_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 2, startRow=4)
+Yield_WOODY_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 3, startRow=4)
 
-Yield_WOODY_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 5, startRow=4)
-Yield_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 3, startRow=4)
+LandHa_SUGAR_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 4, startRow=4)
+Yield_SUGAR_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 5, startRow=4)
+
+LandHa_MAIZE_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 6, startRow=4)
+Yield_MAIZE_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 7, startRow=4)
+
+LandHa_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 8, startRow=4)
+Yield_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 9, startRow=4)
 
 # ---- CLEAN: Yield-Supply ----
 # Clean, arrange and merge files
@@ -98,13 +104,21 @@ DATA2$ScenOrder = factor(DATA2$SCENARIO, levels=c("NoConstraints","NoAbandoned",
 
 # ---- CLEAN: Land-Supply ----
 colnames(LandHa_WOODY_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
+colnames(LandHa_SUGAR_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
+colnames(LandHa_MAIZE_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 colnames(LandHa_NWOOD_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 colnames(Yield_WOODY_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
+colnames(Yield_SUGAR_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
+colnames(Yield_MAIZE_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 colnames(Yield_NWOOD_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 
 LandHa_WOODY_Cat = subset(LandHa_WOODY_Cat, YEAR==2100&!REGION==27)
+LandHa_MAIZE_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
+LandHa_SUGAR_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
 LandHa_NWOOD_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
 Yield_WOODY_Cat = subset(Yield_WOODY_Cat, YEAR==2100&!REGION==27)
+Yield_MAIZE_Cat = subset(Yield_MAIZE_Cat, YEAR==2100&!REGION==27)
+Yield_SUGAR_Cat = subset(Yield_SUGAR_Cat, YEAR==2100&!REGION==27)
 Yield_NWOOD_Cat = subset(Yield_NWOOD_Cat, YEAR==2100&!REGION==27)
 
 LandHa_WOODY_Cat = melt(LandHa_WOODY_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
@@ -133,9 +147,40 @@ NWOOD_Cat_Sorted$CumPot_EJ <- NWOOD_Cat_Sorted$CumPot_EJ / 1e9
 NWOOD_Cat_Sorted$CumLand_MHa <- ave(NWOOD_Cat_Sorted$Land_Ha, NWOOD_Cat_Sorted$SCENARIO, FUN=cumsum)
 NWOOD_Cat_Sorted$CumLand_MHa <- NWOOD_Cat_Sorted$CumLand_MHa / 1e6
 
+LandHa_MAIZE_Cat = melt(LandHa_MAIZE_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(LandHa_MAIZE_Cat)[5] <- "Land_Ha"
+Yield_MAIZE_Cat = melt(Yield_MAIZE_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(Yield_MAIZE_Cat)[5] <- "Yield_GJHa"
+MAIZE_Cat = cbind(LandHa_MAIZE_Cat,Yield_MAIZE_Cat[5])
+MAIZE_Cat$CROP <- "MAIZE"
+MAIZE_Cat_Sorted <- MAIZE_Cat[with(MAIZE_Cat, order(-Yield_GJHa)),] 
+MAIZE_Cat_Sorted = MAIZE_Cat_Sorted %>% mutate(Potential_GJ = Land_Ha * Yield_GJHa)
+MAIZE_Cat_Sorted$CumPot_EJ <- ave(MAIZE_Cat_Sorted$Potential_GJ, MAIZE_Cat_Sorted$SCENARIO, FUN=cumsum)
+MAIZE_Cat_Sorted$CumPot_EJ <- MAIZE_Cat_Sorted$CumPot_EJ / 1e9
+MAIZE_Cat_Sorted$CumLand_MHa <- ave(MAIZE_Cat_Sorted$Land_Ha, MAIZE_Cat_Sorted$SCENARIO, FUN=cumsum)
+MAIZE_Cat_Sorted$CumLand_MHa <- MAIZE_Cat_Sorted$CumLand_MHa / 1e6
 
-DATA_Land = rbind(WOODY_Cat_Sorted,NWOOD_Cat_Sorted)
+LandHa_SUGAR_Cat = melt(LandHa_SUGAR_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(LandHa_SUGAR_Cat)[5] <- "Land_Ha"
+Yield_SUGAR_Cat = melt(Yield_SUGAR_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(Yield_SUGAR_Cat)[5] <- "Yield_GJHa"
+SUGAR_Cat = cbind(LandHa_SUGAR_Cat,Yield_SUGAR_Cat[5])
+SUGAR_Cat$CROP <- "SUGAR"
+SUGAR_Cat_Sorted <- SUGAR_Cat[with(SUGAR_Cat, order(-Yield_GJHa)),] 
+SUGAR_Cat_Sorted = SUGAR_Cat_Sorted %>% mutate(Potential_GJ = Land_Ha * Yield_GJHa)
+SUGAR_Cat_Sorted$CumPot_EJ <- ave(SUGAR_Cat_Sorted$Potential_GJ, SUGAR_Cat_Sorted$SCENARIO, FUN=cumsum)
+SUGAR_Cat_Sorted$CumPot_EJ <- SUGAR_Cat_Sorted$CumPot_EJ / 1e9
+SUGAR_Cat_Sorted$CumLand_MHa <- ave(SUGAR_Cat_Sorted$Land_Ha, SUGAR_Cat_Sorted$SCENARIO, FUN=cumsum)
+SUGAR_Cat_Sorted$CumLand_MHa <- SUGAR_Cat_Sorted$CumLand_MHa / 1e6
+
+DATA_Land = rbind(WOODY_Cat_Sorted,SUGAR_Cat_Sorted,MAIZE_Cat_Sorted,NWOOD_Cat_Sorted)
 DATA_Land$ScenOrder = factor(DATA_Land$SCENARIO, levels=c("NoConstraints","NoAbandoned","NoBioReserve","NoDegraded","NoWetLand","NoWaterShort","NoAll"))
+DATA_Land = subset(DATA_Land, !Yield_GJHa==0)
+
+rm(LandHa_WOODY_Cat,LandHa_SUGAR_Cat,LandHa_MAIZE_Cat,LandHa_NWOOD_Cat)
+rm(Yield_WOODY_Cat,Yield_SUGAR_Cat,Yield_MAIZE_Cat,Yield_NWOOD_Cat)
+rm(WOODY_Cat,SUGAR_Cat,MAIZE_Cat,NWOOD_Cat)
+rm(WOODY_Cat_Sorted,SUGAR_Cat_Sorted,MAIZE_Cat_Sorted,NWOOD_Cat_Sorted)
 
 # ---- LABELS ----
 scen_labels <- c("NoConstraints"="No Land Constraints",

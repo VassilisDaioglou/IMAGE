@@ -514,7 +514,7 @@ FigLandFrac <- ggplot(data=subset(SSP.Land, (variable=="CroplandFrac"|variable==
 FigLandFrac
 
 #
-# ---- FIG: PRIMARY ENERGY----
+# ---- FIG: PRIMARY BIO-ENERGY----
 FigPrim <- ggplot(data=subset(SSP.Prim, (Variable=="PrimBioModern"|Variable=="PrimBioTraditional"|Variable=="PrimCoal"|Variable=="PrimGas"|Variable=="PrimOil"|Variable=="PrimNuclear"|Variable=="PrimRen")&(Year=="2010"|Year=="2030"|Year=="2050"|Year=="2070"|Year=="2100")&REGION=="World"),mapping=aes(x=Year, y=value, fill=VarOrder)) +
   geom_bar(stat="identity") +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
@@ -862,3 +862,29 @@ FigClim <- grid.arrange(FigForcing,FigTemp,FigCtax,layout_matrix=layout)
 # png("output/FigA2.png", width=6*ppi, height=4*ppi, res=ppi)
 # print(plot(FigYields))
 # dev.off()
+#
+# ---- FIGURES FOR PRESENTATIONS/LECTURES ----
+
+FigBioSupSSP2<-ggplot(data=subset(BioSupply.Order, (Year=="2100"|Year=="2050")&SCENARIO=="SSP2")) + 
+  geom_line(aes(x=CumPotCor, y=Cost, colour=LandCat), size=1) +
+  xlim(0,100) + 
+  ylim(0,15) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +
+  theme(text= element_text(size=8, face="plain"), axis.text.x = element_text(angle=66, size=8, hjust=1), axis.text.y = element_text(size=8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  ylab(expression(paste("$"[2005],"/GJ",""))) +
+  xlab(expression(paste(EJ[prim],"/Yr"))) +
+  theme(legend.position="bottom", legend.text = element_text(size=8, face="plain"), legend.background = element_rect(fill=alpha('blue', 0))) +
+  scale_colour_manual(values=c("grey50", "forestgreen","firebrick"),
+                      name ="",
+                      breaks=c("Abandoned","Residues","Rest"),
+                      labels=c("Abandoned Lands","Residues","Other Natural Lands")) +
+  facet_grid(Year~., scales="free_x", labeller=labeller(SCENARIO = scen_labels))
+FigBioSupSSP2
+
+
+# png("output/ForPresentation/FigBioSupSSP2.png", width=3.5*ppi, height=5.5*ppi, res=ppi, bg="white")
+# print(plot(FigBioSupSSP2))
+# dev.off()
+# #

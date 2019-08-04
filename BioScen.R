@@ -451,11 +451,11 @@ var_labels <- c("LandBuiltupArea"="Urban",
 scen_labels <-c("SSP1"="SSP1",
                 "SSP2"="SSP2",
                 "SSP3"="SSP3",
-                "SSP1_20"="SSP1-1.9 W/mÂ²",
-                "SSP2_20"="SSP2-1.9 W/mÂ²",
-                "SSP1_450"="SSP1-2.6 W/mÂ²",
-                "SSP2_450"="SSP2-2.6 W/mÂ²",
-                "SSP3_550"="SSP3-3.4 W/mÂ²")
+                "SSP1_20"="SSP1-1.9 W/m²",
+                "SSP2_20"="SSP2-1.9 W/m²",
+                "SSP1_450"="SSP1-2.6 W/m²",
+                "SSP2_450"="SSP2-2.6 W/m²",
+                "SSP3_550"="SSP3-3.4 W/m²")
 reg_labels <- c("BRA" = "Brazil",
                 "CAN" = "Canada",
                 "CEU" = "Central Europe",
@@ -883,8 +883,51 @@ FigBioSupSSP2<-ggplot(data=subset(BioSupply.Order, (Year=="2100"|Year=="2050")&S
   facet_grid(Year~., scales="free_x", labeller=labeller(SCENARIO = scen_labels))
 FigBioSupSSP2
 
+FigEmisBase <- ggplot(data=subset(SSP.Emis, REGION=="World"&(Year=="2010"|Year=="2030"|Year=="2050"|Year=="2070"|Year=="2100")
+                                  &Scenario=="SSP2"&(!VarOrder=="EmisCO2LandUse")),mapping=aes(x=Year, y=value/1000, fill=VarOrder)) +
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +
+  theme(text= element_text(size=8, face="plain"), axis.text.x = element_text(angle=66, size=8, hjust=1), axis.text.y = element_text(size=8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  ylab(expression(paste(GtCO[2],"-eq/yr",""))) +
+  xlab("") +
+  coord_cartesian(ylim=c(-15, 100)) +
+  theme(legend.position = "bottom",legend.text = element_text(size=8, face="plain"),legend.text.align = 0, legend.justification = "left") +
+  scale_fill_manual(values=c("mediumpurple","lightgoldenrod","lightskyblue","saddlebrown"),
+                    name="",
+                    breaks=c("EmisN2O_cor","EmisCH4_cor","EmisCO2FFIDem","EmisCO2FFISup"),
+                    labels=c(expression(paste(N[2],"O","")),expression(CH[4]),expression(paste(CO[2]," ","(Energy Demand)","")),expression(paste(CO[2]," ","(Energy Supply)","")))) +
+  facet_wrap(~ScenOrder, labeller=labeller(ScenOrder=scen_labels))
+FigEmisBase
+
+FigEmis15C <- ggplot(data=subset(SSP.Emis, REGION=="World"&(Year=="2010"|Year=="2030"|Year=="2050"|Year=="2070"|Year=="2100")
+                                 &Scenario=="SSP2_20"&(!VarOrder=="EmisCO2LandUse")),mapping=aes(x=Year, y=value/1000, fill=VarOrder)) +
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +
+  theme(text= element_text(size=8, face="plain"), axis.text.x = element_text(angle=66, size=8, hjust=1), axis.text.y = element_text(size=8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  ylab(expression(paste(GtCO[2],"-eq/yr",""))) +
+  xlab("") +
+  coord_cartesian(ylim=c(-15, 100)) +
+  theme(legend.position = "bottom",legend.text = element_text(size=8, face="plain"),legend.text.align = 0, legend.justification = "left") +
+  scale_fill_manual(values=c("mediumpurple","lightgoldenrod","lightskyblue","saddlebrown"),
+                    name="",
+                    breaks=c("EmisN2O_cor","EmisCH4_cor","EmisCO2FFIDem","EmisCO2FFISup"),
+                    labels=c(expression(paste(N[2],"O","")),expression(CH[4]),expression(paste(CO[2]," ","(Energy Demand)","")),expression(paste(CO[2]," ","(Energy Supply)","")))) +
+  facet_wrap(~ScenOrder, labeller=labeller(ScenOrder=scen_labels))
+FigEmis15C
 
 # png("output/ForPresentation/FigBioSupSSP2.png", width=3.5*ppi, height=5.5*ppi, res=ppi, bg="white")
 # print(plot(FigBioSupSSP2))
+# dev.off()
+# #
+# png("output/ForPresentation/FigEmisBase.png", width=4.5*ppi, height=4.5*ppi, res=ppi, bg="white")
+# print(plot(FigEmisBase))
+# dev.off()
+# # #
+# png("output/ForPresentation/FigEmis15C.png", width=4.5*ppi, height=4.5*ppi, res=ppi, bg="white")
+# print(plot(FigEmis15C))
 # dev.off()
 # #

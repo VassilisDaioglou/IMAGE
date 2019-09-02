@@ -1,5 +1,8 @@
 # R script to evaluate the effect of land constraint on biomass potentials
-# Dray Yield-supply curves under different land constraints
+# Draw Yield-supply curves under different land constraints
+# Two sets of experiments:
+# 1. Set different environmental land constraints (None, Excl. Aban lands, Excl. Biodiversity, Excl. wetlands, Excl. watershort, Excl. All)
+# 2. Draw curves for different land types (Agriculture, extensive grasslands, forests, other)
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -20,6 +23,9 @@ library(ggpubr)
 ppi <- 300
 FSizeStrip = 6.5
 FSizeLeg = 6.5
+
+HHVMAIZE = 15.8 # GJ/T
+HHVNWOOD = 16.5 # GJ/T
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
@@ -54,6 +60,13 @@ Yield_MAIZE_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 7, startRow=4)
 
 LandHa_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 8, startRow=4)
 Yield_NWOOD_Cat=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 9, startRow=4)
+
+# Data files for Yield-land supply curves for different lands types (Agriculture, Extensive grasslands, forests, other)
+LandHa_MAIZE_Cat.LT=read.xlsx("data/Harper/BioI2TData3.xlsx", sheet = 7, startRow=4)
+Yield_MAIZE_Cat.LT=read.xlsx("data/Harper/BioI2TData3.xlsx", sheet = 6, startRow=4)
+
+LandHa_NWOOD_Cat.LT=read.xlsx("data/Harper/BioI2TData3.xlsx", sheet = 5, startRow=4)
+Yield_NWOOD_Cat.LT=read.xlsx("data/Harper/BioI2TData3.xlsx", sheet = 4, startRow=4)
 
 # Residues available potential
 ResPot=read.xlsx("data/Harper/BioI2TData2.xlsx", sheet = 10, startRow=4)
@@ -191,6 +204,49 @@ rm(Yield_WOODY_Cat,Yield_SUGAR_Cat,Yield_MAIZE_Cat,Yield_NWOOD_Cat)
 rm(WOODY_Cat,SUGAR_Cat,MAIZE_Cat,NWOOD_Cat)
 rm(WOODY_Cat_Sorted,SUGAR_Cat_Sorted,MAIZE_Cat_Sorted,NWOOD_Cat_Sorted)
 
+# ---- CLEAN: Yield-Land-Supply ----
+colnames(LandHa_NWOOD_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
+colnames(LandHa_MAIZE_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
+colnames(Yield_NWOOD_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
+colnames(Yield_MAIZE_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
+
+LandHa_NWOOD_Cat.LT = subset(LandHa_NWOOD_Cat.LT, YEAR==2010&!REGION==27)
+LandHa_MAIZE_Cat.LT = subset(LandHa_MAIZE_Cat.LT, YEAR==2010&!REGION==27)
+Yield_NWOOD_Cat.LT = subset(Yield_NWOOD_Cat.LT, YEAR==2010&!REGION==27)
+Yield_MAIZE_Cat.LT = subset(Yield_MAIZE_Cat.LT, YEAR==2010&!REGION==27)
+
+LandHa_NWOOD_Cat.LT = melt(LandHa_NWOOD_Cat.LT, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(LandHa_NWOOD_Cat.LT)[5] <- "Land_Ha"
+Yield_NWOOD_Cat.LT = melt(Yield_NWOOD_Cat.LT, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(Yield_NWOOD_Cat.LT)[5] <- "Yield_GJHa"
+NWOOD_Cat.LT = cbind(LandHa_NWOOD_Cat.LT,Yield_NWOOD_Cat.LT[5])
+NWOOD_Cat.LT$CROP <- "NWOOD"
+NWOOD_Cat_Sorted.LT <- NWOOD_Cat.LT[with(NWOOD_Cat.LT, order(-Yield_GJHa)),] 
+NWOOD_Cat_Sorted.LT$CumLand_MHa <- ave(NWOOD_Cat_Sorted.LT$Land_Ha, NWOOD_Cat_Sorted.LT$SCENARIO, FUN=cumsum)
+NWOOD_Cat_Sorted.LT$CumLand_MHa <- NWOOD_Cat_Sorted.LT$CumLand_MHa / 1e6
+NWOOD_Cat_Sorted.LT = NWOOD_Cat_Sorted.LT %>% mutate(Yield_THa = Yield_GJHa / HHVNWOOD)
+
+LandHa_MAIZE_Cat.LT = melt(LandHa_MAIZE_Cat.LT, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(LandHa_MAIZE_Cat.LT)[5] <- "Land_Ha"
+Yield_MAIZE_Cat.LT = melt(Yield_MAIZE_Cat.LT, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
+colnames(Yield_MAIZE_Cat.LT)[5] <- "Yield_GJHa"
+MAIZE_Cat.LT = cbind(LandHa_MAIZE_Cat.LT,Yield_MAIZE_Cat.LT[5])
+MAIZE_Cat.LT$CROP <- "MAIZE"
+MAIZE_Cat_Sorted.LT <- MAIZE_Cat.LT[with(MAIZE_Cat.LT, order(-Yield_GJHa)),] 
+MAIZE_Cat_Sorted.LT$CumLand_MHa <- ave(MAIZE_Cat_Sorted.LT$Land_Ha, MAIZE_Cat_Sorted.LT$SCENARIO, FUN=cumsum)
+MAIZE_Cat_Sorted.LT$CumLand_MHa <- MAIZE_Cat_Sorted.LT$CumLand_MHa / 1e6
+MAIZE_Cat_Sorted.LT = MAIZE_Cat_Sorted.LT %>% mutate(Yield_THa = Yield_GJHa / HHVMAIZE)
+
+DATA_LandType = rbind(NWOOD_Cat_Sorted.LT,MAIZE_Cat_Sorted.LT)
+DATA_LandType$ScenOrder = factor(DATA_LandType$SCENARIO, levels=c("Agricultural","ExtGrassland","Forest","Other"))
+DATA_LandType = subset(DATA_LandType, !Yield_GJHa==0)
+
+rm(LandHa_MAIZE_Cat.LT,LandHa_NWOOD_Cat.LT)
+rm(Yield_MAIZE_Cat.LT,Yield_NWOOD_Cat.LT)
+rm(MAIZE_Cat.LT,NWOOD_Cat.LT)
+rm(MAIZE_Cat_Sorted.LT,NWOOD_Cat_Sorted.LT)
+
+#
 # ---- LABELS ----
 scen_labels <- c("NoConstraints"="No Land Constraints",
                 "NoAbandoned"="Excl. (future) Abandoned Lands",
@@ -200,6 +256,10 @@ scen_labels <- c("NoConstraints"="No Land Constraints",
                 "NoWaterShort"="Excl. Water-short Areas",
                 "NoAll"="Excl. All of the Above")
                 
+crop_labels <- c("WOODY"="Woody Crops",
+                 "NWOOD"="Grassy Crops",
+                 "MAIZE"="Cereals (Maize)",
+                 "SUGAR"="Sugar Crops")
 #
 # ---- FIG: Yield-Supply Curves ----
 DATA3 = subset(DATA2, YEAR>2015&REGION=="27")
@@ -263,6 +323,29 @@ LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=Scen
   theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
 LandSup
 
+# ---- FIG: Yield-Land-Supply Curves ----
+YieldLandSup <-ggplot(data=subset(DATA_LandType, !SCENARIO=="ExtGrassland"),
+                                  aes(x=CumLand_MHa, y=Yield_THa, colour=ScenOrder, fill=ScenOrder)) + 
+  geom_line(size=0.3)+
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  # Text
+  theme_bw() +
+  theme(text= element_text(size=6, face="plain"), axis.text.x = element_text(angle=66, size=6, hjust=1), axis.text.y = element_text(size=6)) +
+  theme(legend.title=element_text(size=FSizeLeg, face="bold"), legend.position="right", legend.text=element_text(size=FSizeLeg)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  ylab(expression(paste("Yield - T/Ha",""))) +
+  xlab("Land Use - MHa") +
+  # Legend
+  scale_colour_manual(values=c("red","blue","forestgreen","firebrick"),
+                      name ="Land Type:",
+                      breaks=c("Agricultural","ExtGrassland","Forest","Other"),
+                      labels=c("Agricultural Lands","Extensive Grasslands","Forests","Other Lands")
+  ) +
+  # Specifically for residues
+  facet_grid(. ~ CROP, labeller=labeller(CROP=crop_labels), scales="free_y") +
+  theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
+YieldLandSup
+
 # #
 # # ---- OUTPUTS ----
 # png(file = "output/hARPER/Yield_Supply.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
@@ -273,8 +356,7 @@ LandSup
 # plot(LandSup)
 # dev.off()
 # 
-
-
-
-
-
+# png(file = "output/Harper/Yield-Land_Supply.png", width = 4*ppi, height = 2*ppi, units = "px", res = ppi)
+# plot(YieldLandSup)
+# dev.off()
+# 

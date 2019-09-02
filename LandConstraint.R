@@ -326,20 +326,20 @@ LandSup
 # ---- FIG: Yield-Land-Supply Curves ----
 YieldLandSup <-ggplot(data=subset(DATA_LandType, !SCENARIO=="ExtGrassland"),
                                   aes(x=CumLand_MHa, y=Yield_THa, colour=ScenOrder, fill=ScenOrder)) + 
-  geom_line(size=0.3)+
+  geom_line(size=0.5)+
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   # Text
   theme_bw() +
   theme(text= element_text(size=6, face="plain"), axis.text.x = element_text(angle=66, size=6, hjust=1), axis.text.y = element_text(size=6)) +
-  theme(legend.title=element_text(size=FSizeLeg, face="bold"), legend.position="right", legend.text=element_text(size=FSizeLeg)) +
+  theme(legend.title=element_text(size=FSizeLeg, face="bold"), legend.position="bottom", legend.text=element_text(size=FSizeLeg)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  ylab(expression(paste("Yield - T/Ha",""))) +
+  ylab(expression(paste("Yield - t/Ha",""))) +
   xlab("Land Use - MHa") +
   # Legend
-  scale_colour_manual(values=c("red","blue","forestgreen","firebrick"),
+  scale_colour_manual(values=c("red","forestgreen","blue"),
                       name ="Land Type:",
-                      breaks=c("Agricultural","ExtGrassland","Forest","Other"),
-                      labels=c("Agricultural Lands","Extensive Grasslands","Forests","Other Lands")
+                      breaks=c("Agricultural","Forest","Other"),
+                      labels=c("Agricultural Lands","Forests","Other Lands")
   ) +
   # Specifically for residues
   facet_grid(. ~ CROP, labeller=labeller(CROP=crop_labels), scales="free_y") +
@@ -356,7 +356,7 @@ YieldLandSup
 # plot(LandSup)
 # dev.off()
 # 
-# png(file = "output/Harper/Yield-Land_Supply.png", width = 4*ppi, height = 2*ppi, units = "px", res = ppi)
+# png(file = "output/Harper/Yield-Land_Supply.png", width = 4*ppi, height = 3*ppi, units = "px", res = ppi)
 # plot(YieldLandSup)
 # dev.off()
 # 

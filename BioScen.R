@@ -957,5 +957,5 @@ PrimBioDefs <- data.frame(Variables = c("PrimBioEneCrop",
                                         "Modern Primary biomass production from grassy crops",
                                         "Modern Primary biomass production from residues (agriculture+forestry)"))
 
-# write.xlsx(PrimBioProjection, file="output/Other/IMAGE_Primary_Biomass_SSP.xlsx", sheetName="Primary Biomass Prduction", row.names=FALSE, showNA = TRUE)
+# write.xlsx(PrimBioProjection, file="output/Other/IMAGE_Primary_Biomass_SSP.xlsx", sheetName="Primary Biomass Production", row.names=FALSE, showNA = TRUE)
 # write.xlsx(PrimBioDefs, file="output/Other/IMAGE_Primary_Biomass_SSP.xlsx", sheetName="Definitions", append=TRUE, row.names=FALSE, showNA = TRUE)

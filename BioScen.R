@@ -931,3 +931,31 @@ FigEmis15C
 # print(plot(FigEmis15C))
 # dev.off()
 # #
+
+# ---- Other Outputs ----
+# These include outputs requested by other researchers-collaborators
+
+# Primary biomass per feedstock and region
+PrimBioProjection = subset(SSP.BioP, select=-c(VarOrder,ScenOrder,VARID,VARID2))
+PrimBioProjection = subset(PrimBioProjection, !Year<2010)                           
+
+# Definitions of primary biomass categories
+PrimBioDefs <- data.frame(Variables = c("PrimBioEneCrop",
+                                        "PrimBioModern",
+                                        "PrimBioTraditional",
+                                        "PrimBioNatCat1",
+                                        "PrimBioNatCat2",
+                                        "PrimBioNatCat3",
+                                        "PrimBioNatCat5",
+                                        "PrimBioNatCat6"),
+                          Definition = c("Biomass production from Energy crops grown on land (sum of categories 1 to 5)",
+                                        "Primary biomass consumption as modern bioenergy (all production categories)",
+                                        "Primary biomass consumption  for traditional uses (heating/cooking in poor households)",
+                                        "Modern Primary biomass production from Woody crops",
+                                        "Modern Primary biomass production from maize",
+                                        "Modern Primary biomass production from sugar crops",
+                                        "Modern Primary biomass production from grassy crops",
+                                        "Modern Primary biomass production from residues (agriculture+forestry)"))
+
+# write.xlsx(PrimBioProjection, file="output/Other/IMAGE_Primary_Biomass_SSP.xlsx", sheetName="Primary Biomass Prduction", row.names=FALSE, showNA = TRUE)
+# write.xlsx(PrimBioDefs, file="output/Other/IMAGE_Primary_Biomass_SSP.xlsx", sheetName="Definitions", append=TRUE, row.names=FALSE, showNA = TRUE)

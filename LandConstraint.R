@@ -24,6 +24,8 @@ ppi <- 300
 FSizeStrip = 6.5
 FSizeLeg = 6.5
 
+ActYear = 2050
+
 HHVMAIZE = 15.8 # GJ/T
 HHVNWOOD = 16.5 # GJ/T
 # set higher RAM capacity for java (used in clsx package)
@@ -133,14 +135,14 @@ colnames(Yield_SUGAR_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","
 colnames(Yield_MAIZE_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 colnames(Yield_NWOOD_Cat)[1:10] <-c("YEAR","REGION","CATEGORY","NoConstraints","NoBioReserve","NoDegraded","NoWaterShort","NoWetLand","NoAbandoned","NoAll")
 
-LandHa_WOODY_Cat = subset(LandHa_WOODY_Cat, YEAR==2100&!REGION==27)
-LandHa_MAIZE_Cat = subset(LandHa_MAIZE_Cat, YEAR==2100&!REGION==27)
-LandHa_SUGAR_Cat = subset(LandHa_SUGAR_Cat, YEAR==2100&!REGION==27)
-LandHa_NWOOD_Cat = subset(LandHa_NWOOD_Cat, YEAR==2100&!REGION==27)
-Yield_WOODY_Cat = subset(Yield_WOODY_Cat, YEAR==2100&!REGION==27)
-Yield_MAIZE_Cat = subset(Yield_MAIZE_Cat, YEAR==2100&!REGION==27)
-Yield_SUGAR_Cat = subset(Yield_SUGAR_Cat, YEAR==2100&!REGION==27)
-Yield_NWOOD_Cat = subset(Yield_NWOOD_Cat, YEAR==2100&!REGION==27)
+LandHa_WOODY_Cat = subset(LandHa_WOODY_Cat, YEAR==ActYear&!REGION==27)
+LandHa_MAIZE_Cat = subset(LandHa_MAIZE_Cat, YEAR==ActYear&!REGION==27)
+LandHa_SUGAR_Cat = subset(LandHa_SUGAR_Cat, YEAR==ActYear&!REGION==27)
+LandHa_NWOOD_Cat = subset(LandHa_NWOOD_Cat, YEAR==ActYear&!REGION==27)
+Yield_WOODY_Cat = subset(Yield_WOODY_Cat, YEAR==ActYear&!REGION==27)
+Yield_MAIZE_Cat = subset(Yield_MAIZE_Cat, YEAR==ActYear&!REGION==27)
+Yield_SUGAR_Cat = subset(Yield_SUGAR_Cat, YEAR==ActYear&!REGION==27)
+Yield_NWOOD_Cat = subset(Yield_NWOOD_Cat, YEAR==ActYear&!REGION==27)
 
 LandHa_WOODY_Cat = melt(LandHa_WOODY_Cat, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
 colnames(LandHa_WOODY_Cat)[5] <- "Land_Ha"
@@ -197,7 +199,7 @@ SUGAR_Cat_Sorted$CumLand_MHa <- SUGAR_Cat_Sorted$CumLand_MHa / 1e6
 DATA_Land = rbind(WOODY_Cat_Sorted,SUGAR_Cat_Sorted,MAIZE_Cat_Sorted,NWOOD_Cat_Sorted)
 DATA_Land$ScenOrder = factor(DATA_Land$SCENARIO, levels=c("NoConstraints","NoAbandoned","NoBioReserve","NoDegraded","NoWetLand","NoWaterShort","NoAll"))
 DATA_Land = subset(DATA_Land, !Yield_GJHa==0)
-DATA_Land$CumPot_EJ_Res = DATA_Land$CumPot_EJ + ResPot$Potential_EJ[ResPot$YEAR==2100]
+DATA_Land$CumPot_EJ_Res = DATA_Land$CumPot_EJ + ResPot$Potential_EJ[ResPot$YEAR==ActYear]
 
 rm(LandHa_WOODY_Cat,LandHa_SUGAR_Cat,LandHa_MAIZE_Cat,LandHa_NWOOD_Cat)
 rm(Yield_WOODY_Cat,Yield_SUGAR_Cat,Yield_MAIZE_Cat,Yield_NWOOD_Cat)
@@ -210,10 +212,10 @@ colnames(LandHa_MAIZE_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural"
 colnames(Yield_NWOOD_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
 colnames(Yield_MAIZE_Cat.LT)[1:7] <-c("YEAR","REGION","CATEGORY","Agricultural","ExtGrassland","Forest","Other")
 
-LandHa_NWOOD_Cat.LT = subset(LandHa_NWOOD_Cat.LT, YEAR==2010&!REGION==27)
-LandHa_MAIZE_Cat.LT = subset(LandHa_MAIZE_Cat.LT, YEAR==2010&!REGION==27)
-Yield_NWOOD_Cat.LT = subset(Yield_NWOOD_Cat.LT, YEAR==2010&!REGION==27)
-Yield_MAIZE_Cat.LT = subset(Yield_MAIZE_Cat.LT, YEAR==2010&!REGION==27)
+LandHa_NWOOD_Cat.LT = subset(LandHa_NWOOD_Cat.LT, YEAR==ActYear&!REGION==27)
+LandHa_MAIZE_Cat.LT = subset(LandHa_MAIZE_Cat.LT, YEAR==ActYear&!REGION==27)
+Yield_NWOOD_Cat.LT = subset(Yield_NWOOD_Cat.LT, YEAR==ActYear&!REGION==27)
+Yield_MAIZE_Cat.LT = subset(Yield_MAIZE_Cat.LT, YEAR==ActYear&!REGION==27)
 
 LandHa_NWOOD_Cat.LT = melt(LandHa_NWOOD_Cat.LT, id.vars=c("YEAR","REGION","CATEGORY"), variable.name="SCENARIO", na.rm=FALSE)
 colnames(LandHa_NWOOD_Cat.LT)[5] <- "Land_Ha"
@@ -298,7 +300,7 @@ DATA_Land = subset(DATA_Land, !SCENARIO=="NoDegraded")
 
 LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=ScenOrder, fill=ScenOrder)) + 
   geom_line(size=0.3)+
-  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==2100], linetype='Residues'),size = 0.3, colour='black') +
+  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==ActYear], linetype='Residues'),size = 0.3, colour='black') +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   ylim(0,220) +
   # Text
@@ -326,7 +328,7 @@ LandSup
 
 LandSup2 <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=CROP, fill=ScenOrder)) + 
   geom_line(size=0.3)+
-  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==2100], linetype='Residues'),size = 0.3, colour='black') +
+  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==ActYear], linetype='Residues'),size = 0.3, colour='black') +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   ylim(0,220) +
   # Text

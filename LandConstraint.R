@@ -249,7 +249,7 @@ rm(MAIZE_Cat_Sorted.LT,NWOOD_Cat_Sorted.LT)
 #
 # ---- LABELS ----
 scen_labels <- c("NoConstraints"="No Land Constraints",
-                "NoAbandoned"="Excl. (future) Abandoned Lands",
+                "NoAbandoned"="Excl. (future) \nAbandoned Lands",
                 "NoBioReserve"="Excl. Biodiversity Reserves",
                 "NoDegraded"="Excl. Degraded Lands",
                 "NoWetLand"="Excl. Wetlands",
@@ -323,6 +323,34 @@ LandSup <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=Scen
   theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
 LandSup
 
+
+LandSup2 <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=CROP, fill=ScenOrder)) + 
+  geom_line(size=0.3)+
+  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==2100], linetype='Residues'),size = 0.3, colour='black') +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  ylim(0,220) +
+  # Text
+  theme_bw() +
+  theme(text= element_text(size=6, face="plain"), axis.text.x = element_text(angle=66, size=6, hjust=1), axis.text.y = element_text(size=6)) +
+  theme(legend.title=element_text(size=FSizeLeg, face="bold"), legend.position="right", legend.text=element_text(size=FSizeLeg)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  ylab(expression(paste("Potential - ",EJ[Prim],"/yr",""))) +
+  xlab("Land Use - MHa") +
+  # Legend
+  scale_colour_manual(values=c("brown","forestgreen","orange","purple"),
+                      name ="Crop:",
+                      breaks=c("WOODY","SUGAR","MAIZE","NWOOD"),
+                      labels=c("Short Rotation Coppice","Sugar-crops","Maize","Grassy-crops")
+  ) +
+  # Specifically for residues
+  scale_linetype_manual(name = "Other Biomass:", values = 2, 
+                        guide = guide_legend(override.aes = list(color = 'black'))) +
+  
+  facet_wrap(~ScenOrder, nrow=2, labeller=labeller(ScenOrder=scen_labels),scales="free_y", strip.position = "top") +
+  theme(strip.text.x = element_text(size = FSizeStrip), strip.text.y = element_text(size = FSizeStrip))
+LandSup2
+
+#
 # ---- FIG: Yield-Land-Supply Curves ----
 YieldLandSup <-ggplot(data=subset(DATA_LandType, !SCENARIO=="ExtGrassland"),
                                   aes(x=CumLand_MHa, y=Yield_THa, colour=ScenOrder, fill=ScenOrder)) + 
@@ -354,6 +382,10 @@ YieldLandSup
 # 
 # png(file = "output/Harper/Land_Supply.png", width = 6*ppi, height = 2*ppi, units = "px", res = ppi)
 # plot(LandSup)
+# dev.off()
+# 
+# png(file = "output/Harper/Land_Supply2.png", width = 6*ppi, height = 3.25*ppi, units = "px", res = ppi)
+# plot(LandSup2)
 # dev.off()
 # 
 # png(file = "output/Harper/Yield-Land_Supply.png", width = 4*ppi, height = 3*ppi, units = "px", res = ppi)

@@ -250,9 +250,9 @@ rm(MAIZE_Cat_Sorted.LT,NWOOD_Cat_Sorted.LT)
 
 #
 # ---- LABELS ----
-scen_labels <- c("NoConstraints"="No Land Constraints",
-                "NoAbandoned"="Excl. (future) \nAbandoned Lands",
-                "NoBioReserve"="Excl. Biodiversity Reserves",
+scen_labels <- c("NoConstraints"="Excl. Forests \n(Default)",
+                "NoAbandoned"="Excl. (projected) \nAbandoned Lands",
+                "NoBioReserve"="Excl. Biodiversity Reserves \n(Default)",
                 "NoDegraded"="Excl. Degraded Lands",
                 "NoWetLand"="Excl. Wetlands",
                 "NoWaterShort"="Excl. Water-short Areas",
@@ -327,10 +327,10 @@ LandSup
 
 
 LandSup2 <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=CROP, fill=ScenOrder)) + 
-  geom_line(size=0.3)+
-  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==ActYear], linetype='Residues'),size = 0.3, colour='black') +
+  geom_line(size=0.5)+
+  geom_hline(aes(yintercept=ResPot$Potential_EJ[ResPot$YEAR==ActYear], linetype='Residues'),size = 0.5, colour='black') +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
-  ylim(0,220) +
+  ylim(0,200) +
   # Text
   theme_bw() +
   theme(text= element_text(size=6, face="plain"), axis.text.x = element_text(angle=66, size=6, hjust=1), axis.text.y = element_text(size=6)) +
@@ -339,7 +339,7 @@ LandSup2 <-ggplot(data=DATA_Land, aes(x=CumLand_MHa, y=CumPot_EJ_Res, colour=CRO
   ylab(expression(paste("Potential - ",EJ[Prim],"/yr",""))) +
   xlab("Land Use - MHa") +
   # Legend
-  scale_colour_manual(values=c("brown","forestgreen","orange","purple"),
+  scale_colour_manual(values=c("brown","forestgreen","orange","blue"),
                       name ="Crop:",
                       breaks=c("WOODY","SUGAR","MAIZE","NWOOD"),
                       labels=c("Short Rotation Coppice","Sugar-crops","Maize","Grassy-crops")
@@ -386,7 +386,7 @@ YieldLandSup
 # plot(LandSup)
 # dev.off()
 # 
-# png(file = "output/Harper/Land_Supply2.png", width = 6*ppi, height = 3.25*ppi, units = "px", res = ppi)
+# png(file = "output/Harper/Land_Supply2.png", width = 7*ppi, height = 4*ppi, units = "px", res = ppi)
 # plot(LandSup2)
 # dev.off()
 # 

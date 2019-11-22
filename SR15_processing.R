@@ -126,6 +126,7 @@ Baselines.MinMax$Maximum <- Baselines.Max[match(Baselines.MinMax$ID, Baselines.M
 
 rm(Baselines.Min,Baselines.Max)
 
+#
 # Mitigation Scenarios
 Mitigation = subset(DATA, !Target=="Baseline")
 Mitigation = Mitigation %>% mutate(FracCCS = `PrimBiomasswCCS-EJ/yr`/`PrimBiomass-EJ/yr`)
@@ -137,6 +138,46 @@ Mitigation$var_Order = factor(Mitigation$variable, levels=c("PrimBiomass-EJ/yr",
                                                             "FracCCS",
                                                             "LandCoverEnergyCrops-Mha",
                                                             "EmisCO2AFOLU-MtCO2/yr"))
+#
+# Sensitivity Runs
+Sensitivity = subset(Mitigation, Project=="EMF33")
+
+Sensitivity$Test <- str_extract(Sensitivity$Scenario,"(cost100|full|nobeccs|nofuel|none|limbio)")
+
+Sensitivity$Test_Order = factor(Sensitivity$Test, levels=c("full",
+                                                           "cost100",
+                                                           "nobeccs",
+                                                           "nofuel",
+                                                           "none",
+                                                           "limbio"))
+
+Sensitivity.Min <- aggregate(Sensitivity$value, by=list(Test=Sensitivity$Test, Year=Sensitivity$Year, variable=Sensitivity$variable), FUN=min, na.rm=TRUE) 
+colnames(Sensitivity.Min)[4] <- "Minimum"
+Sensitivity.Min$ID = paste(Sensitivity.Min$Test,Sensitivity.Min$variable,Sensitivity.Min$Year)
+
+Sensitivity.Max <- aggregate(Sensitivity$value, by=list(Test=Sensitivity$Test, Year=Sensitivity$Year, variable=Sensitivity$variable), FUN=max, na.rm=TRUE) 
+colnames(Sensitivity.Max)[4] <- "Maximum"
+Sensitivity.Max$ID = paste(Sensitivity.Min$Test,Sensitivity.Min$variable,Sensitivity.Max$Year)
+
+Sensitivity.MinMax = Sensitivity.Min
+Sensitivity.MinMax$Maximum <- Sensitivity.Max[match(Sensitivity.MinMax$ID, Sensitivity.Max$ID),"Maximum"]
+
+rm(Sensitivity.Max,Sensitivity.Min)
+
+Sensitivity.MinMax$Test_Order = factor(Sensitivity.MinMax$Test, levels=c("full",
+                                                           "cost100",
+                                                           "nobeccs",
+                                                           "nofuel",
+                                                           "none",
+                                                           "limbio"))
+
+Sensitivity.MinMax$var_Order = factor(Sensitivity.MinMax$variable, levels=c("PrimBiomass-EJ/yr",
+                                                            "PrimBiomasswCCS-EJ/yr",
+                                                            "FracCCS",
+                                                            "LandCoverEnergyCrops-Mha",
+                                                            "EmisCO2AFOLU-MtCO2/yr"))
+
+
 #
 # ---- LABELS ----
 #var labels with text wraps                
@@ -193,7 +234,7 @@ MitigProj
 MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) + 
   geom_line(data=subset(Mitigation, Target=="2C"), alpha=0.33) + 
   geom_line(data=subset(Mitigation, Target=="1.5C"), alpha=0.5) + 
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  geom_hline(yintercept=0,size = 0.3, colour='black') +
   xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -210,6 +251,34 @@ MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) 
 MitigProj2
 
 #
+# ---- FIG: SENSITIVITIES ----
+
+Sens <- ggplot(subset(Sensitivity.MinMax, Year=="2020"|Year=="2040"|Year=="2060"|Year=="2080"|Year=="2100"),
+               aes(x=Year, ymin = Minimum,ymax = Maximum, lower = Minimum, upper = Maximum, middle = Minimum,
+                                       colour=Test_Order, fill=Test_Order)) + 
+  geom_boxplot(stat = 'identity') +
+  geom_hline(yintercept=0,size = 0.3, colour='black') +
+  geom_vline(xintercept=c(2030,2050,2070,2090), size=0.1, colour="gray30") +
+  xlim(2010,2110) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeAxis, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom", legend.text = element_text(size=FSizeLeg)) +
+  scale_colour_manual(values=c("forestgreen","peachpuff1","darkmagenta","chocolate1","lightskyblue4","seagreen1"),
+                      name="",
+                      breaks=c("full","cost100","nobeccs","nofuel","none","limbio"),
+                      labels=c("No Constraint","Costs x2","No BECCS","No Adv. Fuels","No Adv. BECCS or Adv. Fuels","<100 EJ/yr Potential"),
+                      guide=FALSE) + 
+  scale_fill_manual(values=c("forestgreen","peachpuff1","darkmagenta","chocolate1","lightskyblue4","seagreen1"),
+                      name="",
+                      breaks=c("full","cost100","nobeccs","nofuel","none","limbio"),
+                      labels=c("No Constraint","Costs x2","No BECCS","No Adv. Fuels","No Adv. Technologies","<100 EJ/yr Potential")) + 
+  facet_wrap(.~var_Order, nrow=2, scales="free_y", labeller = labeller(var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip)) + 
+  guides(fill = guide_legend(nrow = 1))
+Sens
+#
 # ---- OUTPUTS ----
 # png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
 # plot(BaseProj)
@@ -218,8 +287,12 @@ MitigProj2
 # png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(MitigProj)
 # dev.off()
+# #
+# png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(MitigProj2)
+# dev.off()
 #
-png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(MitigProj2)
-dev.off()
+# png(file = "output/SR15/Sensitivity.png", width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
+# plot(Sens)
+# dev.off()
 #

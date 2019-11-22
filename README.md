@@ -1,4 +1,6 @@
 # Biomass_SSP_Scenarios
-Repository for scripts and results for the Biomass SSP paper
+Repository for scripts and results for multiple biomass results post-processing
 
-Also includes some further analysis to evaluate biomass and bioenergy projections according to IMAGE
+- IMAGE results used in the Biomass SSP paper (Daioglou et al. 2019)
+- Analysis of IMAGE biomass potentials, used for draft by Anna Harper
+- Analysis of SR1.5C database results for IEA-Bioenergy

@@ -288,7 +288,7 @@ Sens
 # plot(MitigProj)
 # dev.off()
 # #
-# png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 6*ppi, units = "px", res = ppi)
+# png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 5.5*ppi, units = "px", res = ppi)
 # plot(MitigProj2)
 # dev.off()
 #

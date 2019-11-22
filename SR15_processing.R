@@ -28,9 +28,15 @@ options(java.parameters = "-Xmx8000m")
 setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
 # Read Data from SR1.5C DB
 DATA=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574413368.csv", sep=",", dec=".", stringsAsFactors = FALSE)
+DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE)
 
 # ---- DATA STRUCTURE ----
 # Re-structure and Clean dataframe
+  # First bind DATA and DATA2 DFs (Data 2 contains primary bioenergy in baselines, which are declared under "Biomass|Modern|w/o CCS")
+DATA = subset(DATA, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
+DATA2 = subset(DATA2, select=-c(X2005))
+DATA = rbind(DATA,DATA2)
+
   # Fix years and values
 DATA=melt(DATA, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(DATA)[6] <- "Year"
@@ -84,11 +90,53 @@ DATA$Variable <- gsub("Modern","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Cropland","",DATA$Variable,fixed=F)
 DATA$Variable <-paste(DATA$Variable,"-",DATA$Unit)
 DATA$Variable <- gsub("million","M",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("woCCS","",DATA$Variable,fixed=F)
 DATA$Variable <-gsub( "[[:space:]]","",DATA$Variable,fixed=F)
 
   # Re-structure to have variables as columns
 DATA$Unit <- NULL
 DATA=spread(DATA,Variable,value)
+#
+# ---- DATA PROCESSING ----
+# HAve to generate datasets containting the minimum and maximum for each of the "Targets" 
+# This will aid in drawing shaded areas for each target
 
+# First do for baselines
+Baselines = subset(DATA, Target=="Baseline")
+Baselines = melt(Baselines, id.vars=c("Model","Scenario","Region","Year","Project","Target"), na.rm=TRUE)
 
+Baselines.Min <- aggregate(Baselines$value, by=list(Year=Baselines$Year, Project=Baselines$Project, variable=Baselines$variable), FUN=min, na.rm=TRUE) 
+colnames(Baselines.Min)[4] <- "Minimum"
+Baselines.Min$ID = paste(Baselines.Min$Project,Baselines.Min$variable,Baselines.Min$Year)
+
+Baselines.Max <- aggregate(Baselines$value, by=list(Year=Baselines$Year, Project=Baselines$Project, variable=Baselines$variable), FUN=max, na.rm=TRUE) 
+colnames(Baselines.Max)[4] <- "Maximum"
+Baselines.Max$ID = paste(Baselines.Min$Project,Baselines.Min$variable,Baselines.Max$Year)
+
+Baselines.MinMax = Baselines.Min
+Baselines.MinMax$Maximum <- Baselines.Max[match(Baselines.MinMax$ID, Baselines.Max$ID),"Maximum"]
+
+rm(Baselines.Min,Baselines.Max)
+#
 # ---- FIGURES ----
+# Baselines projections
+BaseProj <- ggplot(subset(Baselines.MinMax, !variable=="PrimBiomasswCCS-EJ/yr"), aes(x=Year, y=Minimum)) + 
+  geom_line(aes(y = Minimum), alpha = 0.1) + 
+  geom_line(aes(y = Maximum), alpha = 0.1) +
+  geom_ribbon(aes(ymin=Minimum,ymax=Maximum, fill=Project), alpha="0.5") +
+  xlab("") + 
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="none") +
+  scale_fill_manual(values=c("forestgreen","dodgerblue","firebrick1","darkolivegreen1","darkorchid"),
+                    name="",
+                    breaks=c("SSP1","SSP2","SSP3","SSP4","SSP5"),
+                    labels=c("SSP1","SSP2","SSP3","SSP4","SSP5")
+                    ,guide=FALSE) +
+  
+  facet_grid(variable~Project) 
+BaseProj
+
+
+

@@ -29,15 +29,19 @@ options(java.parameters = "-Xmx8000m")
 setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
 # Read Data from SR1.5C DB
 DATA=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574413368.csv", sep=",", dec=".", stringsAsFactors = FALSE)
-DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE)
+DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with Prim Bio in baselines
+AFOLU=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574430547.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with AFOLU emissions in Mitigation Scenarios
 
 # ---- DATA STRUCTURE ----
 # Re-structure and Clean dataframe
   # First bind DATA and DATA2 DFs (Data 2 contains primary bioenergy in baselines, which are declared under "Biomass|Modern|w/o CCS")
 DATA = subset(DATA, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 DATA2 = subset(DATA2, select=-c(X2005))
-DATA = rbind(DATA,DATA2)
+AFOLU = subset(AFOLU, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 
+DATA = rbind(DATA,DATA2,AFOLU)
+
+rm(DATA2, AFOLU)
   # Fix years and values
 DATA=melt(DATA, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(DATA)[6] <- "Year"
@@ -84,15 +88,18 @@ DATA$Target <- gsub("26","2C",DATA$Target,fixed=F)
 DATA$Target <- gsub("2.0","2C",DATA$Target,fixed=F)
 
   # Clean Variable names
-DATA$Variable <-gsub( "[[:punct:]]","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("[[:punct:]]","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Land Cover","LandCover",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Primary Energy","Prim",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Modern","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Cropland","",DATA$Variable,fixed=F)
-DATA$Variable <-paste(DATA$Variable,"-",DATA$Unit)
-DATA$Variable <- gsub("million","M",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Emissions","Emis",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("woCCS","",DATA$Variable,fixed=F)
-DATA$Variable <-gsub( "[[:space:]]","",DATA$Variable,fixed=F)
+
+DATA$Variable <- paste(DATA$Variable,"-",DATA$Unit)
+DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("million","M",DATA$Variable,fixed=F)
 
   # Re-structure to have variables as columns
 DATA$Unit <- NULL
@@ -125,14 +132,19 @@ Mitigation = Mitigation %>% mutate(FracCCS = `PrimBiomasswCCS-EJ/yr`/`PrimBiomas
 
 Mitigation = melt(Mitigation, id.vars=c("Model","Scenario","Region","Year","Project","Target"))
 
-Mitigation$var_Order = factor(Mitigation$variable, levels=c("PrimBiomass-EJ/yr","PrimBiomasswCCS-EJ/yr","FracCCS","LandCoverEnergyCrops-Mha"))
+Mitigation$var_Order = factor(Mitigation$variable, levels=c("PrimBiomass-EJ/yr",
+                                                            "PrimBiomasswCCS-EJ/yr",
+                                                            "FracCCS",
+                                                            "LandCoverEnergyCrops-Mha",
+                                                            "EmisCO2AFOLU-MtCO2/yr"))
 #
 # ---- LABELS ----
 #var labels with text wraps                
 var_labels <- c("LandCoverEnergyCrops-Mha"="Land Cover Energy Crops \nMHa",
                 "PrimBiomass-EJ/yr"="Primary Biomass \nEJ/yr",
                 "PrimBiomasswCCS-EJ/yr"="Primary Biomass with CCS \nEJ/yr",
-                "FracCCS"="Fraction Combined \nwith CCS")
+                "FracCCS"="Fraction Combined \nwith CCS",
+                "EmisCO2AFOLU-MtCO2/yr"="AFOLU CO2 Emissions \nMtCO2/yr")
 
 
 # ---- FIG: BASELINES ----
@@ -181,6 +193,7 @@ MitigProj
 MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) + 
   geom_line(data=subset(Mitigation, Target=="2C"), alpha=0.33) + 
   geom_line(data=subset(Mitigation, Target=="1.5C"), alpha=0.5) + 
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
   xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -206,7 +219,7 @@ MitigProj2
 # plot(MitigProj)
 # dev.off()
 #
-# png(file = "output/SR15/MitigProj2.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(MitigProj2)
-# dev.off()
+png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 6*ppi, units = "px", res = ppi)
+plot(MitigProj2)
+dev.off()
 #

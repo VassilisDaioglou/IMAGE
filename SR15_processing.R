@@ -18,8 +18,9 @@ library(ggpubr)
 
 # ---- INPUTS ----
 ppi <- 300
-FSizeStrip = 6.5
-FSizeLeg = 6.5
+FSizeStrip = 10
+FSizeAxis = 9
+FSizeLeg = 10
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -98,10 +99,10 @@ DATA$Unit <- NULL
 DATA=spread(DATA,Variable,value)
 #
 # ---- DATA PROCESSING ----
-# HAve to generate datasets containting the minimum and maximum for each of the "Targets" 
+# Have to generate datasets containting the minimum and maximum for each of the "Targets" 
 # This will aid in drawing shaded areas for each target
 
-# First do for baselines
+# Baselines
 Baselines = subset(DATA, Target=="Baseline")
 Baselines = melt(Baselines, id.vars=c("Model","Scenario","Region","Year","Project","Target"), na.rm=TRUE)
 
@@ -117,8 +118,24 @@ Baselines.MinMax = Baselines.Min
 Baselines.MinMax$Maximum <- Baselines.Max[match(Baselines.MinMax$ID, Baselines.Max$ID),"Maximum"]
 
 rm(Baselines.Min,Baselines.Max)
+
+# Mitigation Scenarios
+Mitigation = subset(DATA, !Target=="Baseline")
+Mitigation = Mitigation %>% mutate(FracCCS = `PrimBiomasswCCS-EJ/yr`/`PrimBiomass-EJ/yr`)
+
+Mitigation = melt(Mitigation, id.vars=c("Model","Scenario","Region","Year","Project","Target"))
+
+Mitigation$var_Order = factor(Mitigation$variable, levels=c("PrimBiomass-EJ/yr","PrimBiomasswCCS-EJ/yr","FracCCS","LandCoverEnergyCrops-Mha"))
 #
-# ---- FIGURES ----
+# ---- LABELS ----
+#var labels with text wraps                
+var_labels <- c("LandCoverEnergyCrops-Mha"="Land Cover Energy Crops \nMHa",
+                "PrimBiomass-EJ/yr"="Primary Biomass \nEJ/yr",
+                "PrimBiomasswCCS-EJ/yr"="Primary Biomass with CCS \nEJ/yr",
+                "FracCCS"="Fraction Combined \nwith CCS")
+
+
+# ---- FIG: BASELINES ----
 # Baselines projections
 BaseProj <- ggplot(subset(Baselines.MinMax, !variable=="PrimBiomasswCCS-EJ/yr"), aes(x=Year, y=Minimum)) + 
   geom_line(aes(y = Minimum), alpha = 0.1) + 
@@ -138,5 +155,58 @@ BaseProj <- ggplot(subset(Baselines.MinMax, !variable=="PrimBiomasswCCS-EJ/yr"),
   facet_grid(variable~Project) 
 BaseProj
 
+# ---- FIG: MITIGATION ----
+# Mitigation Projections
+# Mitig = subset(Mitigation, select=-c(Model,Scenario,Region,Project))
+Mitigation$ID = paste(Mitigation$Model,Mitigation$Scenario,Mitigation$Region,Mitigation$Project)
 
+MitigProj <- ggplot(data=subset(Mitigation, !Target=="1600"), aes(x=Year,y = value, colour=Target, fill=ID)) + 
+  geom_line(alpha=0.75) + 
+  xlim(2010,2100) +
+  xlab("") + 
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="none") +
+  scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1","darkorchid"),
+                      name="",
+                      breaks=c("1.5C","2C","WB2C","1600"),
+                      labels=c("1.5C","2C","WB2C",">2C")
+                      ,guide=FALSE) +
+  
+  facet_grid(variable~Target, scales="free_y") 
+MitigProj
 
+# Mitigation Projections with targets superimposed
+MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) + 
+  geom_line(data=subset(Mitigation, Target=="2C"), alpha=0.33) + 
+  geom_line(data=subset(Mitigation, Target=="1.5C"), alpha=0.5) + 
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeAxis, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("forestgreen","darkorchid"),
+                      name="",
+                      breaks=c("1.5C","2C"),
+                      labels=c("1.5C","2C")
+                      ) +
+  facet_wrap(.~var_Order, nrow=2, scales="free_y", labeller = labeller(var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip))
+MitigProj2
+
+#
+# ---- OUTPUTS ----
+# png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(BaseProj)
+# dev.off()
+# # 
+# png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(MitigProj)
+# dev.off()
+#
+# png(file = "output/SR15/MitigProj2.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(MitigProj2)
+# dev.off()
+#

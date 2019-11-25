@@ -15,15 +15,19 @@ library(xlsx)
 library(openxlsx)
 library(ggpubr)
 
-# ---- INPUTS: BioTool ----
+# ---- INPUTS: Constants ----
 ppi <- 300
 FSizeStrip = 6.5
 FSizeLeg = 6.5
 FSizeAxis = 9
 
+Regions = c(2,5,10,11,16,18,20)
+Years = c("1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
+
   # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
+# ---- INPUTS: Data ----
   # set directory path 
 setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
   # Read Data Files for Baseline Scenario
@@ -37,7 +41,7 @@ UEIntHeat=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "UEIntHeat_new_Fut", s
 CO2Emis=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CO2Spec", startRow=4)
 
   # Read Data Files for Mitigation Scenario
-# Stocks=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "StockFlows", startRow=4)
+Stocks.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "StockFlows", startRow=4)
 Investment.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Investments_Total", startRow=4)
 # Investment.Renov=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Investments_RenovBuild", startRow=4)
 EffMS.new450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "MS_new", startRow=4)
@@ -49,26 +53,25 @@ CO2Emis.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CO2Spec", start
 #
 # ---- MUNGING ----
 # ---- ***Stocks ----
-colnames(Stocks)[1:6] <- c("Year","Region","TURQ","New","Decomissioned","Total")
-Stocks = melt(Stocks, id.vars=c("Year","Region","TURQ"))
+Stocks$Scen <- "SSP2"
+Stocks.450$Scen <- "SSP2_450"
+Stocks = rbind(Stocks,Stocks.450)
+rm(Stocks.450)
+
+colnames(Stocks)[1:7] <- c("Year","Region","TURQ","New","Decomissioned","Total","Scen")
+Stocks = melt(Stocks, id.vars=c("Year","Region","TURQ","Scen"))
 
 # ---- ***Investments ----
-colnames(Investment)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                            "U1","U2","U3","U4","U5",
-                            "R1","R2","R3","R4","R5")
-Investment = melt(Investment, id.vars=c("Year","Region"))
-Investment = subset(Investment, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 Investment$Scen <- "SSP2"
-
-colnames(Investment.450)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                                "U1","U2","U3","U4","U5",
-                                "R1","R2","R3","R4","R5")
-Investment.450 = melt(Investment.450, id.vars=c("Year","Region"))
-Investment.450 = subset(Investment.450, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 Investment.450$Scen <- "SSP2_450"
-
 Investment = rbind(Investment,Investment.450)
 rm(Investment.450)
+
+colnames(Investment)[1:16] <- c("Year","Region","Total","Urban","Rural",
+                                "U1","U2","U3","U4","U5",
+                                "R1","R2","R3","R4","R5",
+                                "Scen")
+Investment = melt(Investment, id.vars=c("Year","Region","Scen"))
 
 # ---- ***Efficiency Market Shares ----
 EffMS.new$Scen <- "SSP2"
@@ -78,7 +81,6 @@ rm(EffMS.new450)
 
 colnames(EffMS.new)[1:8] <- c("Year","Region","TURQ","EffLevel","B1","B2","B3","B4")
 EffMS.new = melt(EffMS.new, id.vars=c("Year","Region","TURQ","EffLevel","Scen"))
-EffMS.new = subset(EffMS.new, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 EffMS.new = subset(EffMS.new, variable=="B1")
 EffMS.new = subset(EffMS.new, !Region==27)
 EffMS.new$value <- as.numeric(EffMS.new$value)
@@ -94,7 +96,6 @@ colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
                                "R1","R2","R3","R4","R5")
 RenovRate = melt(RenovRate, id.vars=c("Year","Region","Scen"))
-RenovRate = subset(RenovRate, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 
 # ---- ***Heating USeful Energy Intensity ----
 UEIntHeat$Scen <- "SSP2"
@@ -106,7 +107,6 @@ colnames(UEIntHeat)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
                                "R1","R2","R3","R4","R5")
 UEIntHeat = melt(UEIntHeat, id.vars=c("Year","Region","Scen"))
-UEIntHeat = subset(UEIntHeat, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 
 # ---- ***HEating Energy USe ----
 EneUseFunc$Scen <- "SSP2"
@@ -121,7 +121,6 @@ colnames(EneUseFunc)[1:16] <- c("Year","Region","Scen","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
                                "R1","R2","R3","R4","R5")
 EneUseFunc = melt(EneUseFunc, id.vars=c("Year","Region","Scen"))
-EneUseFunc = subset(EneUseFunc, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 EneUseFunc = subset(EneUseFunc, !Region==27)
 EneUseFunc$Region[EneUseFunc$Region==28] <- 27
 
@@ -134,13 +133,20 @@ rm(CO2Emis.450)
 colnames(CO2Emis)[1:2] <- c("Year","Region")
 CO2Emis = subset(CO2Emis, select=c(Year,Region,class_.5,Scen))
 colnames(CO2Emis)[3] <- c("value")
-CO2Emis = subset(CO2Emis, Year=="1980"|Year=="1990"|Year=="2000"|Year=="2010"|Year=="2020"|Year=="2030"|Year=="2040"|Year=="2050"|Year=="2060"|Year=="2070"|Year=="2080"|Year=="2090"|Year=="2100")
 CO2Emis = subset(CO2Emis, !Region==27)
 CO2Emis$Region[CO2Emis$Region==28] <- 27
 CO2Emis$variable <- "Total"
 
 #
-# ---- DATA AGGREGATION
+# ---- DATA AGGREGATION ----
+Stocks=subset(Stocks, Region %in% Regions & Year %in% Years)
+Investment=subset(Investment, Region %in% Regions & Year %in% Years)
+EffMS.new=subset(EffMS.new, Region %in% Regions & Year %in% Years)
+RenovRate=subset(RenovRate, Region %in% Regions & Year %in% Years)
+UEIntHeat=subset(UEIntHeat, Region %in% Regions & Year %in% Years)
+EneUseFunc=subset(EneUseFunc, Region %in% Regions & Year %in% Years)
+CO2Emis=subset(CO2Emis, Region %in% Regions & Year %in% Years)
+
 Investment$Variable <- "Investments"
 RenovRate$Variable <- "RenovationRate"
 UEIntHeat$Variable <- "UeIntHeat"
@@ -148,13 +154,13 @@ EneUseFunc$Variable <- "HeatingDemand"
 CO2Emis$Variable <- "ResiCO2Emis"
 
 DATA.TRQS = rbind(Investment,RenovRate,UEIntHeat,EneUseFunc,CO2Emis) 
-colnames(DATA.TRQS)[3] <- "TURQ"
+colnames(DATA.TRQS)[4] <- "TURQ"
 # ---- FIGURES ----
 # ---- FIG: Investments ----
-Inv.S <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural")&Region==27)
-                  , aes(x=Year,y = value, fill=variable)) + 
-  geom_bar(stat="identity") +
-  # geom_line(alpha=1) + 
+Inv.UR <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural"))
+                  , aes(x=Year,y = value, colour=variable)) + 
+  # geom_bar(stat="identity") +
+  geom_line(alpha=1) +
   xlim(2020,2100) +
   xlab("") + ylab("Bn$/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -166,10 +172,10 @@ Inv.S <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural")&Re
   #                     breaks=c("New","Decomissioned","Total"),
   #                     labels=c("New","Decomissioned","Total")) +
   # 
-  facet_wrap(Scen~.) 
-Inv.S
+  facet_grid(Region~Scen, scales="free_y") 
+Inv.UR
 
-Inv.R <- ggplot(data=subset(Investment, Scen=="SSP2_450"&!(variable=="Total"|variable=="Urban"|variable=="Rural"))
+Inv.URQ <- ggplot(data=subset(Investment, !(variable=="Total"|variable=="Urban"|variable=="Rural"))
                 , aes(x=Year,y = value, fill=variable)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
@@ -178,17 +184,19 @@ Inv.R <- ggplot(data=subset(Investment, Scen=="SSP2_450"&!(variable=="Total"|var
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  facet_wrap(Region~., scales="free_y") 
-Inv.R
-
+  facet_grid(Region~Scen, scales="free_y") 
+Inv.URQ
 
 #
 # ---- FIG: Efficiency Level ----
-Eff.UQ <- ggplot(data=subset(EffMS.new, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8)&Region==1)
+ActiveRegion <- 11
+
+Eff.UQS <- ggplot(data=subset(EffMS.new, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8)&Region==ActiveRegion)
                 , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
   xlab("") + ylab("") +
+  ggtitle(paste("Region: ",ActiveRegion)) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -199,7 +207,25 @@ Eff.UQ <- ggplot(data=subset(EffMS.new, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8
   #                     labels=c("New","Decomissioned","Total")) +
   # 
   facet_grid(TURQ~Scen)
-Eff.UQ
+Eff.UQS
+
+Eff.TRS <- ggplot(data=subset(EffMS.new, (TURQ==8))
+                 , aes(x=Year,y = value, fill=EffLevel)) + 
+  geom_bar(stat="identity") +
+  xlim(2020,2100) +
+  xlab("") + ylab("") +
+  ggtitle(paste("TURQ: ",8)) +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
+  #                     name="",
+  #                     breaks=c("New","Decomissioned","Total"),
+  #                     labels=c("New","Decomissioned","Total")) +
+  # 
+  facet_grid(Region~Scen)
+Eff.TRS
 
 #
 # ---- FIG: UE Intensity ----
@@ -217,11 +243,11 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
   #                     breaks=c("New","Decomissioned","Total"),
   #                     labels=c("New","Decomissioned","Total")) +
   # 
-  facet_wrap(.~Region) 
+  facet_wrap(Region~.) 
 UEInt.SRT
 #
 # ---- FIG: Combined Results ----
-RenovEffect <- ggplot(data=subset(DATA.TRQS, (Region==2|Region==5|Region==10|Region==11|Region==16|Region==18|Region==20)&TURQ=="Total")
+RenovEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total")
                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=1) +
   xlim(1980,2100) +
@@ -240,14 +266,22 @@ RenovEffect
 #
 
 # ---- OUTPUTS ----
-# png(file = "output/BuildStocks/InvestmentsR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Inv.R)
+# png(file = "output/BuildStocks/Investments_UR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Inv.UR)
 # dev.off()
-#
-# png(file = "output/BuildStocks/EffLevel.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Eff.UQ)
+# #
+# png(file = "output/BuildStocks/Investments_URQ.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Inv.URQ)
 # dev.off()
-#
+# 
+# png(file = "output/BuildStocks/EffLevel_UQS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Eff.UQS)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Eff.TRS)
+# dev.off()
+# 
 # png(file = "output/BuildStocks/UEInt.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(UEInt.SRT)
 # dev.off()
@@ -257,7 +291,7 @@ RenovEffect
 # dev.off()
 # 
 # ---- FIG: Stocks ----
-Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1&Region==20), aes(x=Year,y = value, colour=variable)) + 
+Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1), aes(x=Year,y = value, colour=variable)) + 
   geom_line(alpha=1) + 
   xlim(1971,2100) +
   xlab("") + 
@@ -270,17 +304,14 @@ Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1&Region==20
                       breaks=c("New","Decomissioned","Total"),
                       labels=c("New","Decomissioned","Total")) +
   
-  facet_wrap(Region~., scales="free_y") 
+  facet_grid(Region~Scen, scales="free_y") 
 Stocks.fig
 
-png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(Stocks.fig)
-dev.off()
+# png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Stocks.fig)
+# dev.off()
 #
 #
-
-
-
 # ---- FIG: Renovation Rate ----
 RR.T <- ggplot(data=subset(RenovRate, variable=="Total")
                , aes(x=Region,y = value, fill=Region)) + 

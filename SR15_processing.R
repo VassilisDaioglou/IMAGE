@@ -80,6 +80,7 @@ DATA$Target <- gsub("LowEnergyDemand","1.5C",DATA$Target,fixed=F)
 DATA$Target <- gsub("1p5","1.5C",DATA$Target,fixed=F)
 DATA$Target <- gsub("CC","C",DATA$Target,fixed=F)
 DATA$Target <- gsub("19","1.5C",DATA$Target,fixed=F)
+DATA$Target <- gsub("WB2C","1.5C",DATA$Target,fixed=F)  # Set WB2C as 1.5C
 DATA$Target <- gsub("2_66","2C",DATA$Target,fixed=F)
 DATA$Target <- gsub("Med2C","2C",DATA$Target,fixed=F)
 DATA$Target <- gsub("1000","2C",DATA$Target,fixed=F)
@@ -130,6 +131,7 @@ rm(Baselines.Min,Baselines.Max)
 # Mitigation Scenarios
 Mitigation = subset(DATA, !Target=="Baseline")
 Mitigation = Mitigation %>% mutate(FracCCS = `PrimBiomasswCCS-EJ/yr`/`PrimBiomass-EJ/yr`)
+Mitigation = subset(Mitigation, !(FracCCS>1))  # Ignore some observations which return values >1
 
 Mitigation = melt(Mitigation, id.vars=c("Model","Scenario","Region","Year","Project","Target"))
 
@@ -232,7 +234,7 @@ MitigProj
 
 # Mitigation Projections with targets superimposed
 MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) + 
-  geom_line(data=subset(Mitigation, Target=="2C"), alpha=0.33) + 
+  geom_line(data=subset(Mitigation, Target=="2C"), alpha=0.6) + 
   geom_line(data=subset(Mitigation, Target=="1.5C"), alpha=0.5) + 
   geom_hline(yintercept=0,size = 0.3, colour='black') +
   xlim(2010,2100) +

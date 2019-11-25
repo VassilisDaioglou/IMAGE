@@ -221,7 +221,7 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
 UEInt.SRT
 #
 # ---- FIG: Combined Results ----
-RenovEffect <- ggplot(data=subset(DATA.TRQS, Region==27&TURQ=="Total")
+RenovEffect <- ggplot(data=subset(DATA.TRQS, (Region==2|Region==5|Region==10|Region==11|Region==16|Region==18|Region==20)&TURQ=="Total")
                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=1) +
   xlim(1980,2100) +
@@ -235,7 +235,7 @@ RenovEffect <- ggplot(data=subset(DATA.TRQS, Region==27&TURQ=="Total")
   #                     breaks=c("New","Decomissioned","Total"),
   #                     labels=c("New","Decomissioned","Total")) +
   # 
-  facet_wrap(.~Variable, nrow=1, scales="free_y") 
+  facet_grid(Variable~Region, scales="free_y") 
 RenovEffect
 #
 
@@ -252,7 +252,7 @@ RenovEffect
 # plot(UEInt.SRT)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/RenovEffect.png", width = 6*ppi, height = 2*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/RenovEffect.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(RenovEffect)
 # dev.off()
 # 
@@ -273,9 +273,9 @@ Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1&Region==20
   facet_wrap(Region~., scales="free_y") 
 Stocks.fig
 
-# png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Stocks.fig)
-# dev.off()
+png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+plot(Stocks.fig)
+dev.off()
 #
 #
 

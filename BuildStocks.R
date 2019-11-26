@@ -17,12 +17,15 @@ library(ggpubr)
 
 # ---- INPUTS: Constants ----
 ppi <- 300
-FSizeStrip = 6.5
-FSizeLeg = 6.5
+FSizeStrip = 9
 FSizeAxis = 9
+FSizeLeg = 9
 
 Regions = c(2,5,10,11,16,18,20)
 Years = c("1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
+
+ActiveRegion <- 27
+ActiveTURQ<-8
 
   # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -72,7 +75,15 @@ colnames(Investment)[1:16] <- c("Year","Region","Total","Urban","Rural",
                                 "R1","R2","R3","R4","R5",
                                 "Scen")
 Investment = melt(Investment, id.vars=c("Year","Region","Scen"))
+  # Normalise to 2020 value
+Investment$ID <- paste(Investment$Region,Investment$Scen,Investment$variable)
+Investment.2010 = subset(Investment, Year==2010)
+Investment$val_2010 = Investment.2010[match(Investment$ID, Investment.2010$ID),"value"]
+rm(Investment.2010)
+Investment = Investment %>% mutate(Normalised_2010 = value/val_2010)
 
+Investment = subset(Investment, select=-c(value,ID,val_2010))
+colnames(Investment)[5] <- "value"
 # ---- ***Efficiency Market Shares ----
 EffMS.new$Scen <- "SSP2"
 EffMS.new450$Scen <- "SSP2_450"
@@ -82,8 +93,9 @@ rm(EffMS.new450)
 colnames(EffMS.new)[1:8] <- c("Year","Region","TURQ","EffLevel","B1","B2","B3","B4")
 EffMS.new = melt(EffMS.new, id.vars=c("Year","Region","TURQ","EffLevel","Scen"))
 EffMS.new = subset(EffMS.new, variable=="B1")
-EffMS.new = subset(EffMS.new, !Region==27)
+# EffMS.new = subset(EffMS.new, !Region==27)
 EffMS.new$value <- as.numeric(EffMS.new$value)
+EffMS.new$EffLevel <- as.character(EffMS.new$EffLevel)
 
 # ---- ***Renovation Rates ----
   # Renovation Rate (Annual)
@@ -96,7 +108,7 @@ colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
                                "R1","R2","R3","R4","R5")
 RenovRate = melt(RenovRate, id.vars=c("Year","Region","Scen"))
-
+RenovRate$value <- RenovRate$value * 100
 # ---- ***Heating USeful Energy Intensity ----
 UEIntHeat$Scen <- "SSP2"
 UEIntHeat.450$Scen <- "SSP2_450"
@@ -108,6 +120,17 @@ colnames(UEIntHeat)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "R1","R2","R3","R4","R5")
 UEIntHeat = melt(UEIntHeat, id.vars=c("Year","Region","Scen"))
 
+  # Normalise to 2020 value
+UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
+UEIntHeat.2010 = subset(UEIntHeat, Year==2010)
+UEIntHeat$val_2010 = UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
+rm(UEIntHeat.2010)
+UEIntHeat = UEIntHeat %>% mutate(Normalised_2010 = value/val_2010)
+
+UEIntHeat = subset(UEIntHeat, select=-c(value,ID,val_2010))
+colnames(UEIntHeat)[5] <- "value"
+
+#
 # ---- ***HEating Energy USe ----
 EneUseFunc$Scen <- "SSP2"
 EneUseFunc.450$Scen <- "SSP2_450"
@@ -124,6 +147,17 @@ EneUseFunc = melt(EneUseFunc, id.vars=c("Year","Region","Scen"))
 EneUseFunc = subset(EneUseFunc, !Region==27)
 EneUseFunc$Region[EneUseFunc$Region==28] <- 27
 
+  # Normalise to 2020 value
+EneUseFunc$ID <- paste(EneUseFunc$Region,EneUseFunc$Scen,EneUseFunc$variable)
+EneUseFunc.2010 = subset(EneUseFunc, Year==2010)
+EneUseFunc$val_2010 = EneUseFunc.2010[match(EneUseFunc$ID, EneUseFunc.2010$ID),"value"]
+rm(EneUseFunc.2010)
+EneUseFunc = EneUseFunc %>% mutate(Normalised_2010 = value/val_2010)
+
+EneUseFunc = subset(EneUseFunc, select=-c(value,ID,val_2010))
+colnames(EneUseFunc)[5] <- "value"
+
+#
 # ---- ***CO2 Emissions ----
 CO2Emis$Scen <- "SSP2"
 CO2Emis.450$Scen <- "SSP2_450"
@@ -137,15 +171,26 @@ CO2Emis = subset(CO2Emis, !Region==27)
 CO2Emis$Region[CO2Emis$Region==28] <- 27
 CO2Emis$variable <- "Total"
 
+  # Normalise to 2020 value
+CO2Emis$ID <- paste(CO2Emis$Region,CO2Emis$Scen,CO2Emis$variable)
+CO2Emis.2010 = subset(CO2Emis, Year==2010)
+CO2Emis$val_2010 = CO2Emis.2010[match(CO2Emis$ID, CO2Emis.2010$ID),"value"]
+rm(CO2Emis.2010)
+CO2Emis = CO2Emis %>% mutate(Normalised_2010 = value/val_2010)
+
+CO2Emis = subset(CO2Emis, select=-c(value,ID,val_2010))
+colnames(CO2Emis)[5] <- "value"
+
 #
 # ---- DATA AGGREGATION ----
-Stocks=subset(Stocks, Region %in% Regions & Year %in% Years)
-Investment=subset(Investment, Region %in% Regions & Year %in% Years)
-EffMS.new=subset(EffMS.new, Region %in% Regions & Year %in% Years)
-RenovRate=subset(RenovRate, Region %in% Regions & Year %in% Years)
-UEIntHeat=subset(UEIntHeat, Region %in% Regions & Year %in% Years)
-EneUseFunc=subset(EneUseFunc, Region %in% Regions & Year %in% Years)
-CO2Emis=subset(CO2Emis, Region %in% Regions & Year %in% Years)
+
+Stocks=subset(Stocks, Year %in% Years)
+Investment=subset(Investment, Year %in% Years)
+EffMS.new=subset(EffMS.new, Year %in% Years)
+RenovRate=subset(RenovRate, Year %in% Years)
+UEIntHeat=subset(UEIntHeat, Year %in% Years)
+EneUseFunc=subset(EneUseFunc, Year %in% Years)
+CO2Emis=subset(CO2Emis, Year %in% Years)
 
 Investment$Variable <- "Investments"
 RenovRate$Variable <- "RenovationRate"
@@ -155,76 +200,99 @@ CO2Emis$Variable <- "ResiCO2Emis"
 
 DATA.TRQS = rbind(Investment,RenovRate,UEIntHeat,EneUseFunc,CO2Emis) 
 colnames(DATA.TRQS)[4] <- "TURQ"
+
+DATA.TRQS$Var_Order <- factor(DATA.TRQS$Variable, level=c("Investments",
+                                                          "RenovationRate",
+                                                          "UeIntHeat",
+                                                          "HeatingDemand",
+                                                          "ResiCO2Emis"))
+
+DATA.TS = subset(DATA.TRQS, Region == 27&TURQ == "Total" & Year %in% Years)
+DATA.TS$TURQ <- NULL
+DATA.TRQS = subset(DATA.TRQS, Region %in% Regions & Year %in% Years)
+
+#
+# ---- LABELS ----
+scen_labels <-c("SSP1"="SSP1","SSP2"="SSP2","SSP3"="SSP3",
+                "SSP1_450"="SSP1 - 2°C",
+                "SSP2_450"="SSP2 - 2°C",
+                "SSP1_20"="SSP1 - 1.5°C",
+                "SSP2_20"="SSP2 - 1.5°C")
+
+reg_labels <-c("2"="USA",
+               "5"="Brazil",
+               "10"="S. Africa",
+               "11"="W. Europe",
+               "16"="Russia",
+               "18"="India",
+               "20"="China")
+
+var_labels <-c("Investments"="Investments \n(2010=1)",
+               "RenovationRate"="Renovation \nRate \n(%)",
+               "UeIntHeat"="Heating \nIntensity \n(2010=1)",
+               "HeatingDemand"="Heating \nDemand \n(2010=1)",
+               "ResiCO2Emis"="Residential \nEmissions \n(2010=1)")
+
 # ---- FIGURES ----
 # ---- FIG: Investments ----
-Inv.UR <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural"))
+Inv.UR <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural")& Region %in% Regions)
                   , aes(x=Year,y = value, colour=variable)) + 
   # geom_bar(stat="identity") +
   geom_line(alpha=1) +
   xlim(2020,2100) +
-  xlab("") + ylab("Bn$/yr") +
+  xlab("") + ylab("2010 = 1") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
-  facet_grid(Region~Scen, scales="free_y") 
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("darkorchid","forestgreen"),
+                      name="",
+                      breaks=c("Urban","Rural"),
+                      labels=c("Urban","Rural")) +
+  facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Inv.UR
-
-Inv.URQ <- ggplot(data=subset(Investment, !(variable=="Total"|variable=="Urban"|variable=="Rural"))
-                , aes(x=Year,y = value, fill=variable)) + 
-  geom_bar(stat="identity") +
-  xlim(2020,2100) +
-  xlab("") + ylab("Bn$/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  facet_grid(Region~Scen, scales="free_y") 
-Inv.URQ
 
 #
 # ---- FIG: Efficiency Level ----
-ActiveRegion <- 11
+# EffMS.newGlobTUR = subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==27)
 
-Eff.UQS <- ggplot(data=subset(EffMS.new, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8)&Region==ActiveRegion)
+Eff.UQS <- ggplot(data=subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==ActiveRegion)
                 , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
   xlab("") + ylab("") +
   ggtitle(paste("Region: ",ActiveRegion)) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
+  theme(legend.position="right") +
   # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
   #                     name="",
   #                     breaks=c("New","Decomissioned","Total"),
   #                     labels=c("New","Decomissioned","Total")) +
   # 
-  facet_grid(TURQ~Scen)
+  facet_grid(TURQ~Scen) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip))
 Eff.UQS
 
-Eff.TRS <- ggplot(data=subset(EffMS.new, (TURQ==8))
+Eff.TRS <- ggplot(data=subset(EffMS.new, TURQ==ActiveTURQ & Region %in% Regions)
                  , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
   xlab("") + ylab("") +
-  ggtitle(paste("TURQ: ",8)) +
+  ggtitle(paste("TURQ: ",ActiveTURQ)) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
+  theme(legend.position="right") +
   # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
   #                     name="",
   #                     breaks=c("New","Decomissioned","Total"),
   #                     labels=c("New","Decomissioned","Total")) +
   # 
-  facet_grid(Region~Scen)
+  facet_grid(Region~Scen, labeller=labeller(Region=reg_labels,Scen=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Eff.TRS
 
 #
@@ -249,35 +317,26 @@ UEInt.SRT
 # ---- FIG: Combined Results ----
 RenovEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total")
                     , aes(x=Year,y = value, colour=Scen)) + 
-  geom_line(alpha=1) +
-  xlim(1980,2100) +
+  geom_line(alpha=0.8) +
+  xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
-  facet_grid(Variable~Region, scales="free_y") 
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("navy","green"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450"),
+                      labels=c("SSP2","SSP2 - 2°C")) +
+  facet_grid(Var_Order~Region, scales="free_y",labeller=labeller(Region=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 RenovEffect
 #
-
 # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Investments_UR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Inv.UR)
 # dev.off()
-# #
-# png(file = "output/BuildStocks/Investments_URQ.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Inv.URQ)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/EffLevel_UQS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Eff.UQS)
-# dev.off()
-# 
+#
 # png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Eff.TRS)
 # dev.off()
@@ -286,7 +345,7 @@ RenovEffect
 # plot(UEInt.SRT)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/RenovEffect.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/RenovEffect.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(RenovEffect)
 # dev.off()
 # 

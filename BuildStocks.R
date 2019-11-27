@@ -33,7 +33,7 @@ options(java.parameters = "-Xmx8000m")
 
 # ---- INPUTS: Data ----
   # set directory path 
-setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
+setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
 Stocks=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "StockFlows", startRow=4)
 Investment=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "Investments_Total", startRow=4)

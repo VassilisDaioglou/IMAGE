@@ -350,21 +350,21 @@ RenovEffect
 # dev.off()
 # 
 # ---- FIG: Stocks ----
-Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1), aes(x=Year,y = value, colour=variable)) + 
-  geom_line(alpha=1) + 
-  xlim(1971,2100) +
-  xlab("") + 
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-                      name="",
-                      breaks=c("New","Decomissioned","Total"),
-                      labels=c("New","Decomissioned","Total")) +
-  
-  facet_grid(Region~Scen, scales="free_y") 
-Stocks.fig
+# Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1), aes(x=Year,y = value, colour=variable)) + 
+#   geom_line(alpha=1) + 
+#   xlim(1971,2100) +
+#   xlab("") + 
+#   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+#   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+#   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+#   theme(legend.position="bottom") +
+#   scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
+#                       name="",
+#                       breaks=c("New","Decomissioned","Total"),
+#                       labels=c("New","Decomissioned","Total")) +
+#   
+#   facet_grid(Region~Scen, scales="free_y") 
+# Stocks.fig
 
 # png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Stocks.fig)
@@ -372,25 +372,23 @@ Stocks.fig
 #
 #
 # ---- FIG: Renovation Rate ----
-RR.T <- ggplot(data=subset(RenovRate, variable=="Total")
-               , aes(x=Region,y = value, fill=Region)) + 
-  geom_bar(stat="identity") +
-  xlab("") + ylab("") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
-  facet_grid(.~Scen)
-RR.T
+# RR.T <- ggplot(data=subset(RenovRate, variable=="Total")
+#                , aes(x=Region,y = value, fill=Region)) + 
+#   geom_bar(stat="identity") +
+#   xlab("") + ylab("") +
+#   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+#   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+#   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+#   theme(legend.position="bottom") +
+#   # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
+#   #                     name="",
+#   #                     breaks=c("New","Decomissioned","Total"),
+#   #                     labels=c("New","Decomissioned","Total")) +
+#   # 
+#   facet_grid(.~Scen)
+# RR.T
 
 # png(file = "output/BuildStocks/RenovRate.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(RR.T)
 # dev.off()
 # 
-
-#

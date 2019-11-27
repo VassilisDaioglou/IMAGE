@@ -39,7 +39,7 @@ Investment_pc=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "Investments_Total
 EffMS_new=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "MS_new", startRow=4)
 RenovRate=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "Renov_Rate", startRow=4)
 UEHeatCool_pc=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat_Fut=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "UEintHeat_Fut", startRow=4)
+UEIntHeat=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CCElec", startRow=4)
 CCSpaceHeat=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CCSpaceHeat", startRow=4)
@@ -49,7 +49,7 @@ Investment_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Investmen
 EffMS_new.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "MS_new", startRow=4)
 RenovRate.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Renov_Rate", startRow=4)
 UEHeatCool_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat_Fut.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEintHeat_Fut", startRow=4)
+UEIntHeat.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCElec", startRow=4)
 CCSpaceHeat.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCSpaceHeat", startRow=4)
@@ -57,38 +57,38 @@ CCSpaceHeat.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCSpaceHeat
 #
 # ---- MUNGING ----
 # ---- ***Investments ----
-Investment$Scen <- "SSP2"
-Investment.450$Scen <- "SSP2_450"
-Investment = rbind(Investment,Investment.450)
-rm(Investment.450)
+Investment_pc$Scen <- "SSP2"
+Investment_pc.450$Scen <- "SSP2_450"
+Investment_pc = rbind(Investment_pc,Investment_pc.450)
+rm(Investment_pc.450)
 
-colnames(Investment)[1:16] <- c("Year","Region","Total","Urban","Rural",
+colnames(Investment_pc)[1:16] <- c("Year","Region","Total","Urban","Rural",
                                 "U1","U2","U3","U4","U5",
                                 "R1","R2","R3","R4","R5",
                                 "Scen")
-Investment = melt(Investment, id.vars=c("Year","Region","Scen"))
+Investment_pc = melt(Investment_pc, id.vars=c("Year","Region","Scen"))
   # Normalise to 2020 value
-Investment$ID <- paste(Investment$Region,Investment$Scen,Investment$variable)
-Investment.2010 = subset(Investment, Year==2010)
-Investment$val_2010 = Investment.2010[match(Investment$ID, Investment.2010$ID),"value"]
-rm(Investment.2010)
-Investment = Investment %>% mutate(Normalised_2010 = value/val_2010)
+Investment_pc$ID <- paste(Investment_pc$Region,Investment_pc$Scen,Investment_pc$variable)
+Investment_pc.2010 = subset(Investment_pc, Year==2010)
+Investment_pc$val_2010 = Investment_pc.2010[match(Investment_pc$ID, Investment_pc.2010$ID),"value"]
+rm(Investment_pc.2010)
+Investment_pc = Investment_pc %>% mutate(Normalised_2010 = value/val_2010)
 
-Investment = subset(Investment, select=-c(value,ID,val_2010))
-colnames(Investment)[5] <- "value"
+Investment_pc = subset(Investment_pc, select=-c(value,ID,val_2010))
+colnames(Investment_pc)[5] <- "value"
+#
 # ---- ***Efficiency Market Shares ----
-EffMS.new$Scen <- "SSP2"
-EffMS.new450$Scen <- "SSP2_450"
-EffMS.new = rbind(EffMS.new,EffMS.new450)
-rm(EffMS.new450)
+EffMS_new$Scen <- "SSP2"
+EffMS_new.450$Scen <- "SSP2_450"
+EffMS_new = rbind(EffMS_new,EffMS_new.450)
+rm(EffMS_new.450)
 
-colnames(EffMS.new)[1:8] <- c("Year","Region","TURQ","EffLevel","B1","B2","B3","B4")
-EffMS.new = melt(EffMS.new, id.vars=c("Year","Region","TURQ","EffLevel","Scen"))
-EffMS.new = subset(EffMS.new, variable=="B1")
-# EffMS.new = subset(EffMS.new, !Region==27)
-EffMS.new$value <- as.numeric(EffMS.new$value)
-EffMS.new$EffLevel <- as.character(EffMS.new$EffLevel)
-
+colnames(EffMS_new)[1:8] <- c("Year","Region","TURQ","EffLevel","B1","B2","B3","B4")
+EffMS_new = melt(EffMS_new, id.vars=c("Year","Region","TURQ","EffLevel","Scen"))
+EffMS_new = subset(EffMS_new, variable=="B1")
+EffMS_new$value <- as.numeric(EffMS_new$value)
+EffMS_new$EffLevel <- as.character(EffMS_new$EffLevel)
+#
 # ---- ***Renovation Rates ----
   # Renovation Rate (Annual)
 RenovRate$Scen <- "SSP2"
@@ -101,7 +101,8 @@ colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "R1","R2","R3","R4","R5")
 RenovRate = melt(RenovRate, id.vars=c("Year","Region","Scen"))
 RenovRate$value <- RenovRate$value * 100
-# ---- ***Heating USeful Energy Intensity ----
+#
+# ---- ***Heating Useful Energy Intensity ----
 UEIntHeat$Scen <- "SSP2"
 UEIntHeat.450$Scen <- "SSP2_450"
 UEIntHeat = rbind(UEIntHeat,UEIntHeat.450)
@@ -123,85 +124,108 @@ UEIntHeat = subset(UEIntHeat, select=-c(value,ID,val_2010))
 colnames(UEIntHeat)[5] <- "value"
 
 #
-# ---- ***HEating Energy USe ----
-EneUseFunc$Scen <- "SSP2"
-EneUseFunc.450$Scen <- "SSP2_450"
-EneUseFunc = rbind(EneUseFunc,EneUseFunc.450)
-rm(EneUseFunc.450)
+# ---- ***Heating+Cooling Energy USe ----
+UEHeatCool_pc$Scen <- "SSP2"
+UEHeatCool_pc.450$Scen <- "SSP2_450"
+UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450)
+rm(UEHeatCool_pc.450)
 
-colnames(EneUseFunc)[1:3] <- c("Year","Region","TURQ")
-EneUseFunc = subset(EneUseFunc, select=c(Year,Region,TURQ,class_.5,Scen))
-EneUseFunc = spread(EneUseFunc, TURQ,class_.5)
-colnames(EneUseFunc)[1:16] <- c("Year","Region","Scen","Total","Urban","Rural",
-                               "U1","U2","U3","U4","U5",
-                               "R1","R2","R3","R4","R5")
-EneUseFunc = melt(EneUseFunc, id.vars=c("Year","Region","Scen"))
-EneUseFunc = subset(EneUseFunc, !Region==27)
-EneUseFunc$Region[EneUseFunc$Region==28] <- 27
+colnames(UEHeatCool_pc)[1:15] <- c("Year","Region","Total","Urban","Rural",
+                                "U1","U2","U3","U4","U5",
+                                "R1","R2","R3","R4","R5")
 
-  # Normalise to 2020 value
-EneUseFunc$ID <- paste(EneUseFunc$Region,EneUseFunc$Scen,EneUseFunc$variable)
-EneUseFunc.2010 = subset(EneUseFunc, Year==2010)
-EneUseFunc$val_2010 = EneUseFunc.2010[match(EneUseFunc$ID, EneUseFunc.2010$ID),"value"]
-rm(EneUseFunc.2010)
-EneUseFunc = EneUseFunc %>% mutate(Normalised_2010 = value/val_2010)
+UEHeatCool_pc = melt(UEHeatCool_pc, id.vars=c("Year","Region","Scen"))
 
-EneUseFunc = subset(EneUseFunc, select=-c(value,ID,val_2010))
-colnames(EneUseFunc)[5] <- "value"
+  # Normalise to 2010 value
+UEHeatCool_pc$ID <- paste(UEHeatCool_pc$Region,UEHeatCool_pc$Scen,UEHeatCool_pc$variable)
+UEHeatCool_pc.2010 = subset(UEHeatCool_pc, Year==2010)
+UEHeatCool_pc$val_2010 = UEHeatCool_pc.2010[match(UEHeatCool_pc$ID, UEHeatCool_pc.2010$ID),"value"]
+rm(UEHeatCool_pc.2010)
+UEHeatCool_pc = UEHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
+
+UEHeatCool_pc = subset(UEHeatCool_pc, select=-c(value,ID,val_2010))
+colnames(UEHeatCool_pc)[5] <- "value"
 
 #
 # ---- ***CO2 Emissions ----
-CO2Emis$Scen <- "SSP2"
-CO2Emis.450$Scen <- "SSP2_450"
-CO2Emis = rbind(CO2Emis,CO2Emis.450)
-rm(CO2Emis.450)
+CO2EmisHeatCool_pc$Scen <- "SSP2"
+CO2EmisHeatCool_pc.450$Scen <- "SSP2_450"
+CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450)
+rm(CO2EmisHeatCool_pc.450)
 
-colnames(CO2Emis)[1:2] <- c("Year","Region")
-CO2Emis = subset(CO2Emis, select=c(Year,Region,class_.5,Scen))
-colnames(CO2Emis)[3] <- c("value")
-CO2Emis = subset(CO2Emis, !Region==27)
-CO2Emis$Region[CO2Emis$Region==28] <- 27
-CO2Emis$variable <- "Total"
+colnames(CO2EmisHeatCool_pc)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
+                                        11,12,13,14,15,16,17,18,19,20,
+                                        21,22,23,24,25,26,27)
+CO2EmisHeatCool_pc = melt(CO2EmisHeatCool_pc, id.vars=c("Year","Scen"))
+colnames(CO2EmisHeatCool_pc)[3] <- c("Region")
+CO2EmisHeatCool_pc$variable <- "Total"
 
   # Normalise to 2020 value
-CO2Emis$ID <- paste(CO2Emis$Region,CO2Emis$Scen,CO2Emis$variable)
-CO2Emis.2010 = subset(CO2Emis, Year==2010)
-CO2Emis$val_2010 = CO2Emis.2010[match(CO2Emis$ID, CO2Emis.2010$ID),"value"]
-rm(CO2Emis.2010)
-CO2Emis = CO2Emis %>% mutate(Normalised_2010 = value/val_2010)
+CO2EmisHeatCool_pc$ID <- paste(CO2EmisHeatCool_pc$Region,CO2EmisHeatCool_pc$Scen,CO2EmisHeatCool_pc$variable)
+CO2EmisHeatCool_pc.2010 = subset(CO2EmisHeatCool_pc, Year==2010)
+CO2EmisHeatCool_pc$val_2010 = CO2EmisHeatCool_pc.2010[match(CO2EmisHeatCool_pc$ID, CO2EmisHeatCool_pc.2010$ID),"value"]
+rm(CO2EmisHeatCool_pc.2010)
+CO2EmisHeatCool_pc = CO2EmisHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
 
-CO2Emis = subset(CO2Emis, select=-c(value,ID,val_2010))
-colnames(CO2Emis)[5] <- "value"
+CO2EmisHeatCool_pc = subset(CO2EmisHeatCool_pc, select=-c(value,ID,val_2010))
+colnames(CO2EmisHeatCool_pc)[5] <- "value"
 
 #
-# ---- DATA AGGREGATION ----
+# ---- ***Emission Factors ----
+  # Electricity
+CCElec$Scen <- "SSP2"
+CCElec.450$Scen <- "SSP2_450"
+CCElec = rbind(CCElec,CCElec.450)
+rm(CCElec.450)
 
-Stocks=subset(Stocks, Year %in% Years)
-Investment=subset(Investment, Year %in% Years)
-EffMS.new=subset(EffMS.new, Year %in% Years)
+colnames(CCElec)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
+                                        11,12,13,14,15,16,17,18,19,20,
+                                        21,22,23,24,25,26,27)
+CCElec = melt(CCElec, id.vars=c("Year","Scen"))
+colnames(CCElec)[3] <- c("Region")
+CCElec$variable <- "CCElec"
+
+  # Space Heating
+CCSpaceHeat$Scen <- "SSP2"
+CCSpaceHeat.450$Scen <- "SSP2_450"
+CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450)
+rm(CCSpaceHeat.450)
+
+colnames(CCSpaceHeat)[1:3] <- c("Year","Region","Total")
+CCSpaceHeat = subset(CCSpaceHeat, select = c(Year,Region,Total,Scen))
+colnames(CCSpaceHeat)[3] <- "value"
+CCSpaceHeat$variable <- "CCSpaceHeat"
+
+  # Combined
+CC = rbind(CCElec,CCSpaceHeat)
+rm(CCElec,CCSpaceHeat)
+#
+# ---- DATA AGGREGATION ----
+Investment_pc=subset(Investment_pc, Year %in% Years)
+EffMS_new=subset(EffMS_new, Year %in% Years)
 RenovRate=subset(RenovRate, Year %in% Years)
 UEIntHeat=subset(UEIntHeat, Year %in% Years)
-EneUseFunc=subset(EneUseFunc, Year %in% Years)
-CO2Emis=subset(CO2Emis, Year %in% Years)
+UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
+CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
 
-Investment$Variable <- "Investments"
+Investment_pc$Variable <- "Investments_pc"
 RenovRate$Variable <- "RenovationRate"
 UEIntHeat$Variable <- "UeIntHeat"
-EneUseFunc$Variable <- "HeatingDemand"
-CO2Emis$Variable <- "ResiCO2Emis"
+UEHeatCool_pc$Variable <- "HeatCoolDemand_pc"
+CO2EmisHeatCool_pc$Variable <- "ResiCO2EmisHeatCool"
 
-DATA.TRQS = rbind(Investment,RenovRate,UEIntHeat,EneUseFunc,CO2Emis) 
+DATA.TRQS = rbind(Investment_pc,RenovRate,UEIntHeat,UEHeatCool_pc,CO2EmisHeatCool_pc) 
 colnames(DATA.TRQS)[4] <- "TURQ"
 
-DATA.TRQS$Var_Order <- factor(DATA.TRQS$Variable, level=c("Investments",
+DATA.TRQS$Var_Order <- factor(DATA.TRQS$Variable, level=c("Investments_pc",
                                                           "RenovationRate",
                                                           "UeIntHeat",
-                                                          "HeatingDemand",
-                                                          "ResiCO2Emis"))
+                                                          "HeatCoolDemand_pc",
+                                                          "ResiCO2EmisHeatCool"))
 
-DATA.TS = subset(DATA.TRQS, Region == 27&TURQ == "Total" & Year %in% Years)
+DATA.TS = subset(DATA.TRQS, Region == 27&TURQ == "Total")
 DATA.TS$TURQ <- NULL
-DATA.TRQS = subset(DATA.TRQS, Region %in% Regions & Year %in% Years)
+DATA.TRQS = subset(DATA.TRQS, Region %in% Regions)
 
 #
 # ---- LABELS ----
@@ -219,11 +243,11 @@ reg_labels <-c("2"="USA",
                "18"="India",
                "20"="China")
 
-var_labels <-c("Investments"="Investments \n(2010=1)",
+var_labels <-c("Investments_pc"="Investments \n(2010=1)",
                "RenovationRate"="Renovation \nRate \n(%)",
                "UeIntHeat"="Heating \nIntensity \n(2010=1)",
-               "HeatingDemand"="Heating \nDemand \n(2010=1)",
-               "ResiCO2Emis"="Residential \nEmissions \n(2010=1)")
+               "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
+               "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
 
 # ---- FIGURES ----
 # ---- FIG: Investments ----

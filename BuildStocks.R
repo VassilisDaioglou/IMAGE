@@ -22,11 +22,11 @@ FSizeStrip = 9
 FSizeAxis = 9
 FSizeLeg = 9
 
-Regions = c(2,5,10,11,16,18,20)
+Regions = c(2,5,10,11,16,20)
 Years = c("1980","1990","2000","2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
 
-ActiveRegion <- 27
-ActiveTURQ<-8
+ActiveRegion <- 11
+ActiveTURQ<-6
 
   # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -223,6 +223,14 @@ DATA.TRQS$Var_Order <- factor(DATA.TRQS$Variable, level=c("Investments_pc",
                                                           "HeatCoolDemand_pc",
                                                           "ResiCO2EmisHeatCool"))
 
+DATA.TRQS$Reg_Order <- factor(DATA.TRQS$Region, level=c("2",
+                                                          "5",
+                                                          "10",
+                                                          "11",
+                                                          "16",
+                                                          "18",
+                                                          "20"))
+
 DATA.TS = subset(DATA.TRQS, Region == 27&TURQ == "Total")
 DATA.TS$TURQ <- NULL
 DATA.TRQS = subset(DATA.TRQS, Region %in% Regions)
@@ -251,7 +259,7 @@ var_labels <-c("Investments_pc"="Investments \n(2010=1)",
 
 # ---- FIGURES ----
 # ---- FIG: Investments ----
-Inv.UR <- ggplot(data=subset(Investment, (variable=="Urban"|variable=="Rural")& Region %in% Regions)
+Inv.UR <- ggplot(data=subset(Investment_pc, (variable=="Urban"|variable=="Rural")& Region %in% Regions)
                   , aes(x=Year,y = value, colour=variable)) + 
   # geom_bar(stat="identity") +
   geom_line(alpha=1) +
@@ -273,7 +281,7 @@ Inv.UR
 # ---- FIG: Efficiency Level ----
 # EffMS.newGlobTUR = subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==27)
 
-Eff.UQS <- ggplot(data=subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==ActiveRegion)
+Eff.UQS <- ggplot(data=subset(EffMS_new, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8)&Region==ActiveRegion)
                 , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
@@ -283,16 +291,11 @@ Eff.UQS <- ggplot(data=subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==Activ
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
   facet_grid(TURQ~Scen) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip))
 Eff.UQS
 
-Eff.TRS <- ggplot(data=subset(EffMS.new, TURQ==ActiveTURQ & Region %in% Regions)
+Eff.TRS <- ggplot(data=subset(EffMS_new, TURQ==ActiveTURQ & Region %in% Regions)
                  , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
@@ -302,11 +305,6 @@ Eff.TRS <- ggplot(data=subset(EffMS.new, TURQ==ActiveTURQ & Region %in% Regions)
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
   facet_grid(Region~Scen, labeller=labeller(Region=reg_labels,Scen=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Eff.TRS
@@ -319,19 +317,19 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
   xlim(2020,2100) +
   xlab("") + ylab("kJ/cap/HDD") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  # scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-  #                     name="",
-  #                     breaks=c("New","Decomissioned","Total"),
-  #                     labels=c("New","Decomissioned","Total")) +
-  # 
-  facet_wrap(Region~.) 
+  scale_colour_manual(values=c("navy","green"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450"),
+                      labels=c("SSP2","SSP2 - 2°C")) +
+  facet_wrap(Region~.) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.SRT
 #
 # ---- FIG: Combined Results ----
-RenovEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total")
+TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total")
                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=0.8) +
   xlim(2010,2100) +
@@ -344,15 +342,34 @@ RenovEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total")
                       name="",
                       breaks=c("SSP2","SSP2_450"),
                       labels=c("SSP2","SSP2 - 2°C")) +
-  facet_grid(Var_Order~Region, scales="free_y",labeller=labeller(Region=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
+  facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-RenovEffect
+TotEffect
+#
+# ---- FIG: Carbon Contents ----
+CCFig <- ggplot(data=subset(CC, Region %in% Regions)
+                 , aes(x=Year,y = value, colour=Scen)) + 
+  geom_line(alpha=1) +
+  xlim(2010,2100) +
+  xlab("") + ylab("kgC/GJ") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("navy","green"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450"),
+                      labels=c("SSP2","SSP2 - 2°C")) +
+  facet_grid(Region~variable, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+CCFig
+
 #
 # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Investments_UR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Inv.UR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Eff.TRS)
 # dev.off()
@@ -362,30 +379,14 @@ RenovEffect
 # dev.off()
 # 
 # png(file = "output/BuildStocks/RenovEffect.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(RenovEffect)
+# plot(TotEffect)
 # dev.off()
 # 
-# ---- FIG: Stocks ----
-# Stocks.fig <- ggplot(data=subset(Stocks, !(variable=="Total")&TURQ==1), aes(x=Year,y = value, colour=variable)) + 
-#   geom_line(alpha=1) + 
-#   xlim(1971,2100) +
-#   xlab("") + 
-#   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-#   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
-#   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-#   theme(legend.position="bottom") +
-#   scale_colour_manual(values=c("forestgreen","dodgerblue","firebrick1"),
-#                       name="",
-#                       breaks=c("New","Decomissioned","Total"),
-#                       labels=c("New","Decomissioned","Total")) +
-#   
-#   facet_grid(Region~Scen, scales="free_y") 
-# Stocks.fig
-
-# png(file = "output/BuildStocks/Stocks.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Stocks.fig)
+# png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(CCFig)
 # dev.off()
-#
+# 
+
 #
 # ---- FIG: Renovation Rate ----
 # RR.T <- ggplot(data=subset(RenovRate, variable=="Total")

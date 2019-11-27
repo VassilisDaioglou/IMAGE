@@ -45,26 +45,17 @@ CCElec=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CCElec", startRow=4)
 CCSpaceHeat=read.xlsx("data/BuildStocks/SSP2.xlsx", sheet = "CCSpaceHeat", startRow=4)
 
   # Read Data Files for Mitigation Scenario
-Investment_pc=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Investments_Total_pc", startRow=4)
-EffMS_new=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "MS_new", startRow=4)
-RenovRate=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Renov_Rate", startRow=4)
-UEHeatCool_pc=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat_Fut=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEintHeat_Fut", startRow=4)
-CO2EmisHeatCool_pc=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CO2EmisHeatCool_pc", startRow=4)
-CCElec=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCElec", startRow=4)
-CCSpaceHeat=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCSpaceHeat", startRow=4)
+Investment_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Investments_Total_pc", startRow=4)
+EffMS_new.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "MS_new", startRow=4)
+RenovRate.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "Renov_Rate", startRow=4)
+UEHeatCool_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEHeatCool_pc", startRow=4)
+UEIntHeat_Fut.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "UEintHeat_Fut", startRow=4)
+CO2EmisHeatCool_pc.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CO2EmisHeatCool_pc", startRow=4)
+CCElec.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCElec", startRow=4)
+CCSpaceHeat.450=read.xlsx("data/BuildStocks/SSP2_450.xlsx", sheet = "CCSpaceHeat", startRow=4)
 
 #
 # ---- MUNGING ----
-# ---- ***Stocks ----
-Stocks$Scen <- "SSP2"
-Stocks.450$Scen <- "SSP2_450"
-Stocks = rbind(Stocks,Stocks.450)
-rm(Stocks.450)
-
-colnames(Stocks)[1:7] <- c("Year","Region","TURQ","New","Decomissioned","Total","Scen")
-Stocks = melt(Stocks, id.vars=c("Year","Region","TURQ","Scen"))
-
 # ---- ***Investments ----
 Investment$Scen <- "SSP2"
 Investment.450$Scen <- "SSP2_450"

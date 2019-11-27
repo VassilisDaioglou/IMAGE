@@ -1,4 +1,5 @@
 # R script to process the results of the TIMER Building Stocks & Renovation represetnation
+# Vassilis Daioglou, November 2019
 # ---- START ----
 # clear memory
 rm(list=ls()) 

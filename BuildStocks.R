@@ -32,7 +32,8 @@ ActiveTURQ<-6
 data_base <- "data/BuildStocks/SSP2.xlsx"
 data_miti <- "data/BuildStocks/SSP2_450.xlsx"
 data_miti_NR <- "data/BuildStocks/SSP2_450_NR.xlsx"
-  # set higher RAM capacity for java (used in clsx package)
+data_miti_NFS <- "data/BuildStocks/SSP2_450_NFS.xlsx"
+# set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
 # ---- INPUTS: Data ----
@@ -69,7 +70,18 @@ UEHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "UEHeatCool_pc", startRow
 UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
-CCSpaceHeat.450_NR = read.xlsx(data_mitit_NR, sheet = "CCSpaceHeat", startRow=4)
+CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
+
+# Read Data Files for Mitigation Scenario WITHOUT fuel switching
+Stocks.450_NFS = read.xlsx(data_miti_NFS, sheet = "FSInsul", startRow=4)
+InsulMS.450_NFS = read.xlsx(data_miti_NFS, sheet = "MS_Aggr", startRow=4)
+RenovRate.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate", startRow=4)
+RenovRate_Ave.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate_ave", startRow=4)
+UEHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEHeatCool_pc", startRow=4)
+UEIntHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEintHeat_Fut", startRow=4)
+CO2EmisHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "CO2EmisHeatCool_pc", startRow=4)
+CCElec.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCElec", startRow=4)
+CCSpaceHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCSpaceHeat", startRow=4)
 
 #
 # ---- MUNGING ----
@@ -77,8 +89,9 @@ CCSpaceHeat.450_NR = read.xlsx(data_mitit_NR, sheet = "CCSpaceHeat", startRow=4)
 Stocks$Scen <- "SSP2"
 Stocks.450$Scen <- "SSP2_450"
 Stocks.450_NR$Scen <- "SSP2_450_NR"
-Stocks = rbind(Stocks,Stocks.450,Stocks.450_NR)
-rm(Stocks.450,Stocks.450_NR)
+Stocks.450_NFS$Scen <- "SSP2_450_NFS"
+Stocks = rbind(Stocks,Stocks.450,Stocks.450_NR,Stocks.450_NFS)
+rm(Stocks.450,Stocks.450_NR,Stocks.450_NFS)
 
 colnames(Stocks)[1:9] <- c("Year","Region","TURQ",
                            "1","2","3","4","5","6")
@@ -103,8 +116,9 @@ colnames(InsulMS)[5] <- "EffLevel"
 RenovRate$Scen <- "SSP2"
 RenovRate.450$Scen <- "SSP2_450"
 RenovRate.450_NR$Scen <- "SSP2_450_NR"
-RenovRate = rbind(RenovRate,RenovRate.450,RenovRate.450_NR)
-rm(RenovRate.450, RenovRate.450_NR)
+RenovRate.450_NFS$Scen <- "SSP2_450_NFS"
+RenovRate = rbind(RenovRate,RenovRate.450,RenovRate.450_NR,RenovRate.450_NFS)
+rm(RenovRate.450, RenovRate.450_NR, RenovRate.450_NFS)
 
 colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -116,8 +130,9 @@ RenovRate$value <- RenovRate$value * 100
 RenovRate_Ave$Scen <- "SSP2"
 RenovRate_Ave.450$Scen <- "SSP2_450"
 RenovRate_Ave.450_NR$Scen <- "SSP2_450_NR"
-RenovRate_Ave = rbind(RenovRate_Ave,RenovRate_Ave.450,RenovRate_Ave.450_NR)
-rm(RenovRate_Ave.450, RenovRate_Ave.450_NR)
+RenovRate_Ave.450_NFS$Scen <- "SSP2_450_NFS"
+RenovRate_Ave = rbind(RenovRate_Ave,RenovRate_Ave.450,RenovRate_Ave.450_NR,RenovRate_Ave.450_NFS)
+rm(RenovRate_Ave.450, RenovRate_Ave.450_NR,RenovRate_Ave.450_NFS)
 
 colnames(RenovRate_Ave)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -125,12 +140,15 @@ colnames(RenovRate_Ave)[1:15] <- c("Year","Region","Total","Urban","Rural",
 RenovRate_Ave = melt(RenovRate_Ave, id.vars=c("Year","Region","Scen"))
 RenovRate_Ave = subset(RenovRate_Ave, Year==2100)
 RenovRate_Ave$value <- RenovRate_Ave$value * 100
+RenovRate_Ave = spread(RenovRate_Ave,Scen,value)
+RenovRate_Ave = RenovRate_Ave %>% mutate (MitigEffect = SSP2_450-SSP2)
 # ---- ***Heating Useful Energy Intensity ----
 UEIntHeat$Scen <- "SSP2"
 UEIntHeat.450$Scen <- "SSP2_450"
 UEIntHeat.450_NR$Scen <- "SSP2_450_NR"
-UEIntHeat = rbind(UEIntHeat,UEIntHeat.450,UEIntHeat.450_NR)
-rm(UEIntHeat.450,UEIntHeat.450_NR)
+UEIntHeat.450_NFS$Scen <- "SSP2_450_NFS"
+UEIntHeat = rbind(UEIntHeat,UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NFS)
+rm(UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NFS)
 
 colnames(UEIntHeat)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -152,8 +170,9 @@ colnames(UEIntHeat)[5] <- "value"
 UEHeatCool_pc$Scen <- "SSP2"
 UEHeatCool_pc.450$Scen <- "SSP2_450"
 UEHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450,UEHeatCool_pc.450_NR)
-rm(UEHeatCool_pc.450,UEHeatCool_pc.450_NR)
+UEHeatCool_pc.450_NFS$Scen <- "SSP2_450_NFS"
+UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NFS)
+rm(UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NFS)
 
 colnames(UEHeatCool_pc)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                 "U1","U2","U3","U4","U5",
@@ -176,8 +195,9 @@ colnames(UEHeatCool_pc)[5] <- "value"
 CO2EmisHeatCool_pc$Scen <- "SSP2"
 CO2EmisHeatCool_pc.450$Scen <- "SSP2_450"
 CO2EmisHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR)
-rm(CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR)
+CO2EmisHeatCool_pc.450_NFS$Scen <- "SSP2_450_NFS"
+CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NFS)
+rm(CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NFS)
 
 colnames(CO2EmisHeatCool_pc)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
                                         11,12,13,14,15,16,17,18,19,20,
@@ -214,8 +234,9 @@ CCElec$variable <- "CCElec"
   # Space Heating
 CCSpaceHeat$Scen <- "SSP2"
 CCSpaceHeat.450$Scen <- "SSP2_450"
-CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450)
-rm(CCSpaceHeat.450)
+CCSpaceHeat.450_NFS$Scen <- "SSP2_450_NFS"
+CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450,CCSpaceHeat.450_NFS)
+rm(CCSpaceHeat.450,CCSpaceHeat.450_NFS)
 
 colnames(CCSpaceHeat)[1:3] <- c("Year","Region","Total")
 CCSpaceHeat = subset(CCSpaceHeat, select = c(Year,Region,Total,Scen))
@@ -269,7 +290,8 @@ scen_labels <-c("SSP1"="SSP1",
                 "SSP2_450"="Mitig.",
                 "SSP1_20"="SSP1 - 1.5°C",
                 "SSP2_20"="SSP2 - 1.5°C",
-                "SSP2_450_NR"="Mitig. No Renov.")
+                "SSP2_450_NR"="Mitig. No Renov.",
+                "SSP2_450_NFS"="Mitig. No Fuel Switching")
 
 reg_labels <-c("2"="USA",
                "5"="Brazil",
@@ -366,10 +388,10 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  scale_colour_manual(values=c("navy","green","firebrick"),
+  scale_colour_manual(values=c("navy","green","firebrick","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR"),
-                      labels=c("Baseline","Mitig.","Mitig No Rrenov.")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NFS"),
+                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Fuel Switch")) +
   facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.SRT
@@ -384,10 +406,10 @@ TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" & !(Variable=="Renovati
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green","firebrick"),
+  scale_colour_manual(values=c("navy","green","firebrick","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR"),
-                      labels=c("Baseline","Mitig.","Mitig. No Renov.")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NFS"),
+                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Fuel Switch")) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 TotEffect

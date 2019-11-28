@@ -49,6 +49,8 @@ UEIntHeat = read.xlsx(data_base, sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc = read.xlsx(data_base, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec = read.xlsx(data_base, sheet = "CCElec", startRow=4)
 CCSpaceHeat = read.xlsx(data_base, sheet = "CCSpaceHeat", startRow=4)
+CostComponent = read.xlsx(data_base, sheet = "CostComponent", startRow=4)
+CostFrac = read.xlsx(data_base, sheet = "CostFrac", startRow=4)
 
   # Read Data Files for Mitigation Scenario
 Stocks.450 = read.xlsx(data_miti, sheet = "FSInsul", startRow=4)
@@ -60,6 +62,8 @@ UEIntHeat.450 = read.xlsx(data_miti, sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc.450 = read.xlsx(data_miti, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec.450 = read.xlsx(data_miti, sheet = "CCElec", startRow=4)
 CCSpaceHeat.450 = read.xlsx(data_miti, sheet = "CCSpaceHeat", startRow=4)
+CostComponent.450 = read.xlsx(data_miti, sheet = "CostComponent", startRow=4)
+CostFrac.450 = read.xlsx(data_miti, sheet = "CostFrac", startRow=4)
 
 # Read Data Files for Mitigation Scenario WITHOUT renovation
 Stocks.450_NR = read.xlsx(data_miti_NR, sheet = "FSInsul", startRow=4)
@@ -71,6 +75,8 @@ UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
 CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
 CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
+CostComponent.450_NR = read.xlsx(data_miti_NR, sheet = "CostComponent", startRow=4)
+CostFrac.450_NR = read.xlsx(data_miti_NR, sheet = "CostFrac", startRow=4)
 
 # Read Data Files for Mitigation Scenario WITHOUT fuel switching
 Stocks.450_NFS = read.xlsx(data_miti_NFS, sheet = "FSInsul", startRow=4)
@@ -82,6 +88,8 @@ UEIntHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEintHeat_Fut", startRow=4
 CO2EmisHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CCElec.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCElec", startRow=4)
 CCSpaceHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCSpaceHeat", startRow=4)
+CostComponent.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostComponent", startRow=4)
+CostFrac.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostFrac", startRow=4)
 
 #
 # ---- MUNGING ----
@@ -247,6 +255,40 @@ CCSpaceHeat$variable <- "CCSpaceHeat"
 CC = rbind(CCElec,CCSpaceHeat)
 rm(CCElec,CCSpaceHeat)
 #
+# ---- ***Cost Components ----
+CostComponent$Scen <- "SSP2"
+CostComponent.450$Scen <- "SSP2_450"
+CostComponent.450_NR$Scen <- "SSP2_450_NR"
+CostComponent.450_NFS$Scen <- "SSP2_450_NFS"
+CostComponent$Variable <- "Absolute"
+CostComponent.450$Variable <- "Absolute"
+CostComponent.450_NR$Variable <- "Absolute"
+CostComponent.450_NFS$Variable <- "Absolute"
+CostComponent$class_.4 <-NULL
+CostComponent.450$class_.4 <-NULL
+CostComponent.450_NR$class_.4 <-NULL
+CostComponent.450_NFS$class_.4 <-NULL
+
+CostFrac$Scen <- "SSP2"
+CostFrac.450$Scen <- "SSP2_450"
+CostFrac.450_NR$Scen <- "SSP2_450_NR"
+CostFrac.450_NFS$Scen <- "SSP2_450_NFS"
+CostFrac$Variable <- "Fraction"
+CostFrac.450$Variable <- "Fraction"
+CostFrac.450_NR$Variable <- "Fraction"
+CostFrac.450_NFS$Variable <- "Fraction"
+
+CostComponent = rbind(CostComponent,CostComponent.450,CostComponent.450_NR,CostComponent.450_NFS,
+                      CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
+
+rm(CostComponent.450,CostComponent.450_NR,CostComponent.450_NFS,
+   CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
+
+colnames(CostComponent)[1:9] <- c("Year","Region","TURQ","EffLevel",
+                                   "Capital","HeatingFuel","CoolingFuel","Scen","Type")
+CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel","Type"))
+
+#
 # ---- DATA AGGREGATION ----
 Stocks=subset(Stocks, Year %in% Years)
 InsulMS=subset(InsulMS, Year %in% Years)
@@ -254,6 +296,7 @@ RenovRate=subset(RenovRate, Year %in% Years)
 UEIntHeat=subset(UEIntHeat, Year %in% Years)
 UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
 CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
+CostComponent=subset(CostComponent, Year %in% Years)
 
 RenovRate$Variable <- "RenovationRate"
 UEIntHeat$Variable <- "UeIntHeat"
@@ -327,25 +370,26 @@ Stck.T <- ggplot(data=subset(Stocks, (TURQ==6)& Region %in% Regions)
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.T
 
-Stck.UR <- ggplot(data=subset(Stocks, (TURQ==2|TURQ==3)& Region %in% Regions & Scen=="SSP2_450")
-                 , aes(x=Year,y = value, fill=EffLevel)) + 
-  geom_bar(stat="identity") +
-  # geom_line(alpha=1) +
-  xlim(2010,2100) +
-  xlab("") + ylab("mill. m^2") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  # scale_colour_manual(values=c("darkorchid","forestgreen"),
-  #                     name="",
-  #                     breaks=c("Urban","Rural"),
-  #                     labels=c("Urban","Rural")) +
-  facet_grid(Region~TURQ, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-Stck.UR
-
 #
+# ---- FIG: Cost Component ----
+plot_list = list()
+for(i in c(2020,2050,2100)){
+  Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1)& Region %in% Regions & Type=="Absolute" & (Year==2100))
+                    , aes(x=EffLevel,y = value, fill=variable)) + 
+    geom_bar(stat="identity") +
+    # xlim(2010,2100) +
+    xlab("") + ylab("") +
+    theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+    theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+    theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+    theme(legend.position="right") +
+    facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+    theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+  Costs.Abs
+  plot_list[[i]] = Costs.Abs
+}
+plot_list[[2020]]
+plot_list[[2100]]
 # ---- FIG: Efficiency Level ----
 # EffMS.newGlobTUR = subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==27)
 
@@ -424,40 +468,48 @@ CCFig <- ggplot(data=subset(CC, Region %in% Regions)
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green"),
+  scale_colour_manual(values=c("navy","green","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450"),
-                      labels=c("SSP2","SSP2 - 2°C")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NFS"),
+                      labels=c("SSP2","SSP2 - 2°C","No Fuel Switching")) +
   facet_grid(Region~variable, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 CCFig
 
 #
-# ---- OUTPUTS ----
-png(file = "output/BuildStocks/Stocks_T.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(Stck.T)
-dev.off()
-
-png(file = "output/BuildStocks/Stocks_UR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(Stck.UR)
-dev.off()
-
-png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(Eff.TRS)
-dev.off()
-
-png(file = "output/BuildStocks/UEInt.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(UEInt.SRT)
-dev.off()
-
-png(file = "output/BuildStocks/RenovEffect.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(TotEffect)
-dev.off()
-
-png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-plot(CCFig)
-dev.off()
-# 
+# # ---- OUTPUTS ----
+# png(file = "output/BuildStocks/Stocks_T.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Stck.T)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/CostComponent2020.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(plot_list[[2020]])
+# dev.off()
+# #
+# png(file = "output/BuildStocks/CostComponent2050.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(plot_list[[2050]])
+# dev.off()
+# #
+# png(file = "output/BuildStocks/CostComponent2100.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(plot_list[[2100]])
+# dev.off()
+# #
+# png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Eff.TRS)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/UEInt.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(UEInt.SRT)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/RenovEffect.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(TotEffect)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(CCFig)
+# dev.off()
+# # 
 
 #
 # ---- FIG: Renovation Rate ----

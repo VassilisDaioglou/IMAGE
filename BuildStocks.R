@@ -374,7 +374,7 @@ Stck.T
 # ---- FIG: Cost Component ----
 plot_list = list()
 for(i in c(2020,2050,2100)){
-  Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1)& Region %in% Regions & Type=="Absolute" & (Year==2100))
+  Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1)& Region %in% Regions & Type=="Absolute" & (Year==i))
                     , aes(x=EffLevel,y = value, fill=variable)) + 
     geom_bar(stat="identity") +
     # xlim(2010,2100) +

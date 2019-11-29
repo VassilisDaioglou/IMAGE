@@ -359,8 +359,12 @@ DATA.TRQS = subset(DATA.TRQS, Region %in% Regions)
 
 #
 # ---- EFFECT ON DEMAND ----
-# UEHeatCool_pc
+EneEffect = spread(UEHeatCool_pc,Scen,value)
+EneEffect = EneEffect %>% mutate(Tot_Mitig = SSP2 - SSP2_450)
+EneEffect = EneEffect %>% mutate(Eff_Mitig = SSP2_450_NIR - SSP2_450)
+EneEffect = EneEffect %>% mutate(Eff_Frac = Eff_Mitig / Tot_Mitig)
 
+test = subset(EneEffect, Year==2100 & Region %in% Regions & (variable=="Total"|variable=="Rural"|variable=="Urban"))
 #
 # ---- LABELS ----
 scen_labels <-c("SSP1"="SSP1",

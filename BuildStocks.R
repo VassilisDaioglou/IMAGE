@@ -22,7 +22,7 @@ FSizeStrip = 9
 FSizeAxis = 9
 FSizeLeg = 9
 
-Regions = c(2,5,10,11,16,20,27)
+Regions = c(2,5,11,16,20,27)
 Years = c("1980","1990","2000","2010","2015","2020","2025","2030","2035","2040","2045",
           "2050","2055","2060","2065","2070","2075","2080","2085","2090","2095","2100")
 
@@ -33,6 +33,7 @@ data_base <- "data/BuildStocks/SSP2.xlsx"
 data_miti <- "data/BuildStocks/SSP2_450.xlsx"
 data_miti_NR <- "data/BuildStocks/SSP2_450_NR.xlsx"
 data_miti_NFS <- "data/BuildStocks/SSP2_450_NFS.xlsx"
+data_miti_NIR <- "data/BuildStocks/SSP2_450_NIR.xlsx"
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
@@ -41,55 +42,69 @@ options(java.parameters = "-Xmx8000m")
 setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
 Stocks = read.xlsx(data_base, sheet = "FSInsul", startRow=4)
-InsulMS = read.xlsx(data_base, sheet = "MS_Aggr", startRow=4)
-RenovRate = read.xlsx(data_base, sheet = "Renov_Rate", startRow=4)
-RenovRate_Ave = read.xlsx(data_base, sheet = "Renov_Rate_ave", startRow=4)
-UEHeatCool_pc = read.xlsx(data_base, sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat = read.xlsx(data_base, sheet = "UEintHeat_Fut", startRow=4)
-CO2EmisHeatCool_pc = read.xlsx(data_base, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CCElec = read.xlsx(data_base, sheet = "CCElec", startRow=4)
-CCSpaceHeat = read.xlsx(data_base, sheet = "CCSpaceHeat", startRow=4)
-CostComponent = read.xlsx(data_base, sheet = "CostComponent", startRow=4)
-CostFrac = read.xlsx(data_base, sheet = "CostFrac", startRow=4)
-
-  # Read Data Files for Mitigation Scenario
 Stocks.450 = read.xlsx(data_miti, sheet = "FSInsul", startRow=4)
-InsulMS.450 = read.xlsx(data_miti, sheet = "MS_Aggr", startRow=4)
-RenovRate.450 = read.xlsx(data_miti, sheet = "Renov_Rate", startRow=4)
-RenovRate_Ave.450 = read.xlsx(data_miti, sheet = "Renov_Rate_ave", startRow=4)
-UEHeatCool_pc.450 = read.xlsx(data_miti, sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat.450 = read.xlsx(data_miti, sheet = "UEintHeat_Fut", startRow=4)
-CO2EmisHeatCool_pc.450 = read.xlsx(data_miti, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CCElec.450 = read.xlsx(data_miti, sheet = "CCElec", startRow=4)
-CCSpaceHeat.450 = read.xlsx(data_miti, sheet = "CCSpaceHeat", startRow=4)
-CostComponent.450 = read.xlsx(data_miti, sheet = "CostComponent", startRow=4)
-CostFrac.450 = read.xlsx(data_miti, sheet = "CostFrac", startRow=4)
-
-# Read Data Files for Mitigation Scenario WITHOUT renovation
 Stocks.450_NR = read.xlsx(data_miti_NR, sheet = "FSInsul", startRow=4)
-InsulMS.450_NR = read.xlsx(data_miti_NR, sheet = "MS_Aggr", startRow=4)
-RenovRate.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate", startRow=4)
-RenovRate_Ave.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate_ave", startRow=4)
-UEHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "UEHeatCool_pc", startRow=4)
-UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
-CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
-CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
-CostComponent.450_NR = read.xlsx(data_miti_NR, sheet = "CostComponent", startRow=4)
-CostFrac.450_NR = read.xlsx(data_miti_NR, sheet = "CostFrac", startRow=4)
-
-# Read Data Files for Mitigation Scenario WITHOUT fuel switching
 Stocks.450_NFS = read.xlsx(data_miti_NFS, sheet = "FSInsul", startRow=4)
-InsulMS.450_NFS = read.xlsx(data_miti_NFS, sheet = "MS_Aggr", startRow=4)
+Stocks.450_NIR = read.xlsx(data_miti_NIR, sheet = "FSInsul", startRow=4)
+
+InsulMS = read.xlsx(data_base, sheet = "MSInsul", startRow=4)
+InsulMS.450 = read.xlsx(data_miti, sheet = "MSInsul", startRow=4)
+InsulMS.450_NR = read.xlsx(data_miti_NR, sheet = "MSInsul", startRow=4)
+InsulMS.450_NFS = read.xlsx(data_miti_NFS, sheet = "MSInsul", startRow=4)
+InsulMS.450_NIR = read.xlsx(data_miti_NIR, sheet = "MSInsul", startRow=4)
+
+RenovRate = read.xlsx(data_base, sheet = "Renov_Rate", startRow=4)
+RenovRate.450 = read.xlsx(data_miti, sheet = "Renov_Rate", startRow=4)
+RenovRate.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate", startRow=4)
 RenovRate.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate", startRow=4)
+RenovRate.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate", startRow=4)
+
+RenovRate_Ave = read.xlsx(data_base, sheet = "Renov_Rate_ave", startRow=4)
+RenovRate_Ave.450 = read.xlsx(data_miti, sheet = "Renov_Rate_ave", startRow=4)
+RenovRate_Ave.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate_ave", startRow=4)
 RenovRate_Ave.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate_ave", startRow=4)
+RenovRate_Ave.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate_ave", startRow=4)
+
+UEHeatCool_pc = read.xlsx(data_base, sheet = "UEHeatCool_pc", startRow=4)
+UEHeatCool_pc.450 = read.xlsx(data_miti, sheet = "UEHeatCool_pc", startRow=4)
+UEHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "UEHeatCool_pc", startRow=4)
 UEHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEHeatCool_pc", startRow=4)
+UEHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEHeatCool_pc", startRow=4)
+
+UEIntHeat = read.xlsx(data_base, sheet = "UEintHeat_Fut", startRow=4)
+UEIntHeat.450 = read.xlsx(data_miti, sheet = "UEintHeat_Fut", startRow=4)
+UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
 UEIntHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEintHeat_Fut", startRow=4)
+UEIntHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEintHeat_Fut", startRow=4)
+
+CO2EmisHeatCool_pc = read.xlsx(data_base, sheet = "CO2EmisHeatCool_pc", startRow=4)
+CO2EmisHeatCool_pc.450 = read.xlsx(data_miti, sheet = "CO2EmisHeatCool_pc", startRow=4)
+CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CO2EmisHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CCElec.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCElec", startRow=4)
-CCSpaceHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCSpaceHeat", startRow=4)
+CO2EmisHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "CO2EmisHeatCool_pc", startRow=4)
+
+CostComponent = read.xlsx(data_base, sheet = "CostComponent", startRow=4)
+CostComponent.450 = read.xlsx(data_miti, sheet = "CostComponent", startRow=4)
+CostComponent.450_NR = read.xlsx(data_miti_NR, sheet = "CostComponent", startRow=4)
 CostComponent.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostComponent", startRow=4)
-CostFrac.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostFrac", startRow=4)
+CostComponent.450_NIR = read.xlsx(data_miti_NIR, sheet = "CostComponent", startRow=4)
+
+CCElec = read.xlsx(data_base, sheet = "CCElec", startRow=4)
+CCElec.450 = read.xlsx(data_miti, sheet = "CCElec", startRow=4)
+CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
+CCElec.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCElec", startRow=4)
+CCElec.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCElec", startRow=4)
+
+CCSpaceHeat = read.xlsx(data_base, sheet = "CCSpaceHeat", startRow=4)
+CCSpaceHeat.450 = read.xlsx(data_miti, sheet = "CCSpaceHeat", startRow=4)
+CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
+CCSpaceHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCSpaceHeat", startRow=4)
+CCSpaceHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCSpaceHeat", startRow=4)
+
+# CostFrac = read.xlsx(data_base, sheet = "CostFrac", startRow=4)
+# CostFrac.450 = read.xlsx(data_miti, sheet = "CostFrac", startRow=4)
+# CostFrac.450_NR = read.xlsx(data_miti_NR, sheet = "CostFrac", startRow=4)
+# CostFrac.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostFrac", startRow=4)
 
 #
 # ---- MUNGING ----
@@ -97,9 +112,9 @@ CostFrac.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostFrac", startRow=4)
 Stocks$Scen <- "SSP2"
 Stocks.450$Scen <- "SSP2_450"
 Stocks.450_NR$Scen <- "SSP2_450_NR"
-Stocks.450_NFS$Scen <- "SSP2_450_NFS"
-Stocks = rbind(Stocks,Stocks.450,Stocks.450_NR,Stocks.450_NFS)
-rm(Stocks.450,Stocks.450_NR,Stocks.450_NFS)
+Stocks.450_NIR$Scen <- "SSP2_450_NIR"
+Stocks = rbind(Stocks,Stocks.450,Stocks.450_NR,Stocks.450_NIR)
+rm(Stocks.450,Stocks.450_NR,Stocks.450_NIR)
 
 colnames(Stocks)[1:9] <- c("Year","Region","TURQ",
                            "1","2","3","4","5","6")
@@ -111,8 +126,9 @@ Stocks$value <- Stocks$value / 1e9
 InsulMS$Scen <- "SSP2"
 InsulMS.450$Scen <- "SSP2_450"
 InsulMS.450_NR$Scen <- "SSP2_450_NR"
-InsulMS = rbind(InsulMS,InsulMS.450,InsulMS.450_NR)
-rm(InsulMS.450,InsulMS.450_NR)
+InsulMS.450_NIR$Scen <- "SSP2_450_NIR"
+InsulMS = rbind(InsulMS,InsulMS.450,InsulMS.450_NR,InsulMS.450_NIR)
+rm(InsulMS.450,InsulMS.450_NR,InsulMS.450_NIR)
 
 colnames(InsulMS)[1:9] <- c("Year","Region","TURQ",
                            "1","2","3","4","5","6")
@@ -124,9 +140,9 @@ colnames(InsulMS)[5] <- "EffLevel"
 RenovRate$Scen <- "SSP2"
 RenovRate.450$Scen <- "SSP2_450"
 RenovRate.450_NR$Scen <- "SSP2_450_NR"
-RenovRate.450_NFS$Scen <- "SSP2_450_NFS"
-RenovRate = rbind(RenovRate,RenovRate.450,RenovRate.450_NR,RenovRate.450_NFS)
-rm(RenovRate.450, RenovRate.450_NR, RenovRate.450_NFS)
+RenovRate.450_NIR$Scen <- "SSP2_450_NIR"
+RenovRate = rbind(RenovRate,RenovRate.450,RenovRate.450_NR,RenovRate.450_NIR)
+rm(RenovRate.450, RenovRate.450_NR, RenovRate.450_NIR)
 
 colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -138,9 +154,9 @@ RenovRate$value <- RenovRate$value * 100
 RenovRate_Ave$Scen <- "SSP2"
 RenovRate_Ave.450$Scen <- "SSP2_450"
 RenovRate_Ave.450_NR$Scen <- "SSP2_450_NR"
-RenovRate_Ave.450_NFS$Scen <- "SSP2_450_NFS"
-RenovRate_Ave = rbind(RenovRate_Ave,RenovRate_Ave.450,RenovRate_Ave.450_NR,RenovRate_Ave.450_NFS)
-rm(RenovRate_Ave.450, RenovRate_Ave.450_NR,RenovRate_Ave.450_NFS)
+RenovRate_Ave.450_NIR$Scen <- "SSP2_450_NIR"
+RenovRate_Ave = rbind(RenovRate_Ave,RenovRate_Ave.450,RenovRate_Ave.450_NR,RenovRate_Ave.450_NIR)
+rm(RenovRate_Ave.450, RenovRate_Ave.450_NR,RenovRate_Ave.450_NIR)
 
 colnames(RenovRate_Ave)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -154,9 +170,9 @@ RenovRate_Ave = RenovRate_Ave %>% mutate (MitigEffect = SSP2_450-SSP2)
 UEIntHeat$Scen <- "SSP2"
 UEIntHeat.450$Scen <- "SSP2_450"
 UEIntHeat.450_NR$Scen <- "SSP2_450_NR"
-UEIntHeat.450_NFS$Scen <- "SSP2_450_NFS"
-UEIntHeat = rbind(UEIntHeat,UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NFS)
-rm(UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NFS)
+UEIntHeat.450_NIR$Scen <- "SSP2_450_NIR"
+UEIntHeat = rbind(UEIntHeat,UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NIR)
+rm(UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NIR)
 
 colnames(UEIntHeat)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                "U1","U2","U3","U4","U5",
@@ -178,9 +194,9 @@ colnames(UEIntHeat)[5] <- "value"
 UEHeatCool_pc$Scen <- "SSP2"
 UEHeatCool_pc.450$Scen <- "SSP2_450"
 UEHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-UEHeatCool_pc.450_NFS$Scen <- "SSP2_450_NFS"
-UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NFS)
-rm(UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NFS)
+UEHeatCool_pc.450_NIR$Scen <- "SSP2_450_NIR"
+UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NIR)
+rm(UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NIR)
 
 colnames(UEHeatCool_pc)[1:15] <- c("Year","Region","Total","Urban","Rural",
                                 "U1","U2","U3","U4","U5",
@@ -203,9 +219,9 @@ colnames(UEHeatCool_pc)[5] <- "value"
 CO2EmisHeatCool_pc$Scen <- "SSP2"
 CO2EmisHeatCool_pc.450$Scen <- "SSP2_450"
 CO2EmisHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-CO2EmisHeatCool_pc.450_NFS$Scen <- "SSP2_450_NFS"
-CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NFS)
-rm(CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NFS)
+CO2EmisHeatCool_pc.450_NIR$Scen <- "SSP2_450_NIR"
+CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NIR)
+rm(CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NIR)
 
 colnames(CO2EmisHeatCool_pc)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
                                         11,12,13,14,15,16,17,18,19,20,
@@ -242,9 +258,9 @@ CCElec$variable <- "CCElec"
   # Space Heating
 CCSpaceHeat$Scen <- "SSP2"
 CCSpaceHeat.450$Scen <- "SSP2_450"
-CCSpaceHeat.450_NFS$Scen <- "SSP2_450_NFS"
-CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450,CCSpaceHeat.450_NFS)
-rm(CCSpaceHeat.450,CCSpaceHeat.450_NFS)
+CCSpaceHeat.450_NIR$Scen <- "SSP2_450_NIR"
+CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450,CCSpaceHeat.450_NIR)
+rm(CCSpaceHeat.450,CCSpaceHeat.450_NIR)
 
 colnames(CCSpaceHeat)[1:3] <- c("Year","Region","Total")
 CCSpaceHeat = subset(CCSpaceHeat, select = c(Year,Region,Total,Scen))
@@ -259,35 +275,52 @@ rm(CCElec,CCSpaceHeat)
 CostComponent$Scen <- "SSP2"
 CostComponent.450$Scen <- "SSP2_450"
 CostComponent.450_NR$Scen <- "SSP2_450_NR"
-CostComponent.450_NFS$Scen <- "SSP2_450_NFS"
-CostComponent$Variable <- "Absolute"
-CostComponent.450$Variable <- "Absolute"
-CostComponent.450_NR$Variable <- "Absolute"
-CostComponent.450_NFS$Variable <- "Absolute"
+CostComponent.450_NIR$Scen <- "SSP2_450_NIR"
+# CostComponent$Variable <- "Absolute"
+# CostComponent.450$Variable <- "Absolute"
+# CostComponent.450_NR$Variable <- "Absolute"
+# CostComponent.450_NFS$Variable <- "Absolute"
 CostComponent$class_.4 <-NULL
 CostComponent.450$class_.4 <-NULL
 CostComponent.450_NR$class_.4 <-NULL
-CostComponent.450_NFS$class_.4 <-NULL
+CostComponent.450_NIR$class_.4 <-NULL
 
-CostFrac$Scen <- "SSP2"
-CostFrac.450$Scen <- "SSP2_450"
-CostFrac.450_NR$Scen <- "SSP2_450_NR"
-CostFrac.450_NFS$Scen <- "SSP2_450_NFS"
-CostFrac$Variable <- "Fraction"
-CostFrac.450$Variable <- "Fraction"
-CostFrac.450_NR$Variable <- "Fraction"
-CostFrac.450_NFS$Variable <- "Fraction"
+# CostFrac$Scen <- "SSP2"
+# CostFrac.450$Scen <- "SSP2_450"
+# CostFrac.450_NR$Scen <- "SSP2_450_NR"
+# CostFrac.450_NFS$Scen <- "SSP2_450_NFS"
+# CostFrac$Variable <- "Fraction"
+# CostFrac.450$Variable <- "Fraction"
+# CostFrac.450_NR$Variable <- "Fraction"
+# CostFrac.450_NFS$Variable <- "Fraction"
 
-CostComponent = rbind(CostComponent,CostComponent.450,CostComponent.450_NR,CostComponent.450_NFS,
-                      CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
+CostComponent = rbind(CostComponent,CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
+                      # CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
 
-rm(CostComponent.450,CostComponent.450_NR,CostComponent.450_NFS,
-   CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
+rm(CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
+   # CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
 
-colnames(CostComponent)[1:9] <- c("Year","Region","TURQ","EffLevel",
-                                   "Capital","HeatingFuel","CoolingFuel","Scen","Type")
-CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel","Type"))
+colnames(CostComponent)[1:8] <- c("Year","Region","TURQ","EffLevel",
+                                   "Capital","HeatingFuel","CoolingFuel","Scen")
+CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel"))
 
+  # Make relative to 2020 total of EffLevel = 1
+CostComponent.2020 = subset(CostComponent, Year==2020&EffLevel==1)
+CostComponent.2020 = spread(CostComponent.2020,variable,value)
+CostComponent.2020 = CostComponent.2020 %>% mutate(Total=Capital+HeatingFuel+CoolingFuel)
+CostComponent.2020$ID = paste(CostComponent.2020$Region,"-",CostComponent.2020$TURQ,CostComponent.2020$Scen)
+
+CostComponent = spread(CostComponent,variable,value)
+CostComponent$ID = paste(CostComponent$Region,"-",CostComponent$TURQ,CostComponent$Scen)
+CostComponent$Tot2020 <- CostComponent.2020[match(CostComponent$ID,CostComponent.2020$ID),9]
+CostComponent$ID <- NULL
+rm(CostComponent.2020)
+
+CostComponent = CostComponent %>% mutate(CapitalNorm = Capital / Tot2020)
+CostComponent = CostComponent %>% mutate(HeatFNorm = HeatingFuel / Tot2020)
+CostComponent = CostComponent %>% mutate(CoolFNorm = CoolingFuel / Tot2020)
+CostComponent$Tot2020 <- NULL
+CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel"))
 #
 # ---- DATA AGGREGATION ----
 Stocks=subset(Stocks, Year %in% Years)
@@ -334,7 +367,8 @@ scen_labels <-c("SSP1"="SSP1",
                 "SSP1_20"="SSP1 - 1.5°C",
                 "SSP2_20"="SSP2 - 1.5°C",
                 "SSP2_450_NR"="Mitig. No Renov.",
-                "SSP2_450_NFS"="Mitig. No Fuel Switching")
+                "SSP2_450_NFS"="Mitig. No Fuel Switching",
+                "SSP2_450_NIR"="Mitig. No Insulation Improv.")
 
 reg_labels <-c("2"="USA",
                "5"="Brazil",
@@ -374,7 +408,11 @@ Stck.T
 # ---- FIG: Cost Component ----
 plot_list = list()
 for(i in c(2020,2050,2100)){
-  Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1)& Region %in% Regions & Type=="Absolute" & (Year==i))
+  Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1) & 
+                                    Region %in% Regions & 
+                                    (Year==i) &
+                                    (Scen=="SSP2"|Scen=="SSP2_450") &
+                                    (variable=="CapitalNorm"|variable=="HeatFNorm"|variable=="CoolFNorm"))
                     , aes(x=EffLevel,y = value, fill=variable)) + 
     geom_bar(stat="identity") +
     # xlim(2010,2100) +
@@ -434,8 +472,8 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("navy","green","firebrick","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NFS"),
-                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Fuel Switch")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Improv. Insul.")) +
   facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.SRT
@@ -444,6 +482,7 @@ UEInt.SRT
 TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" & !(Variable=="RenovationRate"))
                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=0.8) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -452,8 +491,8 @@ TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" & !(Variable=="Renovati
   theme(legend.position="right") +
   scale_colour_manual(values=c("navy","green","firebrick","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NFS"),
-                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Fuel Switch")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Improv. Insul.")) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 TotEffect
@@ -470,8 +509,8 @@ CCFig <- ggplot(data=subset(CC, Region %in% Regions)
   theme(legend.position="right") +
   scale_colour_manual(values=c("navy","green","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NFS"),
-                      labels=c("SSP2","SSP2 - 2°C","No Fuel Switching")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("SSP2","SSP2 - 2°C","Mitig. No Improv. Insul.")) +
   facet_grid(Region~variable, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 CCFig

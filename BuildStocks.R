@@ -182,7 +182,7 @@ UEIntHeat = melt(UEIntHeat, id.vars=c("Year","Region","Scen"))
   # Normalise to 2020 value
 UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
 UEIntHeat.2010 = subset(UEIntHeat, Year==2010)
-UEIntHeat$val_2010 = UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
+UEIntHeat$val_2010 <- UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
 rm(UEIntHeat.2010)
 UEIntHeat = UEIntHeat %>% mutate(Normalised_2010 = value/val_2010)
 
@@ -207,7 +207,7 @@ UEHeatCool_pc = melt(UEHeatCool_pc, id.vars=c("Year","Region","Scen"))
   # Normalise to 2010 value
 UEHeatCool_pc$ID <- paste(UEHeatCool_pc$Region,UEHeatCool_pc$Scen,UEHeatCool_pc$variable)
 UEHeatCool_pc.2010 = subset(UEHeatCool_pc, Year==2010)
-UEHeatCool_pc$val_2010 = UEHeatCool_pc.2010[match(UEHeatCool_pc$ID, UEHeatCool_pc.2010$ID),"value"]
+UEHeatCool_pc$val_2010 <- UEHeatCool_pc.2010[match(UEHeatCool_pc$ID, UEHeatCool_pc.2010$ID),"value"]
 rm(UEHeatCool_pc.2010)
 UEHeatCool_pc = UEHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
 
@@ -233,7 +233,7 @@ CO2EmisHeatCool_pc$variable <- "Total"
   # Normalise to 2020 value
 CO2EmisHeatCool_pc$ID <- paste(CO2EmisHeatCool_pc$Region,CO2EmisHeatCool_pc$Scen,CO2EmisHeatCool_pc$variable)
 CO2EmisHeatCool_pc.2010 = subset(CO2EmisHeatCool_pc, Year==2010)
-CO2EmisHeatCool_pc$val_2010 = CO2EmisHeatCool_pc.2010[match(CO2EmisHeatCool_pc$ID, CO2EmisHeatCool_pc.2010$ID),"value"]
+CO2EmisHeatCool_pc$val_2010 <- CO2EmisHeatCool_pc.2010[match(CO2EmisHeatCool_pc$ID, CO2EmisHeatCool_pc.2010$ID),"value"]
 rm(CO2EmisHeatCool_pc.2010)
 CO2EmisHeatCool_pc = CO2EmisHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
 
@@ -366,6 +366,16 @@ EneEffect = EneEffect %>% mutate(Eff_Frac = Eff_Mitig / Tot_Mitig)
 
 test = subset(EneEffect, Year==2100 & Region %in% Regions & (variable=="Total"|variable=="Rural"|variable=="Urban"))
 #
+# MinMax dataframe for effect of insulation
+InsulMinMax = subset(DATA.TRQS, (Scen=="SSP2_450"|Scen=="SSP2_450_NIR")&(Variable=="HeatCoolDemand_pc"|Variable=="ResiCO2EmisHeatCool"))
+InsulMinMax = spread(InsulMinMax,Scen,value)
+InsulMinMax$ID = paste(InsulMinMax$Year,InsulMinMax$Region,InsulMinMax$TURQ,InsulMinMax$Variable)
+
+DATA.TRQS$ID = paste(DATA.TRQS$Year,DATA.TRQS$Region,DATA.TRQS$TURQ,DATA.TRQS$Variable)
+
+DATA.TRQS$Min <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),7]
+DATA.TRQS$Max <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),8]
+
 # ---- LABELS ----
 scen_labels <-c("SSP1"="SSP1",
                 "SSP2"="Baseline",
@@ -597,11 +607,12 @@ MitigEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 MitigEffect
 
-
-AllEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+AllEffect1 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
                                   !(Variable=="RenovationRate") &
-                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR"))
+                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR") & 
+                                  !(Scen=="SSP2_450_NIR"&Variable=="UeIntHeat"))
                     , aes(x=Year,y = value, colour=Scen)) + 
+  geom_ribbon(aes(ymin=Min,ymax=Max, fill=Variable, colour= NA), alpha="0.5") +
   geom_line(size=1,alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2010,2100) +
@@ -614,9 +625,41 @@ AllEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
                       name="",
                       breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
                       labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
+  scale_fill_manual(values=c("azure3","azure3","azure3"),
+                      name="",
+                      breaks=c("UeIntHeat","HeatCoolDemand_pc","ResiCO2EmisHeatCool"),
+                      labels=c("","",""), guide=FALSE) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-AllEffect
+AllEffect1
+
+AllEffect2 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+                                   !(Variable=="RenovationRate") &
+                                   (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR") & 
+                                   !(Scen=="SSP2_450_NIR"&Variable=="UeIntHeat") &
+                                   !(Scen=="SSP2_450_NIR"&Variable=="ResiCO2EmisHeatCool"))
+                     , aes(x=Year,y = value, colour=Scen)) + 
+  geom_ribbon(aes(ymin=Min,ymax=Max, fill=Variable, colour= NA), alpha="0.5") +
+  geom_line(size=1,alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("navy","green3","red"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
+  scale_fill_manual(values=c("azure3","azure3","azure3"),
+                    name="",
+                    breaks=c("UeIntHeat","HeatCoolDemand_pc","ResiCO2EmisHeatCool"),
+                    labels=c("","",""), guide=FALSE) +
+  facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+AllEffect2
+
 #
 # ---- FIG: Carbon Contents ----
 CCFig <- ggplot(data=subset(CC, Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450") & !(Region==27|Region==5))
@@ -679,10 +722,15 @@ CCFig
 # plot(MitigEffect)
 # dev.off()
 # #
-# png(file = "output/BuildStocks/Effect_All.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(AllEffect)
+# png(file = "output/BuildStocks/Effect_All1.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(AllEffect1)
 # dev.off()
 # 
+# png(file = "output/BuildStocks/Effect_All2.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(AllEffect2)
+# dev.off()
+# 
+
 # png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(CCFig)
 # dev.off()

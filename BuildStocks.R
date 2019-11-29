@@ -383,10 +383,11 @@ var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "UeIntHeat"="Heating \nIntensity \n(2010=1)",
                "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
+turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
 # ---- FIGURES ----
 # ---- FIG: Stocks ----
-Stck.T <- ggplot(data=subset(Stocks, (TURQ==6)& Region %in% Regions)
+Stck.T <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450"))
                   , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   # geom_line(alpha=1) +
@@ -403,6 +404,19 @@ Stck.T <- ggplot(data=subset(Stocks, (TURQ==6)& Region %in% Regions)
   facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.T
+
+Stck.GUR <- ggplot(data=subset(Stocks, (TURQ==2|TURQ==3) & Region==27 & (Scen=="SSP2"|Scen=="SSP2_450"))
+                 , aes(x=Year,y = value, fill=EffLevel)) + 
+  geom_bar(stat="identity") +
+  xlim(2010,2100) +
+  xlab("") + ylab("mill. m^2") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  facet_grid(TURQ~Scen, scales="free_y", labeller=labeller(TURQ=turq_labels, Scen=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Stck.GUR
 
 #
 # ---- FIG: Cost Component ----
@@ -421,6 +435,11 @@ for(i in c(2020,2050,2100)){
     theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
     theme(legend.position="right") +
+    scale_fill_manual(values=c("gray","firebrick","cornflowerblue"),
+                      name="",
+                      breaks=c("CapitalNorm","HeatFNorm","CoolFNorm"),
+                      labels=c("Capital Costs","Heating Fuel","Cooling Fuel")) +
+    
     facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
     theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
   Costs.Abs
@@ -428,6 +447,29 @@ for(i in c(2020,2050,2100)){
 }
 plot_list[[2020]]
 plot_list[[2100]]
+
+Costs.WEU <- ggplot(data=subset(CostComponent, (TURQ==1) & 
+                                  Region == 11  & 
+                                  (Year==2020|Year==2050|Year==2100) &
+                                  (Scen=="SSP2"|Scen=="SSP2_450") &
+                                  (variable=="CapitalNorm"|variable=="HeatFNorm"|variable=="CoolFNorm"))
+                    , aes(x=EffLevel,y = value, fill=variable)) + 
+  geom_bar(stat="identity") +
+  xlab("Efficiency Level") + ylab("Cost relative to 2020 - Efficiency Level = 1") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_x_continuous(breaks=c(1,2,3,4,5,6)) + 
+  scale_fill_manual(values=c("gray","firebrick","cornflowerblue"),
+                      name="",
+                      breaks=c("CapitalNorm","HeatFNorm","CoolFNorm"),
+                      labels=c("Capital Costs","Heating Fuel","Cooling Fuel")) +
+  facet_grid(Year~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Costs.WEU
+
+#
 # ---- FIG: Efficiency Level ----
 # EffMS.newGlobTUR = subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==27)
 
@@ -461,25 +503,31 @@ Eff.TRS
 
 #
 # ---- FIG: UE Intensity ----
-UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total")
+UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total" & (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR"))
                 , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
+  ylim(0,1.2) +
   xlab("") + ylab("kJ/cap/HDD") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  scale_colour_manual(values=c("navy","green","firebrick","gray"),
+  # scale_y_continuous(breaks=c(0,0.2,0.4,0.6,0.8,1)) +
+  # scale_x_continuous(breaks=c(1,2,3,4,5,6)) + 
+  scale_colour_manual(values=c("navy","green","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NIR"),
-                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Improv. Insul.")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitg.","Mitig. No Improv. Insul.")) +
   facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.SRT
 #
 # ---- FIG: Combined Results ----
-TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" & !(Variable=="RenovationRate"))
+TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+                                  !(Variable=="RenovationRate") &
+                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR"))
                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=0.8) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
@@ -489,16 +537,16 @@ TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" & !(Variable=="Renovati
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green","firebrick","gray"),
+  scale_colour_manual(values=c("navy","green","gray"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NR","SSP2_450_NIR"),
-                      labels=c("Baseline","Mitig.","Mitig No Rrenov.","Mitig No Improv. Insul.")) +
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 TotEffect
 #
 # ---- FIG: Carbon Contents ----
-CCFig <- ggplot(data=subset(CC, Region %in% Regions)
+CCFig <- ggplot(data=subset(CC, Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450"))
                  , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(alpha=1) +
   xlim(2010,2100) +
@@ -507,10 +555,10 @@ CCFig <- ggplot(data=subset(CC, Region %in% Regions)
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green","gray"),
+  scale_colour_manual(values=c("navy","green"),
                       name="",
-                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
-                      labels=c("SSP2","SSP2 - 2°C","Mitig. No Improv. Insul.")) +
+                      breaks=c("SSP2","SSP2_450"),
+                      labels=c("SSP2","SSP2 - 2°C")) +
   facet_grid(Region~variable, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 CCFig
@@ -519,6 +567,10 @@ CCFig
 # # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Stocks_T.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(Stck.T)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/Stocks_GUR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Stck.GUR)
 # dev.off()
 # #
 # png(file = "output/BuildStocks/CostComponent2020.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
@@ -533,11 +585,11 @@ CCFig
 # plot(plot_list[[2100]])
 # dev.off()
 # #
-# png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Eff.TRS)
+# png(file = "output/BuildStocks/CostComponentWEU.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Costs.WEU)
 # dev.off()
 # #
-# png(file = "output/BuildStocks/UEInt.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/UEIntGlobal.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(UEInt.SRT)
 # dev.off()
 # #
@@ -548,7 +600,7 @@ CCFig
 # png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(CCFig)
 # dev.off()
-# # 
+# #
 
 #
 # ---- FIG: Renovation Rate ----
@@ -572,3 +624,12 @@ CCFig
 # plot(RR.T)
 # dev.off()
 # 
+# ---- Not Used  OUTPUTS ----
+# png(file = "output/BuildStocks/EffLevel_TRS.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(Eff.TRS)
+# dev.off()
+# #
+# png(file = "output/BuildStocks/UEInt.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(UEInt.SRT)
+# dev.off()
+# #

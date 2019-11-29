@@ -22,7 +22,7 @@ FSizeStrip = 9
 FSizeAxis = 9
 FSizeLeg = 9
 
-Regions = c(2,5,11,16,20,27)
+Regions = c(2,5,11,20,27)
 Years = c("1980","1990","2000","2010","2015","2020","2025","2030","2035","2040","2045",
           "2050","2055","2060","2065","2070","2075","2080","2085","2090","2095","2100")
 
@@ -358,6 +358,10 @@ DATA.TS$TURQ <- NULL
 DATA.TRQS = subset(DATA.TRQS, Region %in% Regions)
 
 #
+# ---- EFFECT ON DEMAND ----
+# UEHeatCool_pc
+
+#
 # ---- LABELS ----
 scen_labels <-c("SSP1"="SSP1",
                 "SSP2"="Baseline",
@@ -385,10 +389,12 @@ var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
+cc_labels <-c("CCElec"="Electricity","CCSpaceHeat"="Heating Fuels")
+
 # ---- FIGURES ----
 # ---- FIG: Stocks ----
-Stck.T <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450"))
-                  , aes(x=Year,y = value, fill=EffLevel)) + 
+Stck.TR <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & !(Region==27) & (Scen=="SSP2"|Scen=="SSP2_450"))
+                 , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
   # geom_line(alpha=1) +
   xlim(2010,2100) +
@@ -396,14 +402,32 @@ Stck.T <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & (Scen=="SS
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  # scale_colour_manual(values=c("darkorchid","forestgreen"),
-  #                     name="",
-  #                     breaks=c("Urban","Rural"),
-  #                     labels=c("Urban","Rural")) +
-  facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+  theme(legend.position="none") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
+                      name="",
+                      breaks=c("1","2","3","4","5","6"),
+                      labels=c("1","2","3","4","5","6")) +
+  facet_grid(Scen~Region, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-Stck.T
+Stck.TR
+
+Stck.TG <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & (Region==27) & (Scen=="SSP2"|Scen=="SSP2_450"))
+                  , aes(x=Year,y = value, fill=EffLevel)) + 
+  geom_bar(stat="identity") +
+  # geom_line(alpha=1) +
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
+                    name="",
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
+  facet_grid(Scen~Region, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Stck.TG
 
 Stck.GUR <- ggplot(data=subset(Stocks, (TURQ==2|TURQ==3) & Region==27 & (Scen=="SSP2"|Scen=="SSP2_450"))
                  , aes(x=Year,y = value, fill=EffLevel)) + 
@@ -414,6 +438,10 @@ Stck.GUR <- ggplot(data=subset(Stocks, (TURQ==2|TURQ==3) & Region==27 & (Scen=="
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
+                    name="",
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
   facet_grid(TURQ~Scen, scales="free_y", labeller=labeller(TURQ=turq_labels, Scen=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.GUR
@@ -525,51 +553,97 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total" & (Scen=="SSP2"|Sce
 UEInt.SRT
 #
 # ---- FIG: Combined Results ----
-TotEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+BaseEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
                                   !(Variable=="RenovationRate") &
-                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR"))
+                                  (Scen=="SSP2"))
                     , aes(x=Year,y = value, colour=Scen)) + 
-  geom_line(alpha=0.8) +
+  geom_line(size=1,alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green","gray"),
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("navy","forestgreen","gray"),
                       name="",
                       breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
                       labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-TotEffect
+BaseEffect
+
+MitigEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+                                   !(Variable=="RenovationRate") &
+                                   (Scen=="SSP2"|Scen=="SSP2_450"))
+                     , aes(x=Year,y = value, colour=Scen)) + 
+  geom_line(size=1,alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("navy","green3","gray"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
+  facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+MitigEffect
+
+
+AllEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
+                                  !(Variable=="RenovationRate") &
+                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR"))
+                    , aes(x=Year,y = value, colour=Scen)) + 
+  geom_line(size=1,alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeStrip, hjust=1), axis.text.y = element_text(size=FSizeStrip)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("navy","green3","red"),
+                      name="",
+                      breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
+                      labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
+  facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+AllEffect
 #
 # ---- FIG: Carbon Contents ----
-CCFig <- ggplot(data=subset(CC, Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450"))
+CCFig <- ggplot(data=subset(CC, Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450") & !(Region==27|Region==5))
                  , aes(x=Year,y = value, colour=Scen)) + 
-  geom_line(alpha=1) +
-  xlim(2010,2100) +
+  geom_line(size=1,alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
   xlab("") + ylab("kgC/GJ") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green"),
+  scale_colour_manual(values=c("navy","green3"),
                       name="",
                       breaks=c("SSP2","SSP2_450"),
-                      labels=c("SSP2","SSP2 - 2°C")) +
-  facet_grid(Region~variable, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
+                      labels=c("Baseline","Mitig.")) +
+  facet_grid(variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels, variable=cc_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 CCFig
 
 #
 # # ---- OUTPUTS ----
-# png(file = "output/BuildStocks/Stocks_T.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(Stck.T)
+# png(file = "output/BuildStocks/Stocks_TR.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Stck.TR)
+# dev.off()
+# # #
+# png(file = "output/BuildStocks/Stocks_TG.png", width = 3*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Stck.TG)
 # dev.off()
 # #
-# png(file = "output/BuildStocks/Stocks_GUR.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/Stocks_GUR.png", width = 6*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Stck.GUR)
 # dev.off()
 # #
@@ -593,10 +667,18 @@ CCFig
 # plot(UEInt.SRT)
 # dev.off()
 # #
-# png(file = "output/BuildStocks/RenovEffect.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(TotEffect)
+# png(file = "output/BuildStocks/Effect_Base.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(BaseEffect)
+# dev.off()
+# # #
+# png(file = "output/BuildStocks/Effect_Mitig.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(MitigEffect)
 # dev.off()
 # #
+# png(file = "output/BuildStocks/Effect_All.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(AllEffect)
+# dev.off()
+# 
 # png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(CCFig)
 # dev.off()

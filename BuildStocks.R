@@ -32,7 +32,6 @@ ActiveTURQ<-6
 data_base <- "data/BuildStocks/SSP2.xlsx"
 data_miti <- "data/BuildStocks/SSP2_450.xlsx"
 data_miti_NR <- "data/BuildStocks/SSP2_450_NR.xlsx"
-data_miti_NFS <- "data/BuildStocks/SSP2_450_NFS.xlsx"
 data_miti_NIR <- "data/BuildStocks/SSP2_450_NIR.xlsx"
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -44,68 +43,52 @@ setwd("C:/Users/Asus/Documents/Github/IMAGE/")
 Stocks = read.xlsx(data_base, sheet = "FSInsul", startRow=4)
 Stocks.450 = read.xlsx(data_miti, sheet = "FSInsul", startRow=4)
 Stocks.450_NR = read.xlsx(data_miti_NR, sheet = "FSInsul", startRow=4)
-Stocks.450_NFS = read.xlsx(data_miti_NFS, sheet = "FSInsul", startRow=4)
 Stocks.450_NIR = read.xlsx(data_miti_NIR, sheet = "FSInsul", startRow=4)
 
 InsulMS = read.xlsx(data_base, sheet = "MSInsul", startRow=4)
 InsulMS.450 = read.xlsx(data_miti, sheet = "MSInsul", startRow=4)
 InsulMS.450_NR = read.xlsx(data_miti_NR, sheet = "MSInsul", startRow=4)
-InsulMS.450_NFS = read.xlsx(data_miti_NFS, sheet = "MSInsul", startRow=4)
 InsulMS.450_NIR = read.xlsx(data_miti_NIR, sheet = "MSInsul", startRow=4)
 
 RenovRate = read.xlsx(data_base, sheet = "Renov_Rate", startRow=4)
 RenovRate.450 = read.xlsx(data_miti, sheet = "Renov_Rate", startRow=4)
 RenovRate.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate", startRow=4)
-RenovRate.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate", startRow=4)
 RenovRate.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate", startRow=4)
 
 RenovRate_Ave = read.xlsx(data_base, sheet = "Renov_Rate_ave", startRow=4)
 RenovRate_Ave.450 = read.xlsx(data_miti, sheet = "Renov_Rate_ave", startRow=4)
 RenovRate_Ave.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate_ave", startRow=4)
-RenovRate_Ave.450_NFS = read.xlsx(data_miti_NFS, sheet = "Renov_Rate_ave", startRow=4)
 RenovRate_Ave.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate_ave", startRow=4)
 
 UEHeatCool_pc = read.xlsx(data_base, sheet = "UEHeatCool_pc", startRow=4)
 UEHeatCool_pc.450 = read.xlsx(data_miti, sheet = "UEHeatCool_pc", startRow=4)
 UEHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "UEHeatCool_pc", startRow=4)
-UEHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEHeatCool_pc", startRow=4)
 UEHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEHeatCool_pc", startRow=4)
 
 UEIntHeat = read.xlsx(data_base, sheet = "UEintHeat_Fut", startRow=4)
 UEIntHeat.450 = read.xlsx(data_miti, sheet = "UEintHeat_Fut", startRow=4)
 UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
-UEIntHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "UEintHeat_Fut", startRow=4)
 UEIntHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEintHeat_Fut", startRow=4)
 
 CO2EmisHeatCool_pc = read.xlsx(data_base, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CO2EmisHeatCool_pc.450 = read.xlsx(data_miti, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CO2EmisHeatCool_pc.450_NFS = read.xlsx(data_miti_NFS, sheet = "CO2EmisHeatCool_pc", startRow=4)
 CO2EmisHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "CO2EmisHeatCool_pc", startRow=4)
 
 CostComponent = read.xlsx(data_base, sheet = "CostComponent", startRow=4)
 CostComponent.450 = read.xlsx(data_miti, sheet = "CostComponent", startRow=4)
 CostComponent.450_NR = read.xlsx(data_miti_NR, sheet = "CostComponent", startRow=4)
-CostComponent.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostComponent", startRow=4)
 CostComponent.450_NIR = read.xlsx(data_miti_NIR, sheet = "CostComponent", startRow=4)
 
 CCElec = read.xlsx(data_base, sheet = "CCElec", startRow=4)
 CCElec.450 = read.xlsx(data_miti, sheet = "CCElec", startRow=4)
 CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
-CCElec.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCElec", startRow=4)
 CCElec.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCElec", startRow=4)
 
 CCSpaceHeat = read.xlsx(data_base, sheet = "CCSpaceHeat", startRow=4)
 CCSpaceHeat.450 = read.xlsx(data_miti, sheet = "CCSpaceHeat", startRow=4)
 CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
-CCSpaceHeat.450_NFS = read.xlsx(data_miti_NFS, sheet = "CCSpaceHeat", startRow=4)
 CCSpaceHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCSpaceHeat", startRow=4)
-
-# CostFrac = read.xlsx(data_base, sheet = "CostFrac", startRow=4)
-# CostFrac.450 = read.xlsx(data_miti, sheet = "CostFrac", startRow=4)
-# CostFrac.450_NR = read.xlsx(data_miti_NR, sheet = "CostFrac", startRow=4)
-# CostFrac.450_NFS = read.xlsx(data_miti_NFS, sheet = "CostFrac", startRow=4)
-
 #
 # ---- MUNGING ----
 # ---- ***Stocks ----
@@ -276,29 +259,13 @@ CostComponent$Scen <- "SSP2"
 CostComponent.450$Scen <- "SSP2_450"
 CostComponent.450_NR$Scen <- "SSP2_450_NR"
 CostComponent.450_NIR$Scen <- "SSP2_450_NIR"
-# CostComponent$Variable <- "Absolute"
-# CostComponent.450$Variable <- "Absolute"
-# CostComponent.450_NR$Variable <- "Absolute"
-# CostComponent.450_NFS$Variable <- "Absolute"
 CostComponent$class_.4 <-NULL
 CostComponent.450$class_.4 <-NULL
 CostComponent.450_NR$class_.4 <-NULL
 CostComponent.450_NIR$class_.4 <-NULL
 
-# CostFrac$Scen <- "SSP2"
-# CostFrac.450$Scen <- "SSP2_450"
-# CostFrac.450_NR$Scen <- "SSP2_450_NR"
-# CostFrac.450_NFS$Scen <- "SSP2_450_NFS"
-# CostFrac$Variable <- "Fraction"
-# CostFrac.450$Variable <- "Fraction"
-# CostFrac.450_NR$Variable <- "Fraction"
-# CostFrac.450_NFS$Variable <- "Fraction"
-
 CostComponent = rbind(CostComponent,CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
-                      # CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
-
 rm(CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
-   # CostFrac,CostFrac.450,CostFrac.450_NR,CostFrac.450_NFS)
 
 colnames(CostComponent)[1:8] <- c("Year","Region","TURQ","EffLevel",
                                    "Capital","HeatingFuel","CoolingFuel","Scen")
@@ -398,7 +365,7 @@ reg_labels <-c("2"="USA",
                "27"="World")
 
 var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
-               "UeIntHeat"="Heating \nIntensity \n(2010=1)",
+               "UeIntHeat"="Heating & Cooling \nIntensity (desired) \n(2010=1)",
                "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
@@ -410,7 +377,6 @@ cc_labels <-c("CCElec"="Electricity","CCSpaceHeat"="Heating Fuels")
 Stck.TR <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & !(Region==27) & (Scen=="SSP2"|Scen=="SSP2_450"))
                  , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
-  # geom_line(alpha=1) +
   xlim(2010,2100) +
   xlab("") + ylab("mill. m^2") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -428,7 +394,6 @@ Stck.TR
 Stck.TG <- ggplot(data=subset(Stocks, (TURQ==1)& Region %in% Regions & (Region==27) & (Scen=="SSP2"|Scen=="SSP2_450"))
                   , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
-  # geom_line(alpha=1) +
   xlim(2010,2100) +
   xlab("") + ylab("") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
@@ -471,7 +436,6 @@ for(i in c(2020,2050,2100)){
                                     (variable=="CapitalNorm"|variable=="HeatFNorm"|variable=="CoolFNorm"))
                     , aes(x=EffLevel,y = value, fill=variable)) + 
     geom_bar(stat="identity") +
-    # xlim(2010,2100) +
     xlab("") + ylab("") +
     theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
     theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -513,8 +477,6 @@ Costs.WEU
 
 #
 # ---- FIG: Efficiency Level ----
-# EffMS.newGlobTUR = subset(EffMS.new, (TURQ==1|TURQ==2|TURQ==3)&Region==27)
-
 EffMS.UQS <- ggplot(data=subset(InsulMS, (TURQ==4|TURQ==5|TURQ==6|TURQ==7|TURQ==8)&Region==ActiveRegion)
                 , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
@@ -556,8 +518,6 @@ UEInt.SRT <- ggplot(data=subset(UEIntHeat, variable=="Total" & (Scen=="SSP2"|Sce
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  # scale_y_continuous(breaks=c(0,0.2,0.4,0.6,0.8,1)) +
-  # scale_x_continuous(breaks=c(1,2,3,4,5,6)) + 
   scale_colour_manual(values=c("navy","green","gray"),
                       name="",
                       breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),

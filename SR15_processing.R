@@ -26,7 +26,7 @@ FSizeLeg = 10
 options(java.parameters = "-Xmx8000m")
 
 # set directory path 
-setwd("C:/Users/Asus/Documents/Github/Biomass_SSP_Scenarios/")
+setwd("C:/Users/Asus/Documents/Github/IMAGE/")
 # Read Data from SR1.5C DB
 DATA=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574413368.csv", sep=",", dec=".", stringsAsFactors = FALSE)
 DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with Prim Bio in baselines

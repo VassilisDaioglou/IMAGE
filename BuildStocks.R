@@ -689,7 +689,7 @@ CCFig
 # png(file = "output/BuildStocks/Effect_All2.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(AllEffect2)
 # dev.off()
-# 
+#
 
 # png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(CCFig)

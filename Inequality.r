@@ -73,10 +73,19 @@ EnFunc$Func_Order <- factor(EnFunc$Function, level=c("COOK",
 colnames(EnUse)[1:11] <- c("Year","Region","TURQ",
                            "COAL","OIL","NGAS","MBIO","TBIO","H2","SHEAT","ELEC")
 EnUse = melt(EnUse, id.vars=c("Year","Region","TURQ"))
-EnUse$Unit <- "GJ/yr"
+EnUse$value <-EnUse$value / 1e9
+EnUse$Unit <- "EJ/yr"
 colnames(EnUse)[4] <- "Carrier" 
 EnUse$Quintile <- TURQ_ID[match(EnUse$TURQ,TURQ_ID$TURQ),4]
 EnUse$Demographic <- TURQ_ID[match(EnUse$TURQ,TURQ_ID$TURQ),3]
+EnUse$En_Order <- factor(EnUse$Carrier, level=c("COAL",
+                                                     "OIL",
+                                                     "NGAS",
+                                                     "MBIO",
+                                                     "TBIO",
+                                                     "H2",
+                                                      "SHEAT",
+                                                      "ELEC"))
 
 # ---- ***Insulation Levels ----
 colnames(FSInsul)[1:9] <- c("Year","Region","TURQ",
@@ -142,10 +151,10 @@ Func.Glo <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==Global)
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","forestgreen"),
+  scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","darkgray"),
                     name="",
-                    breaks=c("COOK","LIGHT","WHEAT","SHEAT","APPL","COOL"),
-                    labels=c("Cooking","Lighting","Water Heating","Space Heating","Appliances","Space Cooling")) +
+                    breaks=c("COOK","LIGHT","WHEAT","SHEAT","COOL","APPL"),
+                    labels=c("Cooking","Lighting","Water Heating","Space Heating","Space Cooling","Appliances")) +
   facet_grid(Demographic~Quintile) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Func.Glo
@@ -159,15 +168,51 @@ Func.SA <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==ActiveRegion
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","forestgreen"),
+  scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","darkgray"),
                     name="",
-                    breaks=c("COOK","LIGHT","WHEAT","SHEAT","APPL","COOL"),
-                    labels=c("Cooking","Lighting","Water Heating","Space Heating","Appliances","Space Cooling")) +
+                    breaks=c("COOK","LIGHT","WHEAT","SHEAT","COOL","APPL"),
+                    labels=c("Cooking","Lighting","Water Heating","Space Heating","Space Cooling","Appliances")) +
   facet_grid(Demographic~Quintile) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Func.SA
 
 #
+# ---- FIG: Carriers ----
+EC.Glo <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==Global & !(Carrier=="H2"))
+                   , aes(x=Year,y = value, fill=En_Order)) + 
+  geom_bar(stat="identity") +
+  xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("gray22","darkorange4","cornflowerblue","brown","forestgreen","darksalmon","darkgray"),
+                    name="",
+                    breaks=c("COAL","OIL","NGAS","MBIO","TBIO","SHEAT","ELEC"),
+                    labels=c("Coal","Liquid (Fossil)","Natural Gas","Modern Biofuel","Traditional Biofuel","District Heating","Electricity")) +
+  facet_grid(Demographic~Quintile) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+EC.Glo
+
+EC.SA <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & !(Carrier=="H2"))
+                 , aes(x=Year,y = value, fill=En_Order)) + 
+  geom_bar(stat="identity") +
+  xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("gray22","darkorange4","cornflowerblue","brown","forestgreen","darksalmon","darkgray"),
+                    name="",
+                    breaks=c("COAL","OIL","NGAS","MBIO","TBIO","SHEAT","ELEC"),
+                    labels=c("Coal","Liquid (Fossil)","Natural Gas","Modern Biofuel","Traditional Biofuel","District Heating","Electricity")) +
+  facet_grid(Demographic~Quintile) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+EC.SA
+
+
 # # ---- OUTPUTS ----
 png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
 plot(Func.Glo)
@@ -175,6 +220,14 @@ dev.off()
 
 png(file = "output/Inequality/Functions_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
 plot(Func.SA)
+dev.off()
+
+png(file = "output/Inequality/Carriers_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+plot(EC.Glo)
+dev.off()
+
+png(file = "output/Inequality/Carriers_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+plot(EC.SA)
 dev.off()
 
 # # #

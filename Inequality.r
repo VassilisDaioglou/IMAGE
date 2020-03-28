@@ -146,7 +146,7 @@ q_labels <-c("4"="Q1","5"="Q2","6"="Q3","7"="Q4","8"="Q5",
 Func.Glo <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==Global)
                   , aes(x=Year,y = value, fill=Func_Order)) + 
   geom_bar(stat="identity") +
-  xlim(2010,2100) +
+  xlim(2020,2100) +
   xlab("") + ylab("EJ/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -163,7 +163,7 @@ Func.Glo
 Func.SA <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==ActiveRegion)
                    , aes(x=Year,y = value, fill=Func_Order)) + 
   geom_bar(stat="identity") +
-  xlim(2010,2100) +
+  xlim(2020,2100) +
   xlab("") + ylab("EJ/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -182,7 +182,7 @@ Func.SA
 EC.Glo <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==Global & !(Carrier=="H2"))
                    , aes(x=Year,y = value, fill=En_Order)) + 
   geom_bar(stat="identity") +
-  xlim(2010,2100) +
+  xlim(2020,2100) +
   xlab("") + ylab("EJ/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -199,7 +199,7 @@ EC.Glo
 EC.SA <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & !(Carrier=="H2"))
                  , aes(x=Year,y = value, fill=En_Order)) + 
   geom_bar(stat="identity") +
-  xlim(2010,2100) +
+  xlim(2020,2100) +
   xlab("") + ylab("EJ/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -218,7 +218,7 @@ EC.SA
 FSInsul.Glo <- ggplot(data=subset(FSInsul, TURQ %in% Quintiles & Region==Global1)
                  , aes(x=Year,y = value, fill=EffLevel)) + 
   geom_bar(stat="identity") +
-  xlim(2010,2100) +
+  xlim(2020,2100) +
   xlab("") + ylab("Bill. m^2/yr") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
@@ -233,29 +233,66 @@ FSInsul.Glo <- ggplot(data=subset(FSInsul, TURQ %in% Quintiles & Region==Global1
 FSInsul.Glo
 
 #
-# ---- FIG: Insulation ----
+# ---- FIG: RenovationRate ----
+RenovRate.Glo <- ggplot(data=subset(RenovRate, TURQ %in% Quintiles & Region==27)
+                      , aes(x=Year,y = value, colour=Quintile)) + 
+  geom_line(alpha=1, size=1.5) +
+  xlim(2020,2100) +
+  xlab("") + ylab("%") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("gray22","gray50","Darkorange1","dodgerblue","forestgreen"),
+                    name="Quintile",
+                    breaks=c("Q1","Q2","Q3","Q4","Q5"),
+                    labels=c("Q1","Q2","Q3","Q4","Q5")) +
+  facet_grid(Demographic~.) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+RenovRate.Glo
+
+RenovRate.R <- ggplot(data=subset(RenovRate, TURQ %in% Quintiles & (Region==18|Region==11))
+                        , aes(x=Year,y = value, colour=Quintile)) + 
+  geom_line(alpha=1, size=1.5) +
+  xlim(2020,2100) +
+  xlab("") + ylab("%") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("gray22","gray50","Darkorange1","dodgerblue","forestgreen"),
+                      name="Quintile",
+                      breaks=c("Q1","Q2","Q3","Q4","Q5"),
+                      labels=c("Q1","Q2","Q3","Q4","Q5")) +
+  facet_grid(Demographic~Region, labeller=labeller(Region=reg_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+RenovRate.R
 
 #
 # # ---- OUTPUTS ----
-png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(Func.Glo)
-dev.off()
-
-png(file = "output/Inequality/Functions_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(Func.SA)
-dev.off()
-
-png(file = "output/Inequality/Carriers_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(EC.Glo)
-dev.off()
-
-png(file = "output/Inequality/Carriers_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(EC.SA)
-dev.off()
-
-png(file = "output/Inequality/Insulation_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(FSInsul.Glo)
-dev.off()
+# png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Func.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/Functions_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Func.SA)
+# dev.off()
+# 
+# png(file = "output/Inequality/Carriers_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(EC.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/Carriers_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(EC.SA)
+# dev.off()
+# 
+# png(file = "output/Inequality/Insulation_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(FSInsul.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/RenovRate_Regional.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(RenovRate.R)
+# dev.off()
 
 # # #
 

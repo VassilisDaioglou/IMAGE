@@ -91,7 +91,8 @@ EnUse$En_Order <- factor(EnUse$Carrier, level=c("COAL",
 colnames(FSInsul)[1:9] <- c("Year","Region","TURQ",
                             "1","2","3","4","5","6")
 FSInsul = melt(FSInsul, id.vars=c("Year","Region","TURQ"))
-FSInsul$Unit <- "m^2"
+FSInsul$value <-FSInsul$value / 1e9
+FSInsul$Unit <- "Bill. m^2"
 colnames(FSInsul)[4] <- "EffLevel" 
 FSInsul$Quintile <- TURQ_ID[match(FSInsul$TURQ,TURQ_ID$TURQ),4]
 FSInsul$Demographic <- TURQ_ID[match(FSInsul$TURQ,TURQ_ID$TURQ),3]
@@ -152,7 +153,7 @@ Func.Glo <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==Global)
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","darkgray"),
-                    name="",
+                    name="Energy\nFunction",
                     breaks=c("COOK","LIGHT","WHEAT","SHEAT","COOL","APPL"),
                     labels=c("Cooking","Lighting","Water Heating","Space Heating","Space Cooling","Appliances")) +
   facet_grid(Demographic~Quintile) + 
@@ -169,7 +170,7 @@ Func.SA <- ggplot(data=subset(EnFunc, TURQ %in% Quintiles & Region==ActiveRegion
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=c("chartreuse","yellow","chocolate1","firebrick","cornflowerblue","darkgray"),
-                    name="",
+                    name="Energy\nFunction",
                     breaks=c("COOK","LIGHT","WHEAT","SHEAT","COOL","APPL"),
                     labels=c("Cooking","Lighting","Water Heating","Space Heating","Space Cooling","Appliances")) +
   facet_grid(Demographic~Quintile) + 
@@ -188,7 +189,7 @@ EC.Glo <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==Global & !(Car
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=c("gray22","darkorange4","cornflowerblue","brown","forestgreen","darksalmon","darkgray"),
-                    name="",
+                    name="Energy\nCarrier",
                     breaks=c("COAL","OIL","NGAS","MBIO","TBIO","SHEAT","ELEC"),
                     labels=c("Coal","Liquid (Fossil)","Natural Gas","Modern Biofuel","Traditional Biofuel","District Heating","Electricity")) +
   facet_grid(Demographic~Quintile) + 
@@ -205,14 +206,36 @@ EC.SA <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & 
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=c("gray22","darkorange4","cornflowerblue","brown","forestgreen","darksalmon","darkgray"),
-                    name="",
+                    name="Energy\nCarrier",
                     breaks=c("COAL","OIL","NGAS","MBIO","TBIO","SHEAT","ELEC"),
                     labels=c("Coal","Liquid (Fossil)","Natural Gas","Modern Biofuel","Traditional Biofuel","District Heating","Electricity")) +
   facet_grid(Demographic~Quintile) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 EC.SA
 
+#
+# ---- FIG: Insulation ----
+FSInsul.Glo <- ggplot(data=subset(FSInsul, TURQ %in% Quintiles & Region==Global1)
+                 , aes(x=Year,y = value, fill=EffLevel)) + 
+  geom_bar(stat="identity") +
+  xlim(2010,2100) +
+  xlab("") + ylab("Bill. m^2/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("firebrick","chocolate1","darkgray","cornflowerblue","chartreuse","forestgreen"),
+                    name="Insulation\nLevel",
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
+  facet_grid(Demographic~Quintile, scales = "free_y") + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FSInsul.Glo
 
+#
+# ---- FIG: Insulation ----
+
+#
 # # ---- OUTPUTS ----
 png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
 plot(Func.Glo)
@@ -228,6 +251,10 @@ dev.off()
 
 png(file = "output/Inequality/Carriers_SA.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
 plot(EC.SA)
+dev.off()
+
+png(file = "output/Inequality/Insulation_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+plot(FSInsul.Glo)
 dev.off()
 
 # # #

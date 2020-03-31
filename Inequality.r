@@ -46,6 +46,7 @@ options(java.parameters = "-Xmx8000m")
 # set directory path 
 setwd("C:/Users/Asus/Documents/Github/IMAGE/")
 data <- "data/Inequality/TIMER_RESULTS.xlsx"
+baselines <- "data/Inequality/BASELINES.xlsx"
 # Read Data Files for Baseline Scenario
 EnFunc = read.xlsx(data, sheet = "EnUseFunction_TURQ", startRow=4)
 EnUse = read.xlsx(data, sheet = "TotalEnUseTURQ", startRow=4)
@@ -53,12 +54,17 @@ FSInsul = read.xlsx(data, sheet = "FSInsul", startRow=4)
 RenovRate = read.xlsx(data, sheet = "Renov_Rate_ave", startRow=4)
 Pop = read.xlsx(data, sheet = "POP_q", startRow=4)
 
+ResEU_SSP1 = read.xlsx(baselines, sheet = "EnUseFunction_TURQ_SSP1", startRow=4)
+ResEU_SSP2 = read.xlsx(baselines, sheet = "EnUseFunction_TURQ_SSP2", startRow=4)
+ResEU_SSP3 = read.xlsx(baselines, sheet = "EnUseFunction_TURQ_SSP3", startRow=4)
+
 # ---- MUNGING ----
 # ---- *** Population ----
 colnames(Pop)[1:15] <- c("Year","Region",
                          "1","2","3",
                          "4","5","6","7","8",
                          "9","10","11","12","13")
+
 Pop = melt(Pop, id.vars=c("Year","Region"))
 colnames(Pop)[3] <- "TURQ"
 Pop = spread(Pop,Region,value)
@@ -71,6 +77,39 @@ levels(Pop$Region)[levels(Pop$Region)=="Tot"] <- "27"
 levels(Pop$Region)[levels(Pop$Region)=="Tot2"] <- "28"
 
 Pop$ID = paste(Pop$Year,"_",Pop$Region,"_",Pop$TURQ, sep="")
+# 
+# ---- *** Baseline Info ----
+ResEU_SSP1$Tot <- apply(ResEU_SSP1[,c(4:9)],1,sum)
+ResEU_SSP1 = subset(ResEU_SSP1, select=c(t,DIM_.1,DIM_.2,Tot))
+colnames(ResEU_SSP1)[1:3] <- c("Year","Region","TURQ")
+ResEU_SSP1$ID = paste(ResEU_SSP1$Year,"_",ResEU_SSP1$Region,"_",ResEU_SSP1$TURQ, sep="")
+ResEU_SSP1$Pop <- Pop[match(ResEU_SSP1$ID,Pop$ID),4]
+ResEU_SSP1$ID <- NULL
+ResEU_SSP1$Scenario <- "SSP1"
+ResEU_SSP1 = ResEU_SSP1 %>% mutate(ResPC = Tot/Pop)
+
+ResEU_SSP2$Tot <- apply(ResEU_SSP2[,c(4:9)],1,sum)
+ResEU_SSP2 = subset(ResEU_SSP2, select=c(t,DIM_.1,DIM_.2,Tot))
+colnames(ResEU_SSP2)[1:3] <- c("Year","Region","TURQ")
+ResEU_SSP2$ID = paste(ResEU_SSP2$Year,"_",ResEU_SSP2$Region,"_",ResEU_SSP2$TURQ, sep="")
+ResEU_SSP2$Pop <- Pop[match(ResEU_SSP2$ID,Pop$ID),4]
+ResEU_SSP2$ID <- NULL
+ResEU_SSP2$Scenario <- "SSP2"
+ResEU_SSP2 = ResEU_SSP2 %>% mutate(ResPC = Tot/Pop)
+
+ResEU_SSP3$Tot <- apply(ResEU_SSP3[,c(4:9)],1,sum)
+ResEU_SSP3 = subset(ResEU_SSP3, select=c(t,DIM_.1,DIM_.2,Tot))
+colnames(ResEU_SSP3)[1:3] <- c("Year","Region","TURQ")
+ResEU_SSP3$ID = paste(ResEU_SSP3$Year,"_",ResEU_SSP3$Region,"_",ResEU_SSP3$TURQ, sep="")
+ResEU_SSP3$Pop <- Pop[match(ResEU_SSP3$ID,Pop$ID),4]
+ResEU_SSP3$ID <- NULL
+ResEU_SSP3$Scenario <- "SSP3"
+ResEU_SSP3 = ResEU_SSP3 %>% mutate(ResPC = Tot/Pop)
+
+ResPC = rbind(ResEU_SSP1,ResEU_SSP2,ResEU_SSP3)
+rm(ResEU_SSP1,ResEU_SSP2,ResEU_SSP3)
+ResPC$TURQ <- as.factor(ResPC$TURQ)
+# 
 # ---- ***Energy Functions ----
 colnames(EnFunc)[1:9] <- c("Year","Region","TURQ",
                            "APPL","LIGHT","COOK","WHEAT","SHEAT","COOL")
@@ -297,6 +336,44 @@ RenovRate.R <- ggplot(data=subset(RenovRate, TURQ %in% Quintiles & (Region==18|R
 RenovRate.R
 
 #
+# ---- FIG: Baseline Variation ----
+
+Baseline.Glo <- ggplot(data=subset(ResPC, Region==28 & (TURQ==4|TURQ==8))
+                        , aes(x=Year,y = ResPC, colour=TURQ)) + 
+  geom_line(alpha=1, size=1) +
+  xlim(2020,2100) +
+  ylim(0,20) +
+  xlab("") + ylab("GJ/cap") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("firebrick","forestgreen"),
+                      name="Demographic",
+                      breaks=c("4","8"),
+                      labels=c("Poorest, Urban","Richest, Urban")) +
+  facet_grid(.~Scenario, labeller = labeller(TURQ=q_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Baseline.Glo
+
+Baseline.R <- ggplot(data=subset(ResPC, Region==ActiveRegion & (TURQ==4|TURQ==8))
+                       , aes(x=Year,y = ResPC, colour=TURQ)) + 
+  geom_line(alpha=1, size=1) +
+  xlim(2020,2100) +
+  ylim(0,20) +
+  xlab("") + ylab("GJ/cap") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("firebrick","forestgreen"),
+                      name="Demographic",
+                      breaks=c("4","8"),
+                      labels=c("Poorest, Urban","Richest, Urban")) +
+  facet_grid(.~Scenario, labeller = labeller(TURQ=q_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Baseline.R
+
 # # ---- OUTPUTS ----
 # png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
 # plot(Func.Glo)
@@ -322,5 +399,9 @@ RenovRate.R
 # plot(RenovRate.R)
 # dev.off()
 # 
+# png(file = "output/Inequality/Baselines_Regional.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Baseline.R)
+# dev.off()
+
 # # #
 

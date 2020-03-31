@@ -29,7 +29,7 @@ Quintiles = c(4,5,6,7,8,9,10,11,12,13)
 UQuint = c(4,5,6,7,8)
 RQuint = c(9,10,11,12,13)
 
-ActiveRegion <- 20
+ActiveRegion <- 21
 Global1 <- 27
 Global <- 28
 
@@ -51,14 +51,31 @@ EnFunc = read.xlsx(data, sheet = "EnUseFunction_TURQ", startRow=4)
 EnUse = read.xlsx(data, sheet = "TotalEnUseTURQ", startRow=4)
 FSInsul = read.xlsx(data, sheet = "FSInsul", startRow=4)
 RenovRate = read.xlsx(data, sheet = "Renov_Rate_ave", startRow=4)
+Pop = read.xlsx(data, sheet = "POP_q", startRow=4)
 
 # ---- MUNGING ----
+# ---- *** Population ----
+colnames(Pop)[1:15] <- c("Year","Region",
+                         "1","2","3",
+                         "4","5","6","7","8",
+                         "9","10","11","12","13")
+Pop = melt(Pop, id.vars=c("Year","Region"))
+colnames(Pop)[3] <- "TURQ"
+Pop = spread(Pop,Region,value)
+Pop$"27" <- NULL
+Pop$Tot <- apply(Pop[,c(3:28)],1,sum)
+Pop$Tot2 <- apply(Pop[,c(3:28)],1,sum)
+Pop = melt(Pop, id.vars=c("Year","TURQ"))
+colnames(Pop)[3] <- "Region"
+levels(Pop$Region)[levels(Pop$Region)=="Tot"] <- "27"
+levels(Pop$Region)[levels(Pop$Region)=="Tot2"] <- "28"
+
+Pop$ID = paste(Pop$Year,"_",Pop$Region,"_",Pop$TURQ, sep="")
 # ---- ***Energy Functions ----
 colnames(EnFunc)[1:9] <- c("Year","Region","TURQ",
                            "APPL","LIGHT","COOK","WHEAT","SHEAT","COOL")
 EnFunc = melt(EnFunc, id.vars=c("Year","Region","TURQ"))
-EnFunc$value <-EnFunc$value / 1e9
-EnFunc$Unit <- "EJ/yr"
+EnFunc$Unit <- "GJ/yr"
 colnames(EnFunc)[4] <- "Function" 
 EnFunc$Quintile <- TURQ_ID[match(EnFunc$TURQ,TURQ_ID$TURQ),4]
 EnFunc$Demographic <- TURQ_ID[match(EnFunc$TURQ,TURQ_ID$TURQ),3]
@@ -69,12 +86,17 @@ EnFunc$Func_Order <- factor(EnFunc$Function, level=c("COOK",
                                                      "COOL",
                                                       "APPL"))
 
+EnFunc$ID = paste(EnFunc$Year,"_",EnFunc$Region,"_",EnFunc$TURQ, sep="")
+EnFunc$Pop <- Pop[match(EnFunc$ID,Pop$ID),4]
+EnFunc$ID <- NULL
+
+EnFunc = EnFunc %>% mutate(EnFunc_pc = value/Pop)
+
 # ---- ***Energy Use ----
 colnames(EnUse)[1:11] <- c("Year","Region","TURQ",
                            "COAL","OIL","NGAS","MBIO","TBIO","H2","SHEAT","ELEC")
 EnUse = melt(EnUse, id.vars=c("Year","Region","TURQ"))
-EnUse$value <-EnUse$value / 1e9
-EnUse$Unit <- "EJ/yr"
+EnUse$Unit <- "GJ/yr"
 colnames(EnUse)[4] <- "Carrier" 
 EnUse$Quintile <- TURQ_ID[match(EnUse$TURQ,TURQ_ID$TURQ),4]
 EnUse$Demographic <- TURQ_ID[match(EnUse$TURQ,TURQ_ID$TURQ),3]
@@ -86,6 +108,12 @@ EnUse$En_Order <- factor(EnUse$Carrier, level=c("COAL",
                                                      "H2",
                                                       "SHEAT",
                                                       "ELEC"))
+
+EnUse$ID = paste(EnUse$Year,"_",EnUse$Region,"_",EnUse$TURQ, sep="")
+EnUse$Pop <- Pop[match(EnUse$ID,Pop$ID),4]
+EnUse$ID <- NULL
+
+EnUse = EnUse %>% mutate(EnUse_pc = value/Pop)
 
 # ---- ***Insulation Levels ----
 colnames(FSInsul)[1:9] <- c("Year","Region","TURQ",
@@ -196,7 +224,7 @@ EC.Glo <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==Global & !(Car
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 EC.Glo
 
-EC.SA <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & !(Carrier=="H2"))
+EC.R <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & !(Carrier=="H2"))
                  , aes(x=Year,y = value, fill=En_Order)) + 
   geom_bar(stat="identity") +
   xlim(2020,2100) +
@@ -211,7 +239,7 @@ EC.SA <- ggplot(data=subset(EnUse, TURQ %in% Quintiles & Region==ActiveRegion & 
                     labels=c("Coal","Liquid (Fossil)","Natural Gas","Modern Biofuel","Traditional Biofuel","District Heating","Electricity")) +
   facet_grid(Demographic~Quintile) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-EC.SA
+EC.R
 
 #
 # ---- FIG: Insulation ----

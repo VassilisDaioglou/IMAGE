@@ -298,29 +298,29 @@ RenovRate.R
 
 #
 # # ---- OUTPUTS ----
-png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(Func.Glo)
-dev.off()
-
-png(file = "output/Inequality/Functions_R.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(Func.SA)
-dev.off()
-
-png(file = "output/Inequality/Carriers_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(EC.Glo)
-dev.off()
-
-png(file = "output/Inequality/Carriers_R.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(EC.SA)
-dev.off()
-
-png(file = "output/Inequality/Insulation_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(FSInsul.Glo)
-dev.off()
-
-png(file = "output/Inequality/RenovRate_Regional.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(RenovRate.R)
-dev.off()
-
+# png(file = "output/Inequality/Functions_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Func.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/Functions_R.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(Func.R)
+# dev.off()
+# 
+# png(file = "output/Inequality/Carriers_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(EC.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/Carriers_R.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(EC.R)
+# dev.off()
+# 
+# png(file = "output/Inequality/Insulation_Global.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(FSInsul.Glo)
+# dev.off()
+# 
+# png(file = "output/Inequality/RenovRate_Regional.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(RenovRate.R)
+# dev.off()
+# 
 # # #
 

@@ -29,7 +29,7 @@ Quintiles = c(4,5,6,7,8,9,10,11,12,13)
 UQuint = c(4,5,6,7,8)
 RQuint = c(9,10,11,12,13)
 
-ActiveRegion <- 21
+ActiveRegion <- 18
 Global1 <- 27
 Global <- 28
 

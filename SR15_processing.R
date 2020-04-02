@@ -264,6 +264,27 @@ MitigProj2 <- ggplot(Mitigation, aes(x=Year,y = value, colour=Target, fill=ID)) 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip))
 MitigProj2
 
+# ---- FIG: MITIGATION: Biomass importance ----
+BioFrac <- ggplot(subset(Mitigation, variable=="PrimBiomass-EJ/yr"|variable=="FracBio"), 
+                  aes(x=Year,y = value, colour=Target, fill=ID)) + 
+  geom_line(data=subset(subset(Mitigation, variable=="PrimBiomass-EJ/yr"|variable=="FracBio"), Target=="2C"), alpha=0.6) + 
+  geom_line(data=subset(subset(Mitigation, variable=="PrimBiomass-EJ/yr"|variable=="FracBio"), Target=="1.5C"), alpha=0.5) + 
+  geom_hline(yintercept=0,size = 0.3, colour='black') +
+  xlim(2010,2100) +
+  xlab("") + ylab("") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeAxis, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("forestgreen","darkorchid"),
+                      name="",
+                      breaks=c("1.5C","2C"),
+                      labels=c("1.5C","2C")
+  ) +
+  facet_wrap(.~var_Order, nrow=1, scales="free_y", labeller = labeller(var_Order=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip))
+BioFrac
+
 #
 # ---- FIG: SENSITIVITIES ----
 
@@ -294,18 +315,22 @@ Sens <- ggplot(subset(Sensitivity.MinMax, Year=="2020"|Year=="2040"|Year=="2060"
 Sens
 #
 # ---- OUTPUTS ----
-png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
-plot(BaseProj)
-dev.off()
-#
-png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
-plot(MitigProj)
-dev.off()
-#
-png(file = "output/SR15/MitigProj2.png", width = 10.5*ppi, height = 5.5*ppi, units = "px", res = ppi)
-plot(MitigProj2)
-dev.off()
-
-png(file = "output/SR15/Sensitivity.png", width = 10.5*ppi, height = 7*ppi, units = "px", res = ppi)
-plot(Sens)
-dev.off()
+# png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(BaseProj)
+# dev.off()
+# #
+# png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(MitigProj)
+# dev.off()
+# #
+# png(file = "output/SR15/MitigProj2.png", width = 10.5*ppi, height = 5.5*ppi, units = "px", res = ppi)
+# plot(MitigProj2)
+# dev.off()
+# 
+# png(file = "output/SR15/Sensitivity.png", width = 10.5*ppi, height = 7*ppi, units = "px", res = ppi)
+# plot(Sens)
+# dev.off()
+# 
+# png(file = "output/SR15/FracBio.png", width = 5*ppi, height = 2.5*ppi, units = "px", res = ppi)
+# plot(BioFrac)
+# dev.off()

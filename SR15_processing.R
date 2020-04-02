@@ -31,6 +31,7 @@ setwd("C:/Users/Asus/Documents/Github/IMAGE/")
 DATA=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574413368.csv", sep=",", dec=".", stringsAsFactors = FALSE)
 DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with Prim Bio in baselines
 AFOLU=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574430547.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with AFOLU emissions in Mitigation Scenarios
+PRIM=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1585815642.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with AFOLU emissions in Mitigation Scenarios
 
 # ---- DATA STRUCTURE ----
 # Re-structure and Clean dataframe
@@ -38,10 +39,11 @@ AFOLU=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574430547.csv", sep=",", 
 DATA = subset(DATA, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 DATA2 = subset(DATA2, select=-c(X2005))
 AFOLU = subset(AFOLU, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
+PRIM = subset(PRIM, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 
-DATA = rbind(DATA,DATA2,AFOLU)
+DATA = rbind(DATA,DATA2,AFOLU,PRIM)
 
-rm(DATA2, AFOLU)
+rm(DATA2, AFOLU, PRIM)
   # Fix years and values
 DATA=melt(DATA, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(DATA)[6] <- "Year"
@@ -107,6 +109,9 @@ DATA$Unit <- NULL
 DATA=spread(DATA,Variable,value)
 #
 # ---- DATA PROCESSING ----
+# Calculate Fraction of Biomass in TPES
+DATA = DATA %>% mutate(FracBio = `PrimBiomass-EJ/yr`/`Prim-EJ/yr`)
+
 # Have to generate datasets containting the minimum and maximum for each of the "Targets" 
 # This will aid in drawing shaded areas for each target
 
@@ -135,7 +140,9 @@ Mitigation = subset(Mitigation, !(FracCCS>1))  # Ignore some observations which 
 
 Mitigation = melt(Mitigation, id.vars=c("Model","Scenario","Region","Year","Project","Target"))
 
-Mitigation$var_Order = factor(Mitigation$variable, levels=c("PrimBiomass-EJ/yr",
+Mitigation$var_Order = factor(Mitigation$variable, levels=c("Prim-EJ/yr",
+                                                            "PrimBiomass-EJ/yr",
+                                                            "FracBio",
                                                             "PrimBiomasswCCS-EJ/yr",
                                                             "FracCCS",
                                                             "LandCoverEnergyCrops-Mha",
@@ -173,20 +180,25 @@ Sensitivity.MinMax$Test_Order = factor(Sensitivity.MinMax$Test, levels=c("full",
                                                            "none",
                                                            "limbio"))
 
-Sensitivity.MinMax$var_Order = factor(Sensitivity.MinMax$variable, levels=c("PrimBiomass-EJ/yr",
-                                                            "PrimBiomasswCCS-EJ/yr",
-                                                            "FracCCS",
-                                                            "LandCoverEnergyCrops-Mha",
-                                                            "EmisCO2AFOLU-MtCO2/yr"))
+Sensitivity.MinMax$var_Order = factor(Sensitivity.MinMax$variable, levels=c("Prim-EJ/yr",
+                                                                            "PrimBiomass-EJ/yr",
+                                                                            "FracBio",
+                                                                            "PrimBiomasswCCS-EJ/yr",
+                                                                            "FracCCS",
+                                                                            "LandCoverEnergyCrops-Mha",
+                                                                            "EmisCO2AFOLU-MtCO2/yr"))
+#
 
 
 #
 # ---- LABELS ----
 #var labels with text wraps                
-var_labels <- c("LandCoverEnergyCrops-Mha"="Land Cover Energy Crops \nMHa",
+var_labels <- c("Prim-EJ/yr"="Total Primary Energy \nEJ/yr",
+                "LandCoverEnergyCrops-Mha"="Land Cover Energy Crops \nMHa",
                 "PrimBiomass-EJ/yr"="Primary Biomass \nEJ/yr",
                 "PrimBiomasswCCS-EJ/yr"="Primary Biomass with CCS \nEJ/yr",
                 "FracCCS"="Fraction Combined \nwith CCS",
+                "FracBio"="Fraction of Biomass \nin TPES",
                 "EmisCO2AFOLU-MtCO2/yr"="AFOLU CO2 Emissions \nMtCO2/yr")
 
 
@@ -282,19 +294,18 @@ Sens <- ggplot(subset(Sensitivity.MinMax, Year=="2020"|Year=="2040"|Year=="2060"
 Sens
 #
 # ---- OUTPUTS ----
-# png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
-# plot(BaseProj)
-# dev.off()
-# # 
-# png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(MitigProj)
-# dev.off()
-# #
-# png(file = "output/SR15/MitigProj2.png", width = 9*ppi, height = 5.5*ppi, units = "px", res = ppi)
-# plot(MitigProj2)
-# dev.off()
+png(file = "output/SR15/BaseProj.png", width = 6*ppi, height = 4*ppi, units = "px", res = ppi)
+plot(BaseProj)
+dev.off()
 #
-# png(file = "output/SR15/Sensitivity.png", width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
-# plot(Sens)
-# dev.off()
+png(file = "output/SR15/MitigProj.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+plot(MitigProj)
+dev.off()
 #
+png(file = "output/SR15/MitigProj2.png", width = 10.5*ppi, height = 5.5*ppi, units = "px", res = ppi)
+plot(MitigProj2)
+dev.off()
+
+png(file = "output/SR15/Sensitivity.png", width = 10.5*ppi, height = 7*ppi, units = "px", res = ppi)
+plot(Sens)
+dev.off()

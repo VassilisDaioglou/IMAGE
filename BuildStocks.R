@@ -1,5 +1,8 @@
 # R script to process the results of the TIMER Building Stocks & Renovation represetnation
 # Vassilis Daioglou, November 2019
+# 
+#  Make appropriate to read IAMC template outputs
+#  Vassilis Daioglou, April 2020
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -22,17 +25,23 @@ FSizeStrip = 9
 FSizeAxis = 9
 FSizeLeg = 9
 
-Regions = c(2,5,11,20,27)
-Years = c("1980","1990","2000","2010","2015","2020","2025","2030","2035","2040","2045",
-          "2050","2055","2060","2065","2070","2075","2080","2085","2090","2095","2100")
+Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX","NAF",
+            "OCE","RCAM","RSAF","RSAM","RSAS","RUS","SAF","SEAS","STAN","TUR","UKR","USA","WAF","WEU","World")
 
-ActiveRegion <- 11
-ActiveTURQ<-6
+Years = c("2005","2010","2015","2020","2025","2030","2035","2040","2045",
+          "2050","2060","2070","2080","2090","2100")
 
-data_base <- "data/BuildStocks/SSP2.xlsx"
-data_miti <- "data/BuildStocks/SSP2_450.xlsx"
-data_miti_NR <- "data/BuildStocks/SSP2_450_NR.xlsx"
-data_miti_NIR <- "data/BuildStocks/SSP2_450_NIR.xlsx"
+ActiveRegion <- "World"
+
+Scenarios = c("Full","none","Demand","Floorspace","NoEffImp","NoRetrofit")
+
+data_full <- "data/BuildStocks/BuildingStocks/Full.xlsx"
+data_none <- "data/BuildStocks/BuildingStocks/none.xlsx"
+data_Demand <- "data/BuildStocks/BuildingStocks/Demand.xlsx"
+data_Floorspace <- "data/BuildStocks/BuildingStocks/Floorspace.xlsx"
+data_NoEffImp <- "data/BuildStocks/BuildingStocks/NoEffImp.xlsx"
+data_NoRetrofit <- "data/BuildStocks/BuildingStocks/NoRetrofit.xlsx"
+
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
@@ -40,55 +49,13 @@ options(java.parameters = "-Xmx8000m")
   # set directory path 
 setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
-Stocks = read.xlsx(data_base, sheet = "FSInsul", startRow=4)
-Stocks.450 = read.xlsx(data_miti, sheet = "FSInsul", startRow=4)
-Stocks.450_NR = read.xlsx(data_miti_NR, sheet = "FSInsul", startRow=4)
-Stocks.450_NIR = read.xlsx(data_miti_NIR, sheet = "FSInsul", startRow=4)
+full = read.xlsx(data_full, sheet = "data")
+none = read.xlsx(data_none, sheet = "data")
+Demand = read.xlsx(data_Demand, sheet = "data")
+Floorspace = read.xlsx(data_Floorspace, sheet = "data")
+NoEffImp = read.xlsx(data_NoEffImp, sheet = "data")
+NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
-InsulMS = read.xlsx(data_base, sheet = "MSInsul", startRow=4)
-InsulMS.450 = read.xlsx(data_miti, sheet = "MSInsul", startRow=4)
-InsulMS.450_NR = read.xlsx(data_miti_NR, sheet = "MSInsul", startRow=4)
-InsulMS.450_NIR = read.xlsx(data_miti_NIR, sheet = "MSInsul", startRow=4)
-
-RenovRate = read.xlsx(data_base, sheet = "Renov_Rate", startRow=4)
-RenovRate.450 = read.xlsx(data_miti, sheet = "Renov_Rate", startRow=4)
-RenovRate.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate", startRow=4)
-RenovRate.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate", startRow=4)
-
-RenovRate_Ave = read.xlsx(data_base, sheet = "Renov_Rate_ave", startRow=4)
-RenovRate_Ave.450 = read.xlsx(data_miti, sheet = "Renov_Rate_ave", startRow=4)
-RenovRate_Ave.450_NR = read.xlsx(data_miti_NR, sheet = "Renov_Rate_ave", startRow=4)
-RenovRate_Ave.450_NIR = read.xlsx(data_miti_NIR, sheet = "Renov_Rate_ave", startRow=4)
-
-UEHeatCool_pc = read.xlsx(data_base, sheet = "UEHeatCool_pc", startRow=4)
-UEHeatCool_pc.450 = read.xlsx(data_miti, sheet = "UEHeatCool_pc", startRow=4)
-UEHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "UEHeatCool_pc", startRow=4)
-UEHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEHeatCool_pc", startRow=4)
-
-UEIntHeat = read.xlsx(data_base, sheet = "UEintHeat_Fut", startRow=4)
-UEIntHeat.450 = read.xlsx(data_miti, sheet = "UEintHeat_Fut", startRow=4)
-UEIntHeat.450_NR = read.xlsx(data_miti_NR, sheet = "UEintHeat_Fut", startRow=4)
-UEIntHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "UEintHeat_Fut", startRow=4)
-
-CO2EmisHeatCool_pc = read.xlsx(data_base, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CO2EmisHeatCool_pc.450 = read.xlsx(data_miti, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CO2EmisHeatCool_pc.450_NR = read.xlsx(data_miti_NR, sheet = "CO2EmisHeatCool_pc", startRow=4)
-CO2EmisHeatCool_pc.450_NIR = read.xlsx(data_miti_NIR, sheet = "CO2EmisHeatCool_pc", startRow=4)
-
-CostComponent = read.xlsx(data_base, sheet = "CostComponent", startRow=4)
-CostComponent.450 = read.xlsx(data_miti, sheet = "CostComponent", startRow=4)
-CostComponent.450_NR = read.xlsx(data_miti_NR, sheet = "CostComponent", startRow=4)
-CostComponent.450_NIR = read.xlsx(data_miti_NIR, sheet = "CostComponent", startRow=4)
-
-CCElec = read.xlsx(data_base, sheet = "CCElec", startRow=4)
-CCElec.450 = read.xlsx(data_miti, sheet = "CCElec", startRow=4)
-CCElec.450_NR = read.xlsx(data_miti_NR, sheet = "CCElec", startRow=4)
-CCElec.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCElec", startRow=4)
-
-CCSpaceHeat = read.xlsx(data_base, sheet = "CCSpaceHeat", startRow=4)
-CCSpaceHeat.450 = read.xlsx(data_miti, sheet = "CCSpaceHeat", startRow=4)
-CCSpaceHeat.450_NR = read.xlsx(data_miti_NR, sheet = "CCSpaceHeat", startRow=4)
-CCSpaceHeat.450_NIR = read.xlsx(data_miti_NIR, sheet = "CCSpaceHeat", startRow=4)
 #
 # ---- MUNGING ----
 # ---- ***Stocks ----

@@ -56,6 +56,7 @@ Floorspace = read.xlsx(data_Floorspace, sheet = "data")
 NoEffImp = read.xlsx(data_NoEffImp, sheet = "data")
 NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
+rm(data_full,data_Demand,data_Floorspace,data_NoEffImp,data_none,data_NoRetrofit)
 #
 # ---- MUNGING ----
 # Create Single Dataset
@@ -131,13 +132,13 @@ DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Varia
 
 #
 # ---- DATA AGGREGATION ----
-Stocks=subset(Stocks, Year %in% Years)
-InsulMS=subset(InsulMS, Year %in% Years)
-RenovRate=subset(RenovRate, Year %in% Years)
-UEIntHeat=subset(UEIntHeat, Year %in% Years)
-UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
-CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
-CostComponent=subset(CostComponent, Year %in% Years)
+# Stocks=subset(Stocks, Year %in% Years)
+# InsulMS=subset(InsulMS, Year %in% Years)
+# RenovRate=subset(RenovRate, Year %in% Years)
+# UEIntHeat=subset(UEIntHeat, Year %in% Years)
+# UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
+# CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
+# CostComponent=subset(CostComponent, Year %in% Years)
 
 RenovRate$Variable <- "RenovationRate"
 UEIntHeat$Variable <- "UeIntHeat"

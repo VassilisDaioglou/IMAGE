@@ -103,6 +103,22 @@ DATA.FE$Prim <- gsub("FEHeat","",DATA.FE$Prim,fixed=F)
 DATA.FE$Variable = substr(DATA.FE$Variable, start=1, stop=6)
 DATA.FE <- DATA.FE[c("Scenario","Region","Year","Variable","Prim","Unit","value")]
 
+DATA.FE <- spread(DATA.FE,Prim,value)
+DATA.FE = DATA.FE %>% mutate(Total = Coal + Elec + Gas + Hydrogen + ModBio + Oil + SecHeat + TradBio)
+DATA.FE = melt(DATA.FE, id.vars=c("Scenario","Region","Year","Variable","Unit"))
+colnames(DATA.FE)[6] <- "Prim"
+DATA.FE = subset(DATA.FE, !(Variable=="FECool"&(Prim=="Coal"|Prim=="Oil"|Prim=="Gas"|Prim=="TradBio"|
+                                                  Prim=="ModBio"|Prim=="Hydrogen"|Prim=="SecHeat"|Prim=="Total")))
+temp = subset(DATA.FE, Variable=="FECool"|(Variable=="FEHeat"&Prim=="Total"))
+temp$Prim <- "Total"
+temp = spread(temp,Variable,value)
+temp = temp %>% mutate(FECoolHeat = FECool + FEHeat)
+temp = melt(temp, id.vars=c("Scenario","Region","Year","Unit","Prim"))
+colnames(temp)[6] <- "Variable"
+  
+DATA.FE = rbind(DATA.FE,temp)
+rm(temp)
+
   # Carbon Contents
 DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
 
@@ -131,7 +147,6 @@ DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Varia
 # colnames(UEIntHeat)[5] <- "value"
 
 #
-# ---- DATA AGGREGATION ----
 # Stocks=subset(Stocks, Year %in% Years)
 # InsulMS=subset(InsulMS, Year %in% Years)
 # RenovRate=subset(RenovRate, Year %in% Years)
@@ -139,32 +154,6 @@ DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Varia
 # UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
 # CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
 # CostComponent=subset(CostComponent, Year %in% Years)
-
-RenovRate$Variable <- "RenovationRate"
-UEIntHeat$Variable <- "UeIntHeat"
-UEHeatCool_pc$Variable <- "HeatCoolDemand_pc"
-CO2EmisHeatCool_pc$Variable <- "ResiCO2EmisHeatCool"
-
-DATA.TRQS = rbind(RenovRate,UEIntHeat,UEHeatCool_pc,CO2EmisHeatCool_pc) 
-colnames(DATA.TRQS)[4] <- "TURQ"
-
-DATA.TRQS$Var_Order <- factor(DATA.TRQS$Variable, level=c("RenovationRate",
-                                                          "UeIntHeat",
-                                                          "HeatCoolDemand_pc",
-                                                          "ResiCO2EmisHeatCool"))
-
-DATA.TRQS$Reg_Order <- factor(DATA.TRQS$Region, level=c("2",
-                                                          "5",
-                                                          "10",
-                                                          "11",
-                                                          "16",
-                                                          "18",
-                                                          "20",
-                                                          "27"))
-
-DATA.TS = subset(DATA.TRQS, Region == 27&TURQ == "Total")
-DATA.TS$TURQ <- NULL
-DATA.TRQS = subset(DATA.TRQS, Region %in% Regions)
 
 #
 # ---- EFFECT ON DEMAND ----

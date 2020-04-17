@@ -58,203 +58,77 @@ NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
 #
 # ---- MUNGING ----
-# ---- ***Stocks ----
-Stocks$Scen <- "SSP2"
-Stocks.450$Scen <- "SSP2_450"
-Stocks.450_NR$Scen <- "SSP2_450_NR"
-Stocks.450_NIR$Scen <- "SSP2_450_NIR"
-Stocks = rbind(Stocks,Stocks.450,Stocks.450_NR,Stocks.450_NIR)
-rm(Stocks.450,Stocks.450_NR,Stocks.450_NIR)
+# Create Single Dataset
+full = melt(full, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+none = melt(none, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Demand = melt(Demand, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Floorspace = melt(Floorspace, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+NoEffImp = melt(NoEffImp, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+NoRetrofit = melt(NoRetrofit, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
-colnames(Stocks)[1:9] <- c("Year","Region","TURQ",
-                           "1","2","3","4","5","6")
-Stocks = melt(Stocks, id.vars=c("Year","Region","TURQ","Scen"))
-colnames(Stocks)[5] <- "EffLevel" 
-Stocks$value <- Stocks$value / 1e9
-#
-# ---- ***Insulation Market Shares ----
-InsulMS$Scen <- "SSP2"
-InsulMS.450$Scen <- "SSP2_450"
-InsulMS.450_NR$Scen <- "SSP2_450_NR"
-InsulMS.450_NIR$Scen <- "SSP2_450_NIR"
-InsulMS = rbind(InsulMS,InsulMS.450,InsulMS.450_NR,InsulMS.450_NIR)
-rm(InsulMS.450,InsulMS.450_NR,InsulMS.450_NIR)
+DATA = rbind(full,none,Demand,Floorspace,NoEffImp,NoRetrofit)
+rm(full,none,Demand,Floorspace,NoEffImp,NoRetrofit)
+DATA$Model <- NULL
+colnames(DATA)[5] <- "Year"
 
-colnames(InsulMS)[1:9] <- c("Year","Region","TURQ",
-                           "1","2","3","4","5","6")
-InsulMS = melt(InsulMS, id.vars=c("Year","Region","TURQ","Scen"))
-colnames(InsulMS)[5] <- "EffLevel" 
-#
-# ---- ***Renovation Rates ----
-  # Renovation Rate (Annual)
-RenovRate$Scen <- "SSP2"
-RenovRate.450$Scen <- "SSP2_450"
-RenovRate.450_NR$Scen <- "SSP2_450_NR"
-RenovRate.450_NIR$Scen <- "SSP2_450_NIR"
-RenovRate = rbind(RenovRate,RenovRate.450,RenovRate.450_NR,RenovRate.450_NIR)
-rm(RenovRate.450, RenovRate.450_NR, RenovRate.450_NIR)
+# Rename Variables
+DATA$Variable <- gsub("[[:punct:]]","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Final Energy","FE",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Useful Energy","UE",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Carbon Content","CC",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Electricity","Elec",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Heating","Heat",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Cooling","Cool",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Secondary Heat","SecHeat",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Modern Biomass","ModBio",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Traditional Biomass","TradBio",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Insulation","Insul",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Investments","Inv",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Intensity","Int",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Emissions","Emis",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Renovation","Renov",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("and","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("per capita","pc",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("per floorspace","pfs",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
-colnames(RenovRate)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                               "U1","U2","U3","U4","U5",
-                               "R1","R2","R3","R4","R5")
-RenovRate = melt(RenovRate, id.vars=c("Year","Region","Scen"))
-RenovRate$value <- RenovRate$value * 100
-#
-  # Total Renovation Rate
-RenovRate_Ave$Scen <- "SSP2"
-RenovRate_Ave.450$Scen <- "SSP2_450"
-RenovRate_Ave.450_NR$Scen <- "SSP2_450_NR"
-RenovRate_Ave.450_NIR$Scen <- "SSP2_450_NIR"
-RenovRate_Ave = rbind(RenovRate_Ave,RenovRate_Ave.450,RenovRate_Ave.450_NR,RenovRate_Ave.450_NIR)
-rm(RenovRate_Ave.450, RenovRate_Ave.450_NR,RenovRate_Ave.450_NIR)
+# Separate datasets
+  # Final Energy
+DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElec"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
+                 |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
+DATA.FE$Prim <- DATA.FE$Variable
+DATA.FE$Prim <- gsub("FECool","",DATA.FE$Prim,fixed=F)
+DATA.FE$Prim <- gsub("FEHeat","",DATA.FE$Prim,fixed=F)
+DATA.FE$Variable = substr(DATA.FE$Variable, start=1, stop=6)
+DATA.FE <- DATA.FE[c("Scenario","Region","Year","Variable","Prim","Unit","value")]
 
-colnames(RenovRate_Ave)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                               "U1","U2","U3","U4","U5",
-                               "R1","R2","R3","R4","R5")
-RenovRate_Ave = melt(RenovRate_Ave, id.vars=c("Year","Region","Scen"))
-RenovRate_Ave = subset(RenovRate_Ave, Year==2100)
-RenovRate_Ave$value <- RenovRate_Ave$value * 100
-RenovRate_Ave = spread(RenovRate_Ave,Scen,value)
-RenovRate_Ave = RenovRate_Ave %>% mutate (MitigEffect = SSP2_450-SSP2)
-# ---- ***Heating Useful Energy Intensity ----
-UEIntHeat$Scen <- "SSP2"
-UEIntHeat.450$Scen <- "SSP2_450"
-UEIntHeat.450_NR$Scen <- "SSP2_450_NR"
-UEIntHeat.450_NIR$Scen <- "SSP2_450_NIR"
-UEIntHeat = rbind(UEIntHeat,UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NIR)
-rm(UEIntHeat.450,UEIntHeat.450_NR,UEIntHeat.450_NIR)
+  # Carbon Contents
+DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
 
-colnames(UEIntHeat)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                               "U1","U2","U3","U4","U5",
-                               "R1","R2","R3","R4","R5")
-UEIntHeat = melt(UEIntHeat, id.vars=c("Year","Region","Scen"))
+  # Floorspace
+DATA.FS <- subset(DATA, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloorspaceLevel2"|Variable=="InsulFloorspaceLevel3"|
+                    Variable=="InsulFloorspaceLevel4"|Variable=="InsulFloorspaceLevel5"|Variable=="InsulFloorspaceLevel6")
+DATA.FS$InsulLevel <- DATA.FS$Variable
+DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
+DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
+DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value")]
+
+  # Investments
+DATA.INV <- subset(DATA, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
+
+  # Useful Energy
+DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Variable=="UEHeatCool"|Variable=="UEIntHeat")
 
   # Normalise to 2020 value
-UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
-UEIntHeat.2010 = subset(UEIntHeat, Year==2010)
-UEIntHeat$val_2010 <- UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
-rm(UEIntHeat.2010)
-UEIntHeat = UEIntHeat %>% mutate(Normalised_2010 = value/val_2010)
+# UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
+# UEIntHeat.2010 = subset(UEIntHeat, Year==2010)
+# UEIntHeat$val_2010 <- UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
+# rm(UEIntHeat.2010)
+# UEIntHeat = UEIntHeat %>% mutate(Normalised_2010 = value/val_2010)
+# 
+# UEIntHeat = subset(UEIntHeat, select=-c(value,ID,val_2010))
+# colnames(UEIntHeat)[5] <- "value"
 
-UEIntHeat = subset(UEIntHeat, select=-c(value,ID,val_2010))
-colnames(UEIntHeat)[5] <- "value"
-
-#
-# ---- ***Heating+Cooling Energy USe ----
-UEHeatCool_pc$Scen <- "SSP2"
-UEHeatCool_pc.450$Scen <- "SSP2_450"
-UEHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-UEHeatCool_pc.450_NIR$Scen <- "SSP2_450_NIR"
-UEHeatCool_pc = rbind(UEHeatCool_pc,UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NIR)
-rm(UEHeatCool_pc.450,UEHeatCool_pc.450_NR,UEHeatCool_pc.450_NIR)
-
-colnames(UEHeatCool_pc)[1:15] <- c("Year","Region","Total","Urban","Rural",
-                                "U1","U2","U3","U4","U5",
-                                "R1","R2","R3","R4","R5")
-
-UEHeatCool_pc = melt(UEHeatCool_pc, id.vars=c("Year","Region","Scen"))
-
-  # Normalise to 2010 value
-UEHeatCool_pc$ID <- paste(UEHeatCool_pc$Region,UEHeatCool_pc$Scen,UEHeatCool_pc$variable)
-UEHeatCool_pc.2010 = subset(UEHeatCool_pc, Year==2010)
-UEHeatCool_pc$val_2010 <- UEHeatCool_pc.2010[match(UEHeatCool_pc$ID, UEHeatCool_pc.2010$ID),"value"]
-rm(UEHeatCool_pc.2010)
-UEHeatCool_pc = UEHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
-
-UEHeatCool_pc = subset(UEHeatCool_pc, select=-c(value,ID,val_2010))
-colnames(UEHeatCool_pc)[5] <- "value"
-
-#
-# ---- ***CO2 Emissions ----
-CO2EmisHeatCool_pc$Scen <- "SSP2"
-CO2EmisHeatCool_pc.450$Scen <- "SSP2_450"
-CO2EmisHeatCool_pc.450_NR$Scen <- "SSP2_450_NR"
-CO2EmisHeatCool_pc.450_NIR$Scen <- "SSP2_450_NIR"
-CO2EmisHeatCool_pc = rbind(CO2EmisHeatCool_pc,CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NIR)
-rm(CO2EmisHeatCool_pc.450,CO2EmisHeatCool_pc.450_NR,CO2EmisHeatCool_pc.450_NIR)
-
-colnames(CO2EmisHeatCool_pc)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
-                                        11,12,13,14,15,16,17,18,19,20,
-                                        21,22,23,24,25,26,27)
-CO2EmisHeatCool_pc = melt(CO2EmisHeatCool_pc, id.vars=c("Year","Scen"))
-colnames(CO2EmisHeatCool_pc)[3] <- c("Region")
-CO2EmisHeatCool_pc$variable <- "Total"
-
-  # Normalise to 2020 value
-CO2EmisHeatCool_pc$ID <- paste(CO2EmisHeatCool_pc$Region,CO2EmisHeatCool_pc$Scen,CO2EmisHeatCool_pc$variable)
-CO2EmisHeatCool_pc.2010 = subset(CO2EmisHeatCool_pc, Year==2010)
-CO2EmisHeatCool_pc$val_2010 <- CO2EmisHeatCool_pc.2010[match(CO2EmisHeatCool_pc$ID, CO2EmisHeatCool_pc.2010$ID),"value"]
-rm(CO2EmisHeatCool_pc.2010)
-CO2EmisHeatCool_pc = CO2EmisHeatCool_pc %>% mutate(Normalised_2010 = value/val_2010)
-
-CO2EmisHeatCool_pc = subset(CO2EmisHeatCool_pc, select=-c(value,ID,val_2010))
-colnames(CO2EmisHeatCool_pc)[5] <- "value"
-
-#
-# ---- ***Emission Factors ----
-  # Electricity
-CCElec$Scen <- "SSP2"
-CCElec.450$Scen <- "SSP2_450"
-CCElec = rbind(CCElec,CCElec.450)
-rm(CCElec.450)
-
-colnames(CCElec)[1:28] <- c("Year",1,2,3,4,5,6,7,8,9,10,
-                                        11,12,13,14,15,16,17,18,19,20,
-                                        21,22,23,24,25,26,27)
-CCElec = melt(CCElec, id.vars=c("Year","Scen"))
-colnames(CCElec)[3] <- c("Region")
-CCElec$variable <- "CCElec"
-
-  # Space Heating
-CCSpaceHeat$Scen <- "SSP2"
-CCSpaceHeat.450$Scen <- "SSP2_450"
-CCSpaceHeat.450_NIR$Scen <- "SSP2_450_NIR"
-CCSpaceHeat = rbind(CCSpaceHeat,CCSpaceHeat.450,CCSpaceHeat.450_NIR)
-rm(CCSpaceHeat.450,CCSpaceHeat.450_NIR)
-
-colnames(CCSpaceHeat)[1:3] <- c("Year","Region","Total")
-CCSpaceHeat = subset(CCSpaceHeat, select = c(Year,Region,Total,Scen))
-colnames(CCSpaceHeat)[3] <- "value"
-CCSpaceHeat$variable <- "CCSpaceHeat"
-
-  # Combined
-CC = rbind(CCElec,CCSpaceHeat)
-rm(CCElec,CCSpaceHeat)
-#
-# ---- ***Cost Components ----
-CostComponent$Scen <- "SSP2"
-CostComponent.450$Scen <- "SSP2_450"
-CostComponent.450_NR$Scen <- "SSP2_450_NR"
-CostComponent.450_NIR$Scen <- "SSP2_450_NIR"
-CostComponent$class_.4 <-NULL
-CostComponent.450$class_.4 <-NULL
-CostComponent.450_NR$class_.4 <-NULL
-CostComponent.450_NIR$class_.4 <-NULL
-
-CostComponent = rbind(CostComponent,CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
-rm(CostComponent.450,CostComponent.450_NR,CostComponent.450_NIR)
-
-colnames(CostComponent)[1:8] <- c("Year","Region","TURQ","EffLevel",
-                                   "Capital","HeatingFuel","CoolingFuel","Scen")
-CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel"))
-
-  # Make relative to 2020 total of EffLevel = 1
-CostComponent.2020 = subset(CostComponent, Year==2020&EffLevel==1)
-CostComponent.2020 = spread(CostComponent.2020,variable,value)
-CostComponent.2020 = CostComponent.2020 %>% mutate(Total=Capital+HeatingFuel+CoolingFuel)
-CostComponent.2020$ID = paste(CostComponent.2020$Region,"-",CostComponent.2020$TURQ,CostComponent.2020$Scen)
-
-CostComponent = spread(CostComponent,variable,value)
-CostComponent$ID = paste(CostComponent$Region,"-",CostComponent$TURQ,CostComponent$Scen)
-CostComponent$Tot2020 <- CostComponent.2020[match(CostComponent$ID,CostComponent.2020$ID),9]
-CostComponent$ID <- NULL
-rm(CostComponent.2020)
-
-CostComponent = CostComponent %>% mutate(CapitalNorm = Capital / Tot2020)
-CostComponent = CostComponent %>% mutate(HeatFNorm = HeatingFuel / Tot2020)
-CostComponent = CostComponent %>% mutate(CoolFNorm = CoolingFuel / Tot2020)
-CostComponent$Tot2020 <- NULL
-CostComponent = melt(CostComponent, id.vars=c("Year","Region","TURQ","Scen","EffLevel"))
 #
 # ---- DATA AGGREGATION ----
 Stocks=subset(Stocks, Year %in% Years)

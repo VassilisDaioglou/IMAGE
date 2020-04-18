@@ -112,7 +112,7 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
 # Separate datasets
-  # Final Energy
+# ---- ***Final Energy*** ----
 DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElec"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
 DATA.FE$Prim <- DATA.FE$Variable
@@ -137,10 +137,10 @@ colnames(temp)[6] <- "Variable"
 DATA.FE = rbind(DATA.FE,temp)
 rm(temp)
 
-  # Carbon Contents
+# ---- ***Carbon Contents*** ----
 DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
 
-  # Floorspace
+# ---- ***Floorspace*** ----
 DATA.FS <- subset(DATA, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloorspaceLevel2"|Variable=="InsulFloorspaceLevel3"|
                     Variable=="InsulFloorspaceLevel4"|Variable=="InsulFloorspaceLevel5"|Variable=="InsulFloorspaceLevel6")
 DATA.FS$InsulLevel <- DATA.FS$Variable
@@ -148,11 +148,19 @@ DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
 DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
 DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value")]
 
-  # Investments
+# ---- ***Investments*** ----
 DATA.INV <- subset(DATA, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
 
-  # Useful Energy
+# ---- ***Useful Energy*** ----
 DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Variable=="UEHeatCool"|Variable=="UEIntHeat")
+  # Normalise to 2020 value
+DATA.UE$ID = paste(DATA.UE$Scenario,DATA.UE$Region,DATA.UE$Variable)
+DATA.UE2020 = subset(DATA.UE, Year==2020)
+DATA.UE$val_2020 <- DATA.UE2020[match(DATA.UE$ID, DATA.UE2020$ID),"value"]
+rm(DATA.UE2020)
+DATA.UE = DATA.UE %>% mutate(Normalised_2020 = value/val_2020)
+DATA.UE$ID <- NULL
+DATA.UE$val_2020 <- NULL
 
   # Normalise to 2020 value
 # UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
@@ -259,11 +267,11 @@ Stck.R
 #
 # ---- FIG: UE Intensity ----
 UEInt.S <- ggplot(data=subset(DATA.UE, Variable=="UEIntHeat" & Year %in% ActiveYears & Region==ActiveRegion & Scenario %in% ScenariosInsul)
-                , aes(x=Year,y = value, colour=Scenario)) + 
+                , aes(x=Year,y = Normalised_2020, colour=Scenario)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   # ylim(0,1.2) +
-  xlab("") + ylab("kJ/m^2/HDD") +
+  xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -400,10 +408,10 @@ CCFig
 # plot(Stck.S)
 # dev.off()
 # #
-# png(file = "output/BuildStocks/UEInt_S.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/UEInt_S.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(UEInt.S)
 # dev.off()
-# #
+#
 
 
 

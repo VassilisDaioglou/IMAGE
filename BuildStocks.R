@@ -17,7 +17,8 @@
 # 4. Demand (Reduced demand of energy services in residential sector)	
 # 5. Floorspace (Reduced residential floorspace)
 # 6. Full (Demand + Floorspace from above)	
-
+#
+# All Scenarios are also repeated for a mitigation scenario (450)
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -47,16 +48,26 @@ ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","
 
 ActiveRegion <- "World"
 
-Scenarios = c("Baseline","Full","Demand","Floorspace","NoEffImp","NoRetrofit")
-ScenariosInsul = c("Baseline","NoEffImp","NoRetrofit")
-ScenariosBehav = c("Baseline","Demand","Floorspace","Full")
+Scenarios = c("Baseline","Full","Demand","Floorspace","NoEffImp","NoRetrofit",
+              "Baseline_450","Full_450","Demand_450","Floorspace_450","NoEffImp_450","NoRetrofit_450")
+ScenariosInsul = c("Baseline","NoEffImp","NoRetrofit",
+                   "Baseline_450","NoEffImp_450","NoRetrofit_450")
+ScenariosBehav = c("Baseline","Demand","Floorspace","Full",
+                   "Baseline_450","Demand_450","Floorspace_450","Full_450")
 
-data_Baseline <- "data/BuildStocks/BuildingStocks/Baseline.xlsx"
-data_Full <- "data/BuildStocks/BuildingStocks/Full.xlsx"
-data_Demand <- "data/BuildStocks/BuildingStocks/Demand.xlsx"
-data_Floorspace <- "data/BuildStocks/BuildingStocks/Floorspace.xlsx"
-data_NoEffImp <- "data/BuildStocks/BuildingStocks/NoEffImp.xlsx"
-data_NoRetrofit <- "data/BuildStocks/BuildingStocks/NoRetrofit.xlsx"
+data_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
+data_Full <- "data/BuildStocks/BuildingStocks/SSP2_Full.xlsx"
+data_Demand <- "data/BuildStocks/BuildingStocks/SSP2_Demand.xlsx"
+data_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_Floorspace.xlsx"
+data_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_NoEffImp.xlsx"
+data_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_NoRetrofit.xlsx"
+
+data_mitig_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
+data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_Full.xlsx"
+data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_Demand.xlsx"
+data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_Floorspace.xlsx"
+data_mitig_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_NoEffImp.xlsx"
+data_mitig_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_NoRetrofit.xlsx"
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -72,7 +83,15 @@ Floorspace = read.xlsx(data_Floorspace, sheet = "data")
 NoEffImp = read.xlsx(data_NoEffImp, sheet = "data")
 NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
-rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_NoEffImp,data_NoRetrofit)
+Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
+Baseline_450 = read.xlsx(data_mitig_Baseline, sheet = "data")
+Demand_450 = read.xlsx(data_mitig_Demand, sheet = "data")
+Floorspace_450 = read.xlsx(data_mitig_Floorspace, sheet = "data")
+NoEffImp_450 = read.xlsx(data_mitig_NoEffImp, sheet = "data")
+NoRetrofit_450 = read.xlsx(data_mitig_NoRetrofit, sheet = "data")
+
+rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_NoEffImp,data_NoRetrofit,
+   data_mitig_Baseline,data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,data_mitig_NoEffImp,data_mitig_NoRetrofit)
 #
 # ---- MUNGING ----
 # Create Single Dataset
@@ -83,8 +102,17 @@ Floorspace = melt(Floorspace, id.vars=c("Model","Scenario","Region","Variable","
 NoEffImp = melt(NoEffImp, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 NoRetrofit = melt(NoRetrofit, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
-DATA = rbind(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit)
-rm(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit)
+Baseline_450 = melt(Baseline_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Full_450 = melt(Full_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Demand_450 = melt(Demand_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Floorspace_450 = melt(Floorspace_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+NoEffImp_450 = melt(NoEffImp_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+NoRetrofit_450 = melt(NoRetrofit_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+
+DATA = rbind(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit,
+             Baseline_450,Full_450,Demand_450,Floorspace_450,NoEffImp_450,NoRetrofit_450)
+rm(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit,
+             Baseline_450,Full_450,Demand_450,Floorspace_450,NoEffImp_450,NoRetrofit_450)
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"
 
@@ -207,13 +235,12 @@ scen_labels <-c("Baseline"="Baseline",
                 "Floorspace"="Constant \nFloorspace",
                 "NoEffImp"="No Efficiency \nImprovement",
                 "NoRetrofit"="No \nRetrofit",
-                "SSP1_450"="SSP1 - 2°C",
-                "SSP2_450"="Mitig.",
-                "SSP1_20"="SSP1 - 1.5°C",
-                "SSP2_20"="SSP2 - 1.5°C",
-                "SSP2_450_NR"="Mitig. No Renov.",
-                "SSP2_450_NFS"="Mitig. No Fuel Switching",
-                "SSP2_450_NIR"="Mitig. No Insulation Improv.")
+                "Baseline_450"="Baseline - 2°C",
+                "Full_450"="Full - 2°C",
+                "Demand_450"="Demand - 2°C",
+                "Floorspace_450"="Constant \nFloorspace - 2°C",
+                "NoEffImp_450"="No Efficiency \nImprovement - 2°C",
+                "NoRetrofit_450"="No \nRetrofit - 2°C")
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",

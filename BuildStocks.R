@@ -1,8 +1,23 @@
-# R script to process the results of the TIMER Building Stocks & Renovation represetnation
+# ---- INFORMATION ----
+# R script to process the results of the TIMER Building Stocks & Renovation 
 # Vassilis Daioglou, November 2019
 # 
 #  Make appropriate to read IAMC template outputs
 #  Vassilis Daioglou, April 2020
+#
+# This script processes and presents the results of a number of scenarios 
+# Aimed at showing the impacts on energy use and CO2 emissions of:
+# (i) Building insulation and renovation
+# (ii) How these contrast behavioural (demand) changes
+# 
+# For this a number of scenarios are run with TIMER:
+# 1. Baseline (SSP2)
+# 2. NoEffImp (No improvements in building shell efficiency COMPARED TO BASELINE!!)
+# 3. NoRetrofit (No retrofits - but improvements of marginal stock allowed)
+# 4. Demand (Reduced demand of energy services in residential sector)	
+# 5. Floorspace (Reduced residential floorspace)
+# 6. Full (Demand + Floorspace from above)	
+
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -32,12 +47,12 @@ ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","
 
 ActiveRegion <- "World"
 
-ScenariosInsul = c("Full","NoEffImp","NoRetrofit")
+Scenarios = c("Baseline","Full","Demand","Floorspace","NoEffImp","NoRetrofit")
+ScenariosInsul = c("Baseline","NoEffImp","NoRetrofit")
+ScenariosBehav = c("Baseline","Demand","Floorspace","Full")
 
-Scenarios = c("Full","none","Demand","Floorspace","NoEffImp","NoRetrofit")
-
-data_full <- "data/BuildStocks/BuildingStocks/Full.xlsx"
-data_none <- "data/BuildStocks/BuildingStocks/none.xlsx"
+data_Baseline <- "data/BuildStocks/BuildingStocks/Baseline.xlsx"
+data_Full <- "data/BuildStocks/BuildingStocks/Full.xlsx"
 data_Demand <- "data/BuildStocks/BuildingStocks/Demand.xlsx"
 data_Floorspace <- "data/BuildStocks/BuildingStocks/Floorspace.xlsx"
 data_NoEffImp <- "data/BuildStocks/BuildingStocks/NoEffImp.xlsx"
@@ -50,26 +65,26 @@ options(java.parameters = "-Xmx8000m")
   # set directory path 
 setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
-full = read.xlsx(data_full, sheet = "data")
-none = read.xlsx(data_none, sheet = "data")
+Full = read.xlsx(data_Full, sheet = "data")
+Baseline = read.xlsx(data_Baseline, sheet = "data")
 Demand = read.xlsx(data_Demand, sheet = "data")
 Floorspace = read.xlsx(data_Floorspace, sheet = "data")
 NoEffImp = read.xlsx(data_NoEffImp, sheet = "data")
 NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
-rm(data_full,data_Demand,data_Floorspace,data_NoEffImp,data_none,data_NoRetrofit)
+rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_NoEffImp,data_NoRetrofit)
 #
 # ---- MUNGING ----
 # Create Single Dataset
-full = melt(full, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-none = melt(none, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Baseline = melt(Baseline, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+Full = melt(Full, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 Demand = melt(Demand, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 Floorspace = melt(Floorspace, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 NoEffImp = melt(NoEffImp, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 NoRetrofit = melt(NoRetrofit, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
-DATA = rbind(full,none,Demand,Floorspace,NoEffImp,NoRetrofit)
-rm(full,none,Demand,Floorspace,NoEffImp,NoRetrofit)
+DATA = rbind(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit)
+rm(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit)
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"
 
@@ -95,7 +110,6 @@ DATA$Variable <- gsub("per floorspace","pfs",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
-
 
 # Separate datasets
   # Final Energy
@@ -179,8 +193,8 @@ DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Varia
 # DATA.TRQS$Max <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),8]
 
 # ---- LABELS ----
-scen_labels <-c("Full"="Full",
-                "none"="None",
+scen_labels <-c("Baseline"="Baseline",
+                "Full"="Full",
                 "Demand"="Demand",
                 "Floorspace"="Constant \nFloorspace",
                 "NoEffImp"="No Efficiency \nImprovement",
@@ -244,7 +258,7 @@ Stck.R
 
 #
 # ---- FIG: UE Intensity ----
-UEInt.S <- ggplot(data=subset(DATA.UE, Variable=="UEIntHeat" & Year %in% Years & Region==ActiveRegion & Scenario %in% ScenariosInsul)
+UEInt.S <- ggplot(data=subset(DATA.UE, Variable=="UEIntHeat" & Year %in% ActiveYears & Region==ActiveRegion & Scenario %in% ScenariosInsul)
                 , aes(x=Year,y = value, colour=Scenario)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
@@ -256,8 +270,8 @@ UEInt.S <- ggplot(data=subset(DATA.UE, Variable=="UEIntHeat" & Year %in% Years &
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","firebrick","forestgreen"),
                       name="",
-                      breaks=c("Full","NoEffImp","NoRetrofit"),
-                      labels=c("Full","No Improv. Insul.","No Retrofits")) +
+                      breaks=c("Baseline","NoEffImp","NoRetrofit"),
+                      labels=c("Baseline","No Improv. Insul.","No Retrofits")) +
   # facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.S
@@ -386,11 +400,13 @@ CCFig
 # plot(Stck.S)
 # dev.off()
 # #
-# #
-# png(file = "output/BuildStocks/UEIntGlobal.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(UEInt.SRT)
+# png(file = "output/BuildStocks/UEInt_S.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(UEInt.S)
 # dev.off()
 # #
+
+
+
 # png(file = "output/BuildStocks/Effect_Base.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(BaseEffect)
 # dev.off()

@@ -156,28 +156,31 @@ DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Varia
 # CostComponent=subset(CostComponent, Year %in% Years)
 
 #
-# ---- EFFECT ON DEMAND ----
-EneEffect = spread(UEHeatCool_pc,Scen,value)
-EneEffect = EneEffect %>% mutate(Tot_Mitig = SSP2 - SSP2_450)
-EneEffect = EneEffect %>% mutate(Eff_Mitig = SSP2_450_NIR - SSP2_450)
-EneEffect = EneEffect %>% mutate(Eff_Frac = Eff_Mitig / Tot_Mitig)
-
-test = subset(EneEffect, Year==2100 & Region %in% Regions & (variable=="Total"|variable=="Rural"|variable=="Urban"))
-#
-# MinMax dataframe for effect of insulation
-InsulMinMax = subset(DATA.TRQS, (Scen=="SSP2_450"|Scen=="SSP2_450_NIR")&(Variable=="HeatCoolDemand_pc"|Variable=="ResiCO2EmisHeatCool"))
-InsulMinMax = spread(InsulMinMax,Scen,value)
-InsulMinMax$ID = paste(InsulMinMax$Year,InsulMinMax$Region,InsulMinMax$TURQ,InsulMinMax$Variable)
-
-DATA.TRQS$ID = paste(DATA.TRQS$Year,DATA.TRQS$Region,DATA.TRQS$TURQ,DATA.TRQS$Variable)
-
-DATA.TRQS$Min <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),7]
-DATA.TRQS$Max <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),8]
+# ---- MITIGATION EFFECT ON DEMAND ----
+# EneEffect = spread(UEHeatCool_pc,Scen,value)
+# EneEffect = EneEffect %>% mutate(Tot_Mitig = SSP2 - SSP2_450)
+# EneEffect = EneEffect %>% mutate(Eff_Mitig = SSP2_450_NIR - SSP2_450)
+# EneEffect = EneEffect %>% mutate(Eff_Frac = Eff_Mitig / Tot_Mitig)
+# 
+# test = subset(EneEffect, Year==2100 & Region %in% Regions & (variable=="Total"|variable=="Rural"|variable=="Urban"))
+# #
+# # MinMax dataframe for effect of insulation
+# InsulMinMax = subset(DATA.TRQS, (Scen=="SSP2_450"|Scen=="SSP2_450_NIR")&(Variable=="HeatCoolDemand_pc"|Variable=="ResiCO2EmisHeatCool"))
+# InsulMinMax = spread(InsulMinMax,Scen,value)
+# InsulMinMax$ID = paste(InsulMinMax$Year,InsulMinMax$Region,InsulMinMax$TURQ,InsulMinMax$Variable)
+# 
+# DATA.TRQS$ID = paste(DATA.TRQS$Year,DATA.TRQS$Region,DATA.TRQS$TURQ,DATA.TRQS$Variable)
+# 
+# DATA.TRQS$Min <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),7]
+# DATA.TRQS$Max <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),8]
 
 # ---- LABELS ----
-scen_labels <-c("SSP1"="SSP1",
-                "SSP2"="Baseline",
-                "SSP3"="SSP3",
+scen_labels <-c("Full"="Full",
+                "none"="None",
+                "Demand"="Demand",
+                "Floorspace"="Constant \nFloorspace",
+                "NoEffImp"="No Efficiency \nImprovement",
+                "NoRetrofit"="No \nRetrofit",
                 "SSP1_450"="SSP1 - 2°C",
                 "SSP2_450"="Mitig.",
                 "SSP1_20"="SSP1 - 1.5°C",
@@ -186,14 +189,12 @@ scen_labels <-c("SSP1"="SSP1",
                 "SSP2_450_NFS"="Mitig. No Fuel Switching",
                 "SSP2_450_NIR"="Mitig. No Insulation Improv.")
 
-reg_labels <-c("2"="USA",
-               "5"="Brazil",
-               "10"="S. Africa",
-               "11"="W. Europe",
-               "16"="Russia",
-               "18"="India",
-               "20"="China",
-               "27"="World")
+reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
+               "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",
+               "MEX"="Mexico","NAF"="Northern Africa","OCE"="Oceania","RCAM"="Rest of Central America","RSAF"="Rest of Southern Africa",
+               "RSAM"="Rest of Southern America","RSAS"="Rest of Southern Asia","RUS"="Russia","SAF"="South Africa","SEAS"="Southeast Asia",
+               "STAN"="Kazakhstan +","TUR"="Turkey","UKR"="Ukraine","USA"="USA","WAF"="Western Africa","WEU"="Western Europe",
+               "World"="Global")
 
 var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "UeIntHeat"="Heating & Cooling \nIntensity (desired) \n(2010=1)",

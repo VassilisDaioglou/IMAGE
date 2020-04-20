@@ -62,12 +62,12 @@ data_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_Floorspace.xlsx"
 data_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_NoEffImp.xlsx"
 data_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_NoRetrofit.xlsx"
 
-data_mitig_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
-data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_Full.xlsx"
-data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_Demand.xlsx"
-data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_Floorspace.xlsx"
-data_mitig_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_NoEffImp.xlsx"
-data_mitig_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_NoRetrofit.xlsx"
+data_mitig_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_450_Baseline.xlsx"
+data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_450_Full.xlsx"
+data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_450_Demand.xlsx"
+data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_450_Floorspace.xlsx"
+data_mitig_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_450_NoEffImp.xlsx"
+data_mitig_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_450_NoRetrofit.xlsx"
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -189,25 +189,6 @@ rm(DATA.UE2020)
 DATA.UE = DATA.UE %>% mutate(Normalised_2020 = value/val_2020)
 DATA.UE$ID <- NULL
 DATA.UE$val_2020 <- NULL
-
-  # Normalise to 2020 value
-# UEIntHeat$ID <- paste(UEIntHeat$Region,UEIntHeat$Scen,UEIntHeat$variable)
-# UEIntHeat.2010 = subset(UEIntHeat, Year==2010)
-# UEIntHeat$val_2010 <- UEIntHeat.2010[match(UEIntHeat$ID, UEIntHeat.2010$ID),"value"]
-# rm(UEIntHeat.2010)
-# UEIntHeat = UEIntHeat %>% mutate(Normalised_2010 = value/val_2010)
-# 
-# UEIntHeat = subset(UEIntHeat, select=-c(value,ID,val_2010))
-# colnames(UEIntHeat)[5] <- "value"
-
-#
-# Stocks=subset(Stocks, Year %in% Years)
-# InsulMS=subset(InsulMS, Year %in% Years)
-# RenovRate=subset(RenovRate, Year %in% Years)
-# UEIntHeat=subset(UEIntHeat, Year %in% Years)
-# UEHeatCool_pc=subset(UEHeatCool_pc, Year %in% Years)
-# CO2EmisHeatCool_pc=subset(CO2EmisHeatCool_pc, Year %in% Years)
-# CostComponent=subset(CostComponent, Year %in% Years)
 
 #
 # ---- MITIGATION EFFECT ON DEMAND ----

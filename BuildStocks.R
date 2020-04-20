@@ -47,7 +47,7 @@ Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX",
 ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
 
 ActiveRegion <- "World"
-
+ActiveRegions =c("BRA","CHN","USA","WEU")
 Scenarios = c("SSP2_Baseline","SSP2_Full","SSP2_Demand","SSP2_Floorspace","SSP2_NoEffImp","SSP2_NoRetrofit",
               "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_NoEffImp","SSP2_450_NoRetrofit")
 
@@ -222,8 +222,8 @@ scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_Baseline"="Baseline  \n2°C",
                 "SSP2_450_Full"="Full \n2°C",
                 "SSP2_450_Demand"="Demand \n2°C",
-                "SSP2_450_Floorspace"="Constant \nFloorspace - 2°C",
-                "SSP2_450_NoEffImp"="No Efficiency \nImprovement - 2°C",
+                "SSP2_450_Floorspace"="Floorspace \n2°C",
+                "SSP2_450_NoEffImp"="No Eff. \nImprov. - 2°C",
                 "SSP2_450_NoRetrofit"="No Retrofit \n2°C")
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
@@ -239,7 +239,7 @@ var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
-cc_labels <-c("CCElec"="Electricity","CCSpaceHeat"="Heating Fuels")
+cc_labels <-c("CCElec"="Electricity","CCHeat"="Heating Fuels")
 
 # ---- FIGURES ----
 # ---- FIG: Stocks ----
@@ -289,13 +289,200 @@ UEInt.S <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & Variable=="UEIn
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("black","forestgreen","firebrick", "skyblue"),
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.S
+#
+# ---- FIG: UE Total ----
+UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)
+                       , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  xlim(2020,2100) +
+  xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_grid(Variable~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+UECoolHeat.SV
+
+UECoolHeat.SRV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region %in% ActiveRegions)
+                        , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  # xlim(2010,2100) +
+  xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+UECoolHeat.SRV
+
+# 
+# ---- FIG: FE Heat ----
+FEHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
+                  , aes(x=Year,y = value, fill=Prim)) + 
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  # ylim(0,1.2) +
+  xlab("") + ylab("GJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("black","gray","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
+                      name="",
+                      breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                      labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+  facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FEHeat.S
+
+FEHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & !(Prim=="Total"))
+                   , aes(x=Year,y = value/1e9, fill=Prim)) + 
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  # ylim(0,1.2) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("black","gray","navyblue","skyblue","forestgreen","purple","bisque","brown"),
+                      name="",
+                      breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                      labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+  facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FEHeat.SR
+
+#
+# ---- FIG: FE Cool ----
+FECool.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECool" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Elec")
+                   , aes(x=Year,y = value/1e9, colour=Prim)) + 
+  geom_line(size=1, alpha=1) +
+  # xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FECool.S
+
+FECool.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECool" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Elec")
+                   , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  # xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FECool.SR
+
+# 
+# ---- FIG: FE Total ----
+FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
+                   , aes(x=Year,y = value/1e9, colour=Prim)) + 
+  geom_line(size=1, alpha=1) +
+  # xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FECoolHeat.S
+
+FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Total")
+                    , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  # xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FECoolHeat.SR
+
+# 
+# ---- FIG: Carbon Contents ----
+CC.R <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & (Scenario=="SSP2_Baseline"|Scenario=="SSP2_450_Baseline"))
+                , aes(x=Year,y = value, colour=ScenOrder)) + 
+  geom_line(size=1,alpha=0.8) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  xlab("") + ylab("kgC/GJ") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("black","green3"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
+                      labels=c("Baseline","2°C")) +
+  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+CC.R
+
+
+CC.SRV <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & Scenario %in% ScenInsul)
+               , aes(x=Year,y = value, colour=ScenOrder)) + 
+  geom_line(size=1,alpha=0.8) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  xlab("") + ylab("kgC/GJ") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+CC.SRV
+
 #
 # ---- FIG: Combined Results ----
 BaseEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
@@ -392,26 +579,6 @@ AllEffect2 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
 AllEffect2
 
 #
-# ---- FIG: Carbon Contents ----
-CCFig <- ggplot(data=subset(CC, Region %in% Regions & (Scen=="SSP2"|Scen=="SSP2_450") & !(Region==27|Region==5))
-                 , aes(x=Year,y = value, colour=Scen)) + 
-  geom_line(size=1,alpha=1) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  xlab("") + ylab("kgC/GJ") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("navy","green3"),
-                      name="",
-                      breaks=c("SSP2","SSP2_450"),
-                      labels=c("Baseline","Mitig.")) +
-  facet_grid(variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels, variable=cc_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-CCFig
-
-#
 # # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Stocks_R.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Stck.R)
@@ -425,30 +592,25 @@ CCFig
 # plot(UEInt.S)
 # dev.off()
 # 
-
-
-
-# png(file = "output/BuildStocks/Effect_Base.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(BaseEffect)
-# dev.off()
-# # #
-# png(file = "output/BuildStocks/Effect_Mitig.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(MitigEffect)
-# dev.off()
-# #
-# png(file = "output/BuildStocks/Effect_All1.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(AllEffect1)
+# png(file = "output/BuildStocks/FEHeat_SR.png", width = 8*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(FEHeat.SR)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/Effect_All2.png", width = 10*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(AllEffect2)
+# png(file = "output/BuildStocks/FECool_SR.png", width = 8*ppi, height = 4*ppi, units = "px", res = ppi)
+# plot(FECool.SR)
 # dev.off()
-#
+# 
+# png(file = "output/BuildStocks/UECoolHeat_SRV.png", width = 8*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(UECoolHeat.SRV)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/CarbonContent_SRV.png", width = 8*ppi, height = 6*ppi, units = "px", res = ppi)
+# plot(CC.SRV)
+# dev.off()
+# 
 
-# png(file = "output/BuildStocks/CarbonContents.png", width = 6*ppi, height = 6*ppi, units = "px", res = ppi)
-# plot(CCFig)
-# dev.off()
-# #
+
+
 
 #
 # ---- FIG: Renovation Rate ----

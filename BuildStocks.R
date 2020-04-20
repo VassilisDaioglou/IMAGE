@@ -139,7 +139,10 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
-# Separate datasets
+DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline","SSP2_Demand","SSP2_Floorspace","SSP2_Full","SSP2_NoRetrofit","SSP2_NoEffImp",
+                                                 "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"))
+  
+  # Separate datasets
 # ---- ***Final Energy*** ----
 DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElec"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
@@ -147,20 +150,20 @@ DATA.FE$Prim <- DATA.FE$Variable
 DATA.FE$Prim <- gsub("FECool","",DATA.FE$Prim,fixed=F)
 DATA.FE$Prim <- gsub("FEHeat","",DATA.FE$Prim,fixed=F)
 DATA.FE$Variable = substr(DATA.FE$Variable, start=1, stop=6)
-DATA.FE <- DATA.FE[c("Scenario","Region","Year","Variable","Prim","Unit","value")]
+DATA.FE <- DATA.FE[c("Scenario","Region","Year","Variable","Prim","Unit","value","ScenOrder")]
 
 DATA.FE <- spread(DATA.FE,Prim,value)
 DATA.FE = DATA.FE %>% mutate(Total = Coal + Elec + Gas + Hydrogen + ModBio + Oil + SecHeat + TradBio)
-DATA.FE = melt(DATA.FE, id.vars=c("Scenario","Region","Year","Variable","Unit"))
-colnames(DATA.FE)[6] <- "Prim"
+DATA.FE = melt(DATA.FE, id.vars=c("Scenario","Region","Year","Variable","Unit","ScenOrder"))
+colnames(DATA.FE)[7] <- "Prim"
 DATA.FE = subset(DATA.FE, !(Variable=="FECool"&(Prim=="Coal"|Prim=="Oil"|Prim=="Gas"|Prim=="TradBio"|
                                                   Prim=="ModBio"|Prim=="Hydrogen"|Prim=="SecHeat"|Prim=="Total")))
 temp = subset(DATA.FE, Variable=="FECool"|(Variable=="FEHeat"&Prim=="Total"))
 temp$Prim <- "Total"
 temp = spread(temp,Variable,value)
 temp = temp %>% mutate(FECoolHeat = FECool + FEHeat)
-temp = melt(temp, id.vars=c("Scenario","Region","Year","Unit","Prim"))
-colnames(temp)[6] <- "Variable"
+temp = melt(temp, id.vars=c("Scenario","Region","Year","Unit","Prim","ScenOrder"))
+colnames(temp)[7] <- "Variable"
   
 DATA.FE = rbind(DATA.FE,temp)
 rm(temp)
@@ -174,7 +177,7 @@ DATA.FS <- subset(DATA, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloors
 DATA.FS$InsulLevel <- DATA.FS$Variable
 DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
 DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
-DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value")]
+DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value","ScenOrder")]
 
 # ---- ***Investments*** ----
 DATA.INV <- subset(DATA, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
@@ -216,12 +219,12 @@ scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_Floorspace"="Constant \nFloorspace",
                 "SSP2_NoEffImp"="No Efficiency \nImprovement",
                 "SSP2_NoRetrofit"="No \nRetrofit",
-                "SSP2_450_Baseline"="Baseline - 2°C",
-                "SSP2_450_Full"="Full - 2°C",
-                "SSP2_450_Demand"="Demand - 2°C",
+                "SSP2_450_Baseline"="Baseline  \n2°C",
+                "SSP2_450_Full"="Full \n2°C",
+                "SSP2_450_Demand"="Demand \n2°C",
                 "SSP2_450_Floorspace"="Constant \nFloorspace - 2°C",
                 "SSP2_450_NoEffImp"="No Efficiency \nImprovement - 2°C",
-                "SSP2_450_NoRetrofit"="No \nRetrofit - 2°C")
+                "SSP2_450_NoRetrofit"="No Retrofit \n2°C")
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",
@@ -240,7 +243,8 @@ cc_labels <-c("CCElec"="Electricity","CCSpaceHeat"="Heating Fuels")
 
 # ---- FIGURES ----
 # ---- FIG: Stocks ----
-Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
+Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), 
+                 aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
   geom_bar(stat="identity") +
   # xlim(2010,2100) +
   xlab("") + ylab("bill. m^2") +
@@ -252,7 +256,7 @@ Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% Acti
                       name="",
                       breaks=c("1","2","3","4","5","6"),
                       labels=c("1","2","3","4","5","6")) +
-  facet_grid(.~Scenario, scales="free_y", labeller=labeller(Region=reg_labels, Scenario=scen_labels)) + 
+  facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.S
 
@@ -275,19 +279,20 @@ Stck.R
 #
 # ---- FIG: UE Intensity ----
 UEInt.S <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & Variable=="UEIntHeat" & Year %in% ActiveYears & Region==ActiveRegion)
-                , aes(x=Year,y = Normalised_2020, colour=Scenario)) + 
+                , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
   # ylim(0,1.2) +
   xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("black","firebrick","forestgreen", "cyan"),
+  scale_colour_manual(values=c("black","forestgreen","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_Baseline","SSP2_450_NoEffImp","SSP2_450_NoRetrofit"),
-                      labels=c("Baseline","Baseline - 2°C","No Improv. Insul. - 2°C","No Retrofits - 2°C")) +
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UEInt.S
@@ -419,7 +424,7 @@ CCFig
 # png(file = "output/BuildStocks/UEInt_S.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(UEInt.S)
 # dev.off()
-#
+# 
 
 
 

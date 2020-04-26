@@ -194,6 +194,9 @@ DATA.UE$ID <- NULL
 DATA.UE$val_2020 <- NULL
 
 #
+# ---- ***Emissions*** ----
+DATA.EM <- subset(DATA, Variable=="EmisCO2HeatCool")
+
 # ---- MITIGATION EFFECT ON DEMAND ----
 # EneEffect = spread(UEHeatCool_pc,Scen,value)
 # EneEffect = EneEffect %>% mutate(Tot_Mitig = SSP2 - SSP2_450)
@@ -411,7 +414,7 @@ FECool.SR
 # 
 # ---- FIG: FE Total ----
 FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
-                   , aes(x=Year,y = value/1e9, colour=Prim)) + 
+                   , aes(x=Year,y = value/1e9, colour=Scenario)) + 
   geom_line(size=1, alpha=1) +
   # xlim(2010,2100) +
   xlab("") + ylab("EJ/yr") +
@@ -444,7 +447,67 @@ FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FECoolHeat.SR
 
+FECoolHeat.SRC <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FECoolHeat" & Year %in% ActiveYears 
+                                     & Region %in% ActiveRegions)
+                    , aes(x=Year,y = value/1e9, fill=Prim)) + 
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  # ylim(0,1.2) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("black","gray","navyblue","skyblue","forestgreen","purple","bisque","brown"),
+                    name="",
+                    breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                    labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+  facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FECoolHeat.SRC
+
+
 # 
+# ---- FIG: Emissions ----
+Emis.S <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region==ActiveRegion)
+                  , aes(x=Year,y = value, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  # ylim(0,1.2) +
+  xlab("") + ylab("kcCO2/cap") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  # facet_wrap(Region~., nrow=3) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Emis.S
+
+Emis.SR <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region %in% ActiveRegions)
+                 , aes(x=Year,y = value, colour=ScenOrder)) + 
+  geom_line(size=1, alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  # ylim(0,1.2) +
+  xlab("") + ylab("kcCO2/cap") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+  facet_wrap(Region~., nrow=1) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Emis.SR
+
 # ---- FIG: Carbon Contents ----
 CC.R <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & (Scenario=="SSP2_Baseline"|Scenario=="SSP2_450_Baseline"))
                 , aes(x=Year,y = value, colour=ScenOrder)) + 

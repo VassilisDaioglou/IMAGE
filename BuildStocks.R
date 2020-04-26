@@ -144,7 +144,7 @@ DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline","SSP2_Demand","
   
   # Separate datasets
 # ---- ***Final Energy*** ----
-DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElec"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
+DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
 DATA.FE$Prim <- DATA.FE$Variable
 DATA.FE$Prim <- gsub("FECool","",DATA.FE$Prim,fixed=F)
@@ -153,11 +153,13 @@ DATA.FE$Variable = substr(DATA.FE$Variable, start=1, stop=6)
 DATA.FE <- DATA.FE[c("Scenario","Region","Year","Variable","Prim","Unit","value","ScenOrder")]
 
 DATA.FE <- spread(DATA.FE,Prim,value)
-DATA.FE = DATA.FE %>% mutate(Total = Coal + Elec + Gas + Hydrogen + ModBio + Oil + SecHeat + TradBio)
+DATA.FE[is.na(DATA.FE)]<- 0.0
+DATA.FE = DATA.FE %>% mutate(Total = Coal + Elec + ElecResistance + ElecHeatpump + Gas + Hydrogen + ModBio + Oil + SecHeat + TradBio)
 DATA.FE = melt(DATA.FE, id.vars=c("Scenario","Region","Year","Variable","Unit","ScenOrder"))
 colnames(DATA.FE)[7] <- "Prim"
-DATA.FE = subset(DATA.FE, !(Variable=="FECool"&(Prim=="Coal"|Prim=="Oil"|Prim=="Gas"|Prim=="TradBio"|
-                                                  Prim=="ModBio"|Prim=="Hydrogen"|Prim=="SecHeat"|Prim=="Total")))
+DATA.FE = subset(DATA.FE, !(Variable=="FECool"&(Prim=="Coal"|Prim=="ElecHeatpump"|Prim=="ElecResistance"|Prim=="Gas"|Prim=="Hydrogen"
+                                                |Prim=="ModBio"|Prim=="Oil"|Prim=="SecHeat"|Prim=="TradBio"
+                                                  |Prim=="Total")))
 temp = subset(DATA.FE, Variable=="FECool"|(Variable=="FEHeat"&Prim=="Total"))
 temp$Prim <- "Total"
 temp = spread(temp,Variable,value)
@@ -348,10 +350,10 @@ FEHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEH
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_colour_manual(values=c("black","gray","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
+  scale_colour_manual(values=c("black","gray","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
                       name="",
-                      breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                      labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+                      breaks=c("Coal","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                      labels=c("Coal","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
   facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FEHeat.S
@@ -367,10 +369,10 @@ FEHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FE
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("black","gray","navyblue","skyblue","forestgreen","purple","bisque","brown"),
+  scale_fill_manual(values=c("black","gray","maroon","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
                       name="",
-                      breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                      labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+                      breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                      labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
   facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FEHeat.SR
@@ -459,10 +461,10 @@ FECoolHeat.SRC <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("black","gray","navyblue","skyblue","forestgreen","purple","bisque","brown"),
+  scale_fill_manual(values=c("black","gray","maroon","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
                     name="",
-                    breaks=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                    labels=c("Coal","Elec","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+                    breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                    labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
   facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FECoolHeat.SRC

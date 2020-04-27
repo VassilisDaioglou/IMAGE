@@ -12,13 +12,14 @@
 # 
 # For this a number of scenarios are run with TIMER:
 # 1. Baseline (SSP2)
-# 2. NoEffImp (No improvements in building shell efficiency COMPARED TO BASELINE!!)
-# 3. NoRetrofit (No retrofits - but improvements of marginal stock allowed)
+# 2. InsulNew (No retrofits - but improvements of marginal stock allowed - Energy Carrier market shares same as baseline)
+# 3. InsulAll (All insulation (new + retrofit) allowed - Energy Carrier market shares same as baseline)
 # 4. Demand (Reduced demand of energy services in residential sector)	
 # 5. Floorspace (Reduced residential floorspace)
 # 6. Full (Demand + Floorspace from above)	
 #
-# All Scenarios are also repeated for a mitigation scenario (450)
+# Baseline repeated for a mitigation scenario (450)
+# All other only for mitigation in order to decompose how they contribute to mitigation
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -48,26 +49,21 @@ ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","
 
 ActiveRegion <- "World"
 ActiveRegions =c("BRA","CHN","USA","WEU")
-Scenarios = c("SSP2_Baseline","SSP2_Full","SSP2_Demand","SSP2_Floorspace","SSP2_NoEffImp","SSP2_NoRetrofit",
-              "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_NoEffImp","SSP2_450_NoRetrofit")
+Scenarios = c("SSP2_Baseline",
+              "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
 
-ScenStand = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_NoEffImp","SSP2_450_NoRetrofit")
-ScenInsul = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoEffImp","SSP2_450_NoRetrofit")
+ScenStand = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
+ScenInsul = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulAll","SSP2_450_InsulNew")
 ScenBehav = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full")
 
 data_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
-data_Full <- "data/BuildStocks/BuildingStocks/SSP2_Full.xlsx"
-data_Demand <- "data/BuildStocks/BuildingStocks/SSP2_Demand.xlsx"
-data_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_Floorspace.xlsx"
-data_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_NoEffImp.xlsx"
-data_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_NoRetrofit.xlsx"
 
 data_mitig_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_450_Baseline.xlsx"
 data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_450_Full.xlsx"
 data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_450_Demand.xlsx"
 data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_450_Floorspace.xlsx"
-data_mitig_NoEffImp <- "data/BuildStocks/BuildingStocks/SSP2_450_NoEffImp.xlsx"
-data_mitig_NoRetrofit <- "data/BuildStocks/BuildingStocks/SSP2_450_NoRetrofit.xlsx"
+data_mitig_InsulAll <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulAll.xlsx"
+data_mitig_InsulNew <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulNew.xlsx"
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -76,43 +72,32 @@ options(java.parameters = "-Xmx8000m")
   # set directory path 
 setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
-Full = read.xlsx(data_Full, sheet = "data")
 Baseline = read.xlsx(data_Baseline, sheet = "data")
-Demand = read.xlsx(data_Demand, sheet = "data")
-Floorspace = read.xlsx(data_Floorspace, sheet = "data")
-NoEffImp = read.xlsx(data_NoEffImp, sheet = "data")
-NoRetrofit = read.xlsx(data_NoRetrofit, sheet = "data")
 
-Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
 Baseline_450 = read.xlsx(data_mitig_Baseline, sheet = "data")
 Demand_450 = read.xlsx(data_mitig_Demand, sheet = "data")
 Floorspace_450 = read.xlsx(data_mitig_Floorspace, sheet = "data")
-NoEffImp_450 = read.xlsx(data_mitig_NoEffImp, sheet = "data")
-NoRetrofit_450 = read.xlsx(data_mitig_NoRetrofit, sheet = "data")
+Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
+InsulAll_450 = read.xlsx(data_mitig_InsulAll, sheet = "data")
+InsulNew_450 = read.xlsx(data_mitig_InsulNew, sheet = "data")
 
-rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_NoEffImp,data_NoRetrofit,
-   data_mitig_Baseline,data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,data_mitig_NoEffImp,data_mitig_NoRetrofit)
+rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_InsulAll,data_InsulNew,
+   data_mitig_Baseline,data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,data_mitig_InsulAll,data_mitig_InsulNew)
 #
 # ---- MUNGING ----
 # Create Single Dataset
 Baseline = melt(Baseline, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Full = melt(Full, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Demand = melt(Demand, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Floorspace = melt(Floorspace, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-NoEffImp = melt(NoEffImp, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-NoRetrofit = melt(NoRetrofit, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
 Baseline_450 = melt(Baseline_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 Full_450 = melt(Full_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 Demand_450 = melt(Demand_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 Floorspace_450 = melt(Floorspace_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-NoEffImp_450 = melt(NoEffImp_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-NoRetrofit_450 = melt(NoRetrofit_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+InsulAll_450 = melt(InsulAll_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+InsulNew_450 = melt(InsulNew_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
-DATA = rbind(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit,
-             Baseline_450,Full_450,Demand_450,Floorspace_450,NoEffImp_450,NoRetrofit_450)
-rm(Baseline,Full,Demand,Floorspace,NoEffImp,NoRetrofit,
-             Baseline_450,Full_450,Demand_450,Floorspace_450,NoEffImp_450,NoRetrofit_450)
+DATA = rbind(Baseline,
+             Baseline_450,Full_450,Demand_450,Floorspace_450,InsulAll_450,InsulNew_450)
+rm(Baseline,Baseline_450,Full_450,Demand_450,Floorspace_450,InsulAll_450,InsulNew_450)
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"
 
@@ -139,8 +124,8 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
-DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline","SSP2_Demand","SSP2_Floorspace","SSP2_Full","SSP2_NoRetrofit","SSP2_NoEffImp",
-                                                 "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"))
+DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline","SSP2_Demand","SSP2_Floorspace","SSP2_Full","SSP2_InsulNew","SSP2_InsulAll",
+                                                 "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll"))
   
   # Separate datasets
 # ---- ***Final Energy*** ----
@@ -222,14 +207,14 @@ scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_Full"="Full",
                 "SSP2_Demand"="Demand",
                 "SSP2_Floorspace"="Constant \nFloorspace",
-                "SSP2_NoEffImp"="No Efficiency \nImprovement",
-                "SSP2_NoRetrofit"="No \nRetrofit",
+                "SSP2_InsulAll"="No Efficiency \nImprovement",
+                "SSP2_InsulNew"="No \nRetrofit",
                 "SSP2_450_Baseline"="Baseline  \n2°C",
                 "SSP2_450_Full"="Full \n2°C",
                 "SSP2_450_Demand"="Demand \n2°C",
                 "SSP2_450_Floorspace"="Floorspace \n2°C",
-                "SSP2_450_NoEffImp"="No Eff. \nImprov. - 2°C",
-                "SSP2_450_NoRetrofit"="No Retrofit \n2°C")
+                "SSP2_450_InsulAll"="No Eff. \nImprov. - 2°C",
+                "SSP2_450_InsulNew"="No Retrofit \n2°C")
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",
@@ -296,7 +281,7 @@ UEInt.S <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & Variable=="UEIn
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -314,7 +299,7 @@ UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variabl
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -331,7 +316,7 @@ UECoolHeat.SRV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variab
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -390,7 +375,7 @@ FECool.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FEC
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -407,7 +392,7 @@ FECool.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FE
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -426,7 +411,7 @@ FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable==
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -443,7 +428,7 @@ FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=
   theme(legend.position="bottom") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -485,7 +470,7 @@ Emis.S <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% Active
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   # facet_wrap(Region~., nrow=3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -504,7 +489,7 @@ Emis.SR <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% Activ
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_wrap(Region~., nrow=1) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -542,7 +527,7 @@ CC.SRV <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & Scenario %in% 
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_NoRetrofit","SSP2_450_NoEffImp"),
+                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                       labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))

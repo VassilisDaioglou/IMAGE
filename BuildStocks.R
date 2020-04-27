@@ -124,7 +124,7 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
-DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline","SSP2_Demand","SSP2_Floorspace","SSP2_Full","SSP2_InsulNew","SSP2_InsulAll",
+DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline",
                                                  "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll"))
   
   # Separate datasets
@@ -181,6 +181,9 @@ DATA.UE$ID <- NULL
 DATA.UE$val_2020 <- NULL
 
 #
+# ---- ***UValues*** ----
+DATA.UV <- subset(DATA, Variable=="UEUValue")
+
 # ---- ***Emissions*** ----
 DATA.EM <- subset(DATA, Variable=="EmisCO2HeatCool")
 
@@ -204,17 +207,12 @@ DATA.EM <- subset(DATA, Variable=="EmisCO2HeatCool")
 
 # ---- LABELS ----
 scen_labels <-c("SSP2_Baseline"="Baseline",
-                "SSP2_Full"="Full",
-                "SSP2_Demand"="Demand",
-                "SSP2_Floorspace"="Constant \nFloorspace",
-                "SSP2_InsulAll"="No Efficiency \nImprovement",
-                "SSP2_InsulNew"="No \nRetrofit",
                 "SSP2_450_Baseline"="Baseline  \n2°C",
                 "SSP2_450_Full"="Full \n2°C",
                 "SSP2_450_Demand"="Demand \n2°C",
                 "SSP2_450_Floorspace"="Floorspace \n2°C",
-                "SSP2_450_InsulAll"="No Eff. \nImprov. - 2°C",
-                "SSP2_450_InsulNew"="No Retrofit \n2°C")
+                "SSP2_450_InsulAll"="New and Retrofit \n2°C",
+                "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",

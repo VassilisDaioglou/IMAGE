@@ -59,9 +59,9 @@ ScenBehav = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Fl
 data_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
 
 data_mitig_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_450_Baseline.xlsx"
-data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_450_Full.xlsx"
-data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_450_Demand.xlsx"
-data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_450_Floorspace.xlsx"
+# data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_450_Full.xlsx"
+# data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_450_Demand.xlsx"
+# data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_450_Floorspace.xlsx"
 data_mitig_InsulAll <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulAll.xlsx"
 data_mitig_InsulNew <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulNew.xlsx"
 
@@ -75,28 +75,32 @@ setwd("C:/Users/Asus/Documents/Github/IMAGE/")
 Baseline = read.xlsx(data_Baseline, sheet = "data")
 
 Baseline_450 = read.xlsx(data_mitig_Baseline, sheet = "data")
-Demand_450 = read.xlsx(data_mitig_Demand, sheet = "data")
-Floorspace_450 = read.xlsx(data_mitig_Floorspace, sheet = "data")
-Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
+# Demand_450 = read.xlsx(data_mitig_Demand, sheet = "data")
+# Floorspace_450 = read.xlsx(data_mitig_Floorspace, sheet = "data")
+# Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
 InsulAll_450 = read.xlsx(data_mitig_InsulAll, sheet = "data")
 InsulNew_450 = read.xlsx(data_mitig_InsulNew, sheet = "data")
 
-rm(data_Baseline,data_Full,data_Demand,data_Floorspace,data_InsulAll,data_InsulNew,
-   data_mitig_Baseline,data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,data_mitig_InsulAll,data_mitig_InsulNew)
+rm(data_Baseline,
+   data_mitig_Baseline,
+   # data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,
+   data_mitig_InsulAll,data_mitig_InsulNew)
 #
 # ---- MUNGING ----
 # Create Single Dataset
 Baseline = melt(Baseline, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
 Baseline_450 = melt(Baseline_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Full_450 = melt(Full_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Demand_450 = melt(Demand_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-Floorspace_450 = melt(Floorspace_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+# Full_450 = melt(Full_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+# Demand_450 = melt(Demand_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
+# Floorspace_450 = melt(Floorspace_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 InsulAll_450 = melt(InsulAll_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 InsulNew_450 = melt(InsulNew_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
 DATA = rbind(Baseline,
-             Baseline_450,Full_450,Demand_450,Floorspace_450,InsulAll_450,InsulNew_450)
+             Baseline_450,
+             # Full_450,Demand_450,Floorspace_450,
+             InsulAll_450,InsulNew_450)
 rm(Baseline,Baseline_450,Full_450,Demand_450,Floorspace_450,InsulAll_450,InsulNew_450)
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"

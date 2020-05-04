@@ -191,6 +191,24 @@ Sensitivity.MinMax$var_Order = factor(Sensitivity.MinMax$variable, levels=c("Pri
 
 
 #
+# ---- DATA Checks ----
+# Ad hoc checks on data to inspect results
+
+  # Check if there are scenarios which do not reply on negative emissions
+NoNeg = subset(Mitigation, variable=="EmisCO2AFOLU-MtCO2/yr"|variable=="PrimBiomasswCCS-EJ/yr")
+NoNeg = subset(NoNeg, select=-c(var_Order,ID))
+NoNeg = spread(NoNeg, variable,value)
+colnames(NoNeg)[7:8] <- c("AFOLU","BioCCS")
+NoNeg = subset(NoNeg, BioCCS == 0)
+NoNeg = subset(NoNeg, !(Year==2010|Year==2020))
+NoNeg = subset(NoNeg, AFOLU > 0)
+
+  # Determine number of scenarios consistent with Paris Targets
+Paris = subset(Mitigation, select=c(Model,Scenario))
+Paris$ID = paste(Paris$Model,Paris$Scenario)
+length(unique(Paris$ID))
+
+# 
 # ---- LABELS ----
 #var labels with text wraps                
 var_labels <- c("Prim-EJ/yr"="Total Primary Energy \nEJ/yr",

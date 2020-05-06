@@ -51,7 +51,7 @@ ActiveRegion <- "World"
 ActiveRegions =c("BRA","CHN","USA","WEU")
 Scenarios = c("SSP2_Baseline",
               "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
-
+ScenBase  =c("SSP2_Baseline","SSP2_450_Baseline")
 ScenStand = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
 ScenInsul = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulAll","SSP2_450_InsulNew")
 ScenBehav = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full")
@@ -101,12 +101,15 @@ DATA = rbind(Baseline,
              Baseline_450,
              # Full_450,Demand_450,Floorspace_450,
              InsulAll_450,InsulNew_450)
-rm(Baseline,Baseline_450,Full_450,Demand_450,Floorspace_450,InsulAll_450,InsulNew_450)
+rm(Baseline,Baseline_450,
+   # Full_450,Demand_450,Floorspace_450,
+   InsulAll_450,InsulNew_450)
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"
 
 # Rename Variables
 DATA$Variable <- gsub("[[:punct:]]","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Residential","Res",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Final Energy","FE",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Useful Energy","UE",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Carbon Content","CC",DATA$Variable,fixed=F)
@@ -130,6 +133,7 @@ DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline",
                                                  "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll"))
+
   
   # Separate datasets
 # ---- ***Final Energy*** ----
@@ -158,6 +162,8 @@ colnames(temp)[7] <- "Variable"
   
 DATA.FE = rbind(DATA.FE,temp)
 rm(temp)
+
+DATA.FE$PrimOrder  =factor(DATA.FE$Prim, levels = c("Coal","Oil","Gas","Hydrogen","ModBio","TradBio","SecHeat","ElecResistance","ElecHeatpump","Elec","Total"))
 
 # ---- ***Carbon Contents*** ----
 DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
@@ -233,7 +239,41 @@ turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
 cc_labels <-c("CCElec"="Electricity","CCHeat"="Heating Fuels")
 
+prim_labels <-c("Coal"="Coal",
+                "Oil"="Oil",
+                "Gas"="Nat. Gas",
+                "Hydrogen"="Hydrogen",
+                "ModBio"="Modern Biomass",
+                "TradBio"="Traditionl Biomass",
+                "SecHeat"="District Heat",
+                "ElecResistance"="Resistance Heater",
+                "ElecHeatpump"="Heat Pump",
+                "Elec"="Cooling Electricity",
+                "Totla"="Total")
+
 # ---- FIGURES ----
+# ---- Figure 1: Fuels ----
+Fuels.S <- ggplot() + 
+  geom_bar(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
+           , aes(x=Year,y = value/1e9, fill=PrimOrder), stat="identity") +
+  geom_line(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FECool" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Elec")
+            , aes(x=Year,y = value/1e9, colour="gray"),size=1, alpha=1) +
+  xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_fill_manual(values=c("black","navyblue","purple","skyblue","forestgreen","brown","bisque","gray","orange","gray"),
+                      name="",
+                      breaks=c("Coal","Oil","Gas","Hydrogen","ModBio","TradBio","SecHeat","ElecResistance","ElecHeatpump","Elec"),
+                      labels=c("Coal","Oil","Gas","Hydrogen","ModBio","TradBio","SecHeat","ElecResistance","ElecHeatpump","Elec")) +
+  facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Fuels.S
+
+
+# 
 # ---- FIG: Stocks ----
 Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), 
                  aes(x=Year,y = value/1e9, fill=InsulLevel)) + 

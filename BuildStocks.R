@@ -53,7 +53,7 @@ Scenarios = c("SSP2_Baseline",
               "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
 ScenBase  =c("SSP2_Baseline","SSP2_450_Baseline")
 ScenStand = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
-ScenInsul = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulAll","SSP2_450_InsulNew")
+ScenInsul = c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline")
 ScenBehav = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full")
 
 EnergyCarriers = c("Coal","Oil","Gas","Hydrogen","ModBio","TradBio","SecHeat","ElecResistance","ElecHeatpump","Elec","Total")
@@ -134,7 +134,7 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline",
-                                                 "SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll"))
+                                                 "SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"))
 
   
   # Separate datasets
@@ -166,6 +166,9 @@ DATA.FE = rbind(DATA.FE,temp)
 rm(temp)
 
 DATA.FE$PrimOrder  =factor(DATA.FE$Prim, levels = c("Coal","Oil","Gas","Hydrogen","ModBio","TradBio","SecHeat","ElecResistance","ElecHeatpump","Elec","Total"))
+
+# ---- *** Rooftop PV *** ----
+DATA.PV <- subset(DATA, Variable=="FEResExportElec"|Variable=="FEResGenerationElec"|Variable=="FEResNetElec")
 
 # ---- ***Carbon Contents*** ----
 DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
@@ -226,6 +229,11 @@ scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_InsulAll"="New and Retrofit \n2°C",
                 "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
 
+scen_labels2 <-c("SSP2_Baseline"="Baseline",
+                "SSP2_450_Baseline"="2°C",
+                "SSP2_450_InsulAll"="New and Retrofit \n2°C",
+                "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
+
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",
                "MEX"="Mexico","NAF"="Northern Africa","OCE"="Oceania","RCAM"="Rest of Central America","RSAF"="Rest of Southern Africa",
@@ -236,7 +244,10 @@ reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China
 var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "UeIntHeat"="Heating & Cooling \nIntensity (desired) \n(2010=1)",
                "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
-               "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)")
+               "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)",
+               "FECoolHeat"="Final Energy [EJ/yr] \nHeating & Cooling",
+               "EmisCO2HeatCool"="Emissions [kgCO2/cap/yr] \nHeating and Cooling")
+
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
 cc_labels <-c("CCElec"="Electricity","CCHeat"="Heating Fuels")
@@ -254,8 +265,8 @@ prim_labels <-c("Coal"="Coal",
                 "Totla"="Total")
 
 # ---- FIGURES ----
-# ---- Figure 1: Fuels ----
-Fuels.S <- ggplot() + 
+# ---- Figure 1: Fuels & Emissions ----
+Fuels.BM <- ggplot() + 
   geom_bar(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
            , aes(x=Year,y = value/1e9, fill=PrimOrder), stat="identity") +
   geom_line(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FECool" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Elec")
@@ -276,18 +287,20 @@ Fuels.S <- ggplot() +
                     labels=prim_labels) +
   facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-Fuels.S
+Fuels.BM
 
-FuelsEmis.S <- ggplot() + 
+FuelsEmis.BM <- ggplot() + 
   geom_bar(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
            , aes(x=Year,y = value/1e9, fill=PrimOrder, alpha=0.8), stat="identity") +
+  geom_bar(data=subset(DATA.PV, Scenario %in% ScenBase & Variable=="FEResGenerationElec" & Year %in% ActiveYears & Region==ActiveRegion)
+           , aes(x=Year,y = -1* value/1e9, fill="maroon", alpha=0.8), stat="identity") +
   geom_line(data=subset(DATA.FE, Scenario %in% ScenBase & Variable=="FECool" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Elec")
             , aes(x=Year,y = value/1e9, colour=PrimOrder),size=1, alpha=1) +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region==ActiveRegion)
             , aes(x=Year,y = value/10, colour="skyblue"),size=2, alpha=1, shape=8, color = "black") +
   xlim(2010,2100) +
   scale_y_continuous(name = "EJ/yr", 
-                     sec.axis = sec_axis(~. * 10, name = "Emission per cap"))+
+                     sec.axis = sec_axis(~. * 10, name = "Heating & Cooling Emissions kgCO2/cap"))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -302,9 +315,30 @@ FuelsEmis.S <- ggplot() +
                      labels=prim_labels) +
   facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FuelsEmis.S
+FuelsEmis.BM
 
 # 
+# ---- Figure 2: Decomposition ----
+FEDecomp.BM <- ggplot() + 
+  geom_bar(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
+           , aes(x=Year, y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
+  geom_bar(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region==ActiveRegion)
+           , aes(x=Year, y = value, fill=ScenOrder),position="dodge", stat="identity") +
+  # xlim(2010,2100) +
+  xlab("") + ylab("EJ/yr") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","firebrick", "skyblue","green3"),
+                      name="",
+                      breaks=ScenInsul,
+                      labels=scen_labels2) +
+  facet_wrap(.~Variable, scales="free_y", labeller=labeller(Variable=var_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FEDecomp.BM
+
+#
 # ---- FIG: Stocks ----
 Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), 
                  aes(x=Year,y = value/1e9, fill=InsulLevel)) + 

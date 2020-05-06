@@ -46,6 +46,7 @@ Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX",
             "OCE","RCAM","RSAF","RSAM","RSAS","RUS","SAF","SEAS","STAN","TUR","UKR","USA","WAF","WEU","World")
 
 ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
+ActiveYears2 = c("2020","2040","2060","2080","2100")
 
 ActiveRegion <- "World"
 ActiveRegions =c("BRA","CHN","USA","WEU")
@@ -320,17 +321,15 @@ FuelsEmis.BM
 # 
 # ---- Figure 2: Decomposition ----
 FEDecomp.BM <- ggplot() + 
-  geom_bar(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
-           , aes(x=Year, y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
-  geom_bar(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region==ActiveRegion)
-           , aes(x=Year, y = value, fill=ScenOrder),position="dodge", stat="identity") +
-  # xlim(2010,2100) +
-  xlab("") + ylab("EJ/yr") +
+  geom_bar(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears2 & Region==ActiveRegion & Prim=="Total")
+           , aes(x=as.character(Year), y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
+  geom_bar(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears2 & Region==ActiveRegion)
+           , aes(x=as.character(Year), y = value, fill=ScenOrder),position="dodge", stat="identity") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","firebrick", "skyblue","green3"),
+  scale_fill_manual(values=c("gray","firebrick", "skyblue","green3"),
                       name="",
                       breaks=ScenInsul,
                       labels=scen_labels2) +

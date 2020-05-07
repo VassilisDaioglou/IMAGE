@@ -294,7 +294,7 @@ prim_labels <-c("Coal"="Coal",
                 "ElecResistance"="Resistance Heater",
                 "ElecHeatpump"="Heat Pump",
                 "Elec"="Cooling Electricity",
-                "ElecPV"="Rooftop Photovoltaic",
+                "ElecPV"="Rooftop Photovoltaic \n(generation)",
                 "Total"="Total")
 
 primheat_labels <- prim_labels[-10] 

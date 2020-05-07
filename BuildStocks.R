@@ -50,6 +50,8 @@ ActiveYears2 = c("2020","2040","2060","2080","2100")
 
 ActiveRegion <- "World"
 ActiveRegions =c("World","BRA","CHN","USA","WEU")
+RCPRegions =c("OECD90","REF","ASIA","MAF","LAM","World")
+
 Scenarios = c("SSP2_Baseline",
               "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
 ScenBase  =c("SSP2_Baseline","SSP2_450_Baseline")
@@ -155,11 +157,19 @@ DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline",
                                                  "SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"))
 # ---- RCP REGION DEFINITON ----
-
-  
+  # Identify variables whose regions can be summed (i.e. absolute measures)
+DATA.R1 = subset(DATA, Unit=="kgCO2/yr"|Unit=="GJ"|Unit=="m2"|Unit=="Bn$")
+DATA.R1 = spread(DATA.R1,Region,value)
+DATA.R1 = DATA.R1 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
+DATA.R1 = DATA.R1 %>% mutate(REF=CEU+RUS+STAN+UKR)
+DATA.R1 = DATA.R1 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
+DATA.R1 = DATA.R1 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
+DATA.R1 = DATA.R1 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+DATA.R1 = melt(DATA.R1,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+colnames(DATA.R1)[colnames(DATA.R1)=="variable"]<-"Region"
   # Separate datasets
 # ---- ***Final Energy*** ----
-DATA.FE <- subset(DATA, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
+DATA.FE <- subset(DATA.R1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
 DATA.FE$Prim <- DATA.FE$Variable
 DATA.FE$Prim <- gsub("FECool","",DATA.FE$Prim,fixed=F)
@@ -221,7 +231,7 @@ DATA.UE$val_2020 <- NULL
 DATA.UV <- subset(DATA, Variable=="UEUValue")
 
 # ---- ***Emissions*** ----
-DATA.EM <- subset(DATA, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
+DATA.EM <- subset(DATA.R1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
 # ---- MITIGATION EFFECT ON DEMAND ----
 # EneEffect = spread(UEHeatCool_pc,Scen,value)
@@ -260,6 +270,7 @@ reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China
                "MEX"="Mexico","NAF"="Northern Africa","OCE"="Oceania","RCAM"="Rest of Central America","RSAF"="Rest of Southern Africa",
                "RSAM"="Rest of Southern America","RSAS"="Rest of Southern Asia","RUS"="Russia","SAF"="South Africa","SEAS"="Southeast Asia",
                "STAN"="Kazakhstan +","TUR"="Turkey","UKR"="Ukraine","USA"="USA","WAF"="Western Africa","WEU"="Western Europe",
+               "OECD90"="OECD","REF"="Reforming \nEconomies","ASIA"="Asia","MAF"="Middle East \n& Africa","LAM"="Latin \nAmerica",
                "World"="Global")
 
 var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
@@ -291,7 +302,7 @@ primheat_labels <- prim_labels[-10]
 # ---- FIGURES ----
 # ---- Figure 1: Fuels & Emissions ----
 DATA.FIG1 = rbind(DATA.FE,DATA.PV)
-DATA.FIG1 = subset(DATA.FIG1, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% ActiveRegions & !(Prim=="Total"))
+DATA.FIG1 = subset(DATA.FIG1, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
 DATA.FIG1 = subset(DATA.FIG1, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
 DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"]
 
@@ -325,11 +336,11 @@ FuelsEmis.BM <- ggplot() +
 FuelsEmis.BM
 
 FuelsEmis.BMR <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG1, !(Prim=="Elec") & Region %in% ActiveRegions), 
+  geom_bar(data=subset(DATA.FIG1, !(Prim=="Elec") & Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.66, stat="identity") +
-  geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region %in% ActiveRegions),
+  geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
-  geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% ActiveRegions & Variable=="EmisCO2HeatCool")
+  geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
              , aes(x=Year,y = value/10e9 * axis_scale, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   scale_y_continuous(name = left_axis, 
@@ -770,7 +781,7 @@ AllEffect2
 # png(file = "output/BuildStocks/Fig1.png", width = 8*ppi, height = 3.5*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BM)
 # dev.off()
-# # 
+# #
 # png(file = "output/BuildStocks/Fig1_R.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BMR)
 # dev.off()

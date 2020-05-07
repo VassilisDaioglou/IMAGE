@@ -307,7 +307,7 @@ DATA.FIG1 = subset(DATA.FIG1, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"
 DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"]
 
 axis_scale = 1/8
-left_axis = "Secondary Energy Demand [EJ/yr]"
+left_axis = "Secondary Energy [EJ/yr]"
 right_axis = "Heating & Cooling Emissions [MtCO2/yr]"
 
 FuelsEmis.BM <- ggplot() + 

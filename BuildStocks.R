@@ -195,16 +195,43 @@ DATA.R2 = DATA.R2 %>% mutate(REF=CEU+RUS+STAN+UKR)
 DATA.R2 = DATA.R2 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
 DATA.R2 = DATA.R2 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
 DATA.R2 = DATA.R2 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+DATA.R2 = melt(DATA.R2,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+colnames(DATA.R2)[colnames(DATA.R2)=="variable"]<-"Region"
 
+DATA.R2$ID = paste(DATA.R2$Scenario,DATA.R2$Region,DATA.R2$Year)
+DATA.R2$Pop <- Weights[match(DATA.R2$ID, Weights$ID),"Pop"] 
+DATA.R2 = DATA.R2 %>% mutate(valueCor = value / Pop)
+DATA.R2 = subset(DATA.R2, select = -c(value,ID,Pop))
+colnames(DATA.R2)[colnames(DATA.R2)=="valueCor"] <- "value"
 # 
-# Identify Variables whose RCP regional data will be FLOORSPACE weighted 
+  # Identify Variables whose RCP regional data will be FLOORSPACE weighted 
 DATA.R3 = subset(DATA, Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|Variable=="UEUvalue")
+DATA.R3$ID = paste(DATA.R3$Scenario,DATA.R3$Region,DATA.R3$Year)
+DATA.R3$FS <- Weights[match(DATA.R3$ID, Weights$ID),"FloorspaceTotal"] 
+DATA.R3 = DATA.R3 %>% mutate(FSWeight = value * FS)
+DATA.R3 = subset(DATA.R3, select=-c(value,FS,ID))
+DATA.R3 = spread(DATA.R3,Region,FSWeight)
+DATA.R3 = DATA.R3 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
+DATA.R3 = DATA.R3 %>% mutate(REF=CEU+RUS+STAN+UKR)
+DATA.R3 = DATA.R3 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
+DATA.R3 = DATA.R3 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
+DATA.R3 = DATA.R3 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+DATA.R3 = melt(DATA.R3,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+colnames(DATA.R3)[colnames(DATA.R3)=="variable"]<-"Region"
 
+DATA.R3$ID = paste(DATA.R3$Scenario,DATA.R3$Region,DATA.R3$Year)
+DATA.R3$FS <- Weights[match(DATA.R3$ID, Weights$ID),"FloorspaceTotal"] 
+DATA.R3 = DATA.R3 %>% mutate(valueCor = value / FS)
+DATA.R3 = subset(DATA.R3, select = -c(value,ID,FS))
+colnames(DATA.R3)[colnames(DATA.R3)=="valueCor"] <- "value"
 
 #
+  # Final Data Set
+DATA1 = rbind(DATA.R1,DATA.R2,DATA.R3)
+rm(DATA, DATA.R1, DATA.R2, DATA.R3)
 # SEPARATE DATASETS
 # ---- ***Final Energy*** ----
-DATA.FE <- subset(DATA.R1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
+DATA.FE <- subset(DATA1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
 DATA.FE$Prim <- DATA.FE$Variable
 DATA.FE$Prim <- gsub("FECool","",DATA.FE$Prim,fixed=F)
@@ -233,14 +260,14 @@ rm(temp)
 DATA.FE$PrimOrder  =factor(DATA.FE$Prim, levels = EnergyCarriers)
 
 # ---- *** Rooftop PV *** ----
-DATA.PV <- subset(DATA, Variable=="FEResExportElec"|Variable=="FEResGenerationElec"|Variable=="FEResNetElec"|Variable=="FEResElecPVHeatCool")
+DATA.PV <- subset(DATA1, Variable=="FEResExportElec"|Variable=="FEResGenerationElec"|Variable=="FEResNetElec"|Variable=="FEResElecPVHeatCool")
 DATA.PV$Prim <- "ElecPV"
 DATA.PV$PrimOrder  =factor(DATA.PV$Prim, levels = EnergyCarriers)
 # ---- ***Carbon Contents*** ----
-DATA.CC <- subset(DATA, Variable=="CCElec"|Variable=="CCHeat")
+DATA.CC <- subset(DATA1, Variable=="CCElec"|Variable=="CCHeat")
 
 # ---- ***Floorspace*** ----
-DATA.FS <- subset(DATA, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloorspaceLevel2"|Variable=="InsulFloorspaceLevel3"|
+DATA.FS <- subset(DATA1, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloorspaceLevel2"|Variable=="InsulFloorspaceLevel3"|
                     Variable=="InsulFloorspaceLevel4"|Variable=="InsulFloorspaceLevel5"|Variable=="InsulFloorspaceLevel6")
 DATA.FS$InsulLevel <- DATA.FS$Variable
 DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
@@ -248,10 +275,10 @@ DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
 DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value","ScenOrder")]
 
 # ---- ***Investments*** ----
-DATA.INV <- subset(DATA, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
+DATA.INV <- subset(DATA1, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
 
 # ---- ***Useful Energy*** ----
-DATA.UE <- subset(DATA, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Variable=="UEHeatCool"|Variable=="UEIntHeat")
+DATA.UE <- subset(DATA1, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Variable=="UEHeatCool"|Variable=="UEIntHeat")
   # Normalise to 2020 value
 DATA.UE$ID = paste(DATA.UE$Scenario,DATA.UE$Region,DATA.UE$Variable)
 DATA.UE2020 = subset(DATA.UE, Year==2020)
@@ -263,10 +290,10 @@ DATA.UE$val_2020 <- NULL
 
 #
 # ---- ***UValues*** ----
-DATA.UV <- subset(DATA, Variable=="UEUValue")
+DATA.UV <- subset(DATA1, Variable=="UEUValue")
 
 # ---- ***Emissions*** ----
-DATA.EM <- subset(DATA.R1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
+DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
 # ---- MITIGATION EFFECT ON DEMAND ----
 # EneEffect = spread(UEHeatCool_pc,Scen,value)

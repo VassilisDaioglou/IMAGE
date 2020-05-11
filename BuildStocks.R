@@ -459,20 +459,28 @@ DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 DATA.FIG2$ID <- NULL
 # 
-Areas <- ggplot(data=DATA.FIG2, aes(x=Year,y = max/1e9, colour=ScenOrder)) + 
-  geom_ribbon(aes(ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5") +
-  # geom_line(size=1,alpha=1) +
+Areas <- ggplot(data=DATA.FIG2) + 
+  geom_line(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &
+                          Region %in% RCPRegions & Prim=="Total"), aes(x=Year, y=value/1e9, color=ScenOrder), 
+            size=0.5,alpha=1) +
+  geom_ribbon(aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5") +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   xlab("") + ylab("EJ/yr") +
-  scale_colour_manual(values=c("forestgreen","firebrick","skyblue"),
+  scale_colour_manual(values=c("black","black","black","black"),
+                    name="",
+                    breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
+                    labels=c("","","",""), guide=FALSE) +
+  scale_fill_manual(values=c("forestgreen","firebrick","skyblue"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                    labels=c("Effect of Insulation \nin New Buildings","Effect of Retrofits","Effect of heating & /n cooling technology choices"), guide=FALSE) +
-  facet_grid(Region~., scales="free_y",labeller=labeller(Region=reg_labels, ScenOrder=scen_labels3)) +
+                    labels=c("Effect of Insulation \nin New Buildings",
+                             "Effect of Retrofits",
+                             "Effect of heating & \ncooling technology choices")) +
+  facet_grid(Region~., scales="free_y",labeller=labeller(Region=reg_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Areas
 

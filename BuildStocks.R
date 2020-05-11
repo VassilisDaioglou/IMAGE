@@ -48,7 +48,7 @@ Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX",
             "World")
 
 ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
-ActiveYears2 = c("2020","2040","2060","2080","2100")
+ActiveYears2 = c("2040","2060","2080","2100")
 
 ActiveRegion <- "World"
 ActiveRegions =c("World","BRA","CHN","USA","WEU")
@@ -327,6 +327,12 @@ scen_labels2 <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_InsulAll"="New and Retrofit \n2°C",
                 "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
 
+scen_labels3 <-c("SSP2_Baseline"="Effect of Insulation \nin New Buildings",
+                 "SSP2_450_InsulNew"="Effect of Retrooofits",
+                 "SSP2_450_InsulAll"="Effect of heating & /n cooling technology choices",
+                 "SSP2_450_Baseline"="Total")
+
+
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
                "INDIA"="India","INDO"="Indonesia","JAP"="Japan","KOR"="Korean Penunsila","ME"="Middle East",
                "MEX"="Mexico","NAF"="Northern Africa","OCE"="Oceania","RCAM"="Rest of Central America","RSAF"="Rest of Southern Africa",
@@ -424,11 +430,58 @@ FuelsEmis.BMR
 
 # 
 # ---- Figure 2: Decomposition ----
+temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &
+                     Region %in% RCPRegions & Prim=="Total")
+
+temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
+temp$ID = paste(temp$Region, temp$Year)
+
+  # Separate datasets for results of each decomposition component
+temp.Base = subset(temp, ScenOrder == "SSP2_Baseline")
+temp.EffNew = subset(temp, ScenOrder == "SSP2_450_InsulNew")
+temp.EffNewRen = subset(temp, ScenOrder == "SSP2_450_InsulAll")
+temp.Tot = subset(temp, ScenOrder == "SSP2_450_Baseline")
+
+  # Complete dataset
+Area.EffNew = temp.Base
+colnames(Area.EffNew)[colnames(Area.EffNew)=="value"] <- "max"
+Area.EffNew$min <- temp.EffNew[match(Area.EffNew$ID,temp.EffNew$ID),"value"]
+
+Area.EffNewRen = temp.EffNew
+colnames(Area.EffNewRen)[colnames(Area.EffNewRen)=="value"] <- "max"
+Area.EffNewRen$min <- temp.EffNewRen[match(Area.EffNewRen$ID,temp.EffNewRen$ID),"value"]
+
+Area.EffNewRenFuel = temp.EffNewRen
+colnames(Area.EffNewRenFuel)[colnames(Area.EffNewRenFuel)=="value"] <- "max"
+Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"value"]
+
+DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+
+DATA.FIG2$ID <- NULL
+# 
+Areas <- ggplot(data=DATA.FIG2, aes(x=Year,y = max/1e9, colour=ScenOrder)) + 
+  geom_ribbon(aes(ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5") +
+  # geom_line(size=1,alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  xlab("") + ylab("EJ/yr") +
+  scale_colour_manual(values=c("forestgreen","firebrick","skyblue"),
+                    name="",
+                    breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
+                    labels=c("Effect of Insulation \nin New Buildings","Effect of Retrofits","Effect of heating & /n cooling technology choices"), guide=FALSE) +
+  facet_grid(Region~., scales="free_y",labeller=labeller(Region=reg_labels, ScenOrder=scen_labels3)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Areas
+
+#
 FEDecomp.BM <- ggplot() + 
   geom_bar(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears2 & Region==ActiveRegion & Prim=="Total")
            , aes(x=as.character(Year), y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
   geom_bar(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears2 & Region==ActiveRegion)
-           , aes(x=as.character(Year), y = value, fill=ScenOrder),position="dodge", stat="identity") +
+           , aes(x=as.character(Year), y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -440,6 +493,7 @@ FEDecomp.BM <- ggplot() +
   facet_wrap(.~Variable, scales="free_y", labeller=labeller(Variable=var_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FEDecomp.BM
+
 
 #
 # ---- FIG: Stocks ----
@@ -846,6 +900,14 @@ AllEffect2
 # #
 # png(file = "output/BuildStocks/Fig1_R.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig2_Area.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(Areas)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig2_Bar.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(FEDecomp.BM)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Stocks_R.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)

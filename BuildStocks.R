@@ -458,6 +458,7 @@ Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"val
 DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 DATA.FIG2$ID <- NULL
+rm(temp,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 # 
 Areas <- ggplot(data=DATA.FIG2) + 
   geom_line(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &

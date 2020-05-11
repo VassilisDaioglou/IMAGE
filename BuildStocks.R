@@ -43,7 +43,9 @@ FSizeAxis = 9
 FSizeLeg = 9
 
 Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX","NAF",
-            "OCE","RCAM","RSAF","RSAM","RSAS","RUS","SAF","SEAS","STAN","TUR","UKR","USA","WAF","WEU","World")
+            "OCE","RCAM","RSAF","RSAM","RSAS","RUS","SAF","SEAS","STAN","TUR","UKR","USA","WAF","WEU",
+            "OECD90","REF","ASIA","MAF","LAM",
+            "World")
 
 ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
 ActiveYears2 = c("2020","2040","2060","2080","2100")
@@ -150,6 +152,7 @@ DATA$Variable <- gsub("Renovation","Renov",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("and","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("per capita","pc",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("per floorspace","pfs",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Population","Pop",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
@@ -157,6 +160,19 @@ DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP2_Baseline",
                                                  "SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"))
 # ---- RCP REGION DEFINITON ----
+  # First determing wieghting factors population & floorspace
+Weights = subset(DATA, Variable=="Pop"|Variable=="FloorspaceTotal")
+Weights = spread(Weights,Region,value)
+Weights = Weights %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
+Weights = Weights %>% mutate(REF=CEU+RUS+STAN+UKR)
+Weights = Weights %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
+Weights = Weights %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
+Weights = Weights %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+Weights = melt(Weights,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+Weights$Unit <- NULL
+Weights = spread(Weights,Variable,value)
+colnames(Weights)[colnames(Weights)=="variable"]<-"Region"
+Weights$ID = paste(Weights$Scenario,Weights$Region,Weights$Year)
   # Identify variables whose regions can be summed (i.e. absolute measures)
 DATA.R1 = subset(DATA, Unit=="kgCO2/yr"|Unit=="GJ"|Unit=="m2"|Unit=="Bn$")
 DATA.R1 = spread(DATA.R1,Region,value)
@@ -167,7 +183,26 @@ DATA.R1 = DATA.R1 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
 DATA.R1 = DATA.R1 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
 DATA.R1 = melt(DATA.R1,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
 colnames(DATA.R1)[colnames(DATA.R1)=="variable"]<-"Region"
-  # Separate datasets
+  # Identify Variables whose RCP regional data will be POPULATION weighted 
+DATA.R2 = subset(DATA, Variable=="CCElec"|Variable=="CCHeat"|Variable=="EmisCO2HeatCoolpc"|Variable=="UEHeatCoolpc")
+DATA.R2$ID = paste(DATA.R2$Scenario,DATA.R2$Region,DATA.R2$Year)
+DATA.R2$Pop <- Weights[match(DATA.R2$ID, Weights$ID),"Pop"] 
+DATA.R2 = DATA.R2 %>% mutate(PopWeight = value * Pop)
+DATA.R2 = subset(DATA.R2, select=-c(value,Pop,ID))
+DATA.R2 = spread(DATA.R2,Region,PopWeight)
+DATA.R2 = DATA.R2 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
+DATA.R2 = DATA.R2 %>% mutate(REF=CEU+RUS+STAN+UKR)
+DATA.R2 = DATA.R2 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
+DATA.R2 = DATA.R2 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
+DATA.R2 = DATA.R2 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+
+# 
+# Identify Variables whose RCP regional data will be FLOORSPACE weighted 
+DATA.R3 = subset(DATA, Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|Variable=="UEUvalue")
+
+
+#
+# SEPARATE DATASETS
 # ---- ***Final Energy*** ----
 DATA.FE <- subset(DATA.R1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")

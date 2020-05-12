@@ -295,24 +295,48 @@ DATA.UV <- subset(DATA1, Variable=="UEUValue")
 # ---- ***Emissions*** ----
 DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
-# ---- MITIGATION EFFECT ON DEMAND ----
-# EneEffect = spread(UEHeatCool_pc,Scen,value)
-# EneEffect = EneEffect %>% mutate(Tot_Mitig = SSP2 - SSP2_450)
-# EneEffect = EneEffect %>% mutate(Eff_Mitig = SSP2_450_NIR - SSP2_450)
-# EneEffect = EneEffect %>% mutate(Eff_Frac = Eff_Mitig / Tot_Mitig)
-# 
-# test = subset(EneEffect, Year==2100 & Region %in% Regions & (variable=="Total"|variable=="Rural"|variable=="Urban"))
-# #
-# # MinMax dataframe for effect of insulation
-# InsulMinMax = subset(DATA.TRQS, (Scen=="SSP2_450"|Scen=="SSP2_450_NIR")&(Variable=="HeatCoolDemand_pc"|Variable=="ResiCO2EmisHeatCool"))
-# InsulMinMax = spread(InsulMinMax,Scen,value)
-# InsulMinMax$ID = paste(InsulMinMax$Year,InsulMinMax$Region,InsulMinMax$TURQ,InsulMinMax$Variable)
-# 
-# DATA.TRQS$ID = paste(DATA.TRQS$Year,DATA.TRQS$Region,DATA.TRQS$TURQ,DATA.TRQS$Variable)
-# 
-# DATA.TRQS$Min <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),7]
-# DATA.TRQS$Max <- InsulMinMax[match(DATA.TRQS$ID,InsulMinMax$ID),8]
+# ---- DATASETS FOR FIGURES ----
+  # Figure 1
+DATA.FIG1 = rbind(DATA.FE,DATA.PV)
+DATA.FIG1 = subset(DATA.FIG1, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
+DATA.FIG1 = subset(DATA.FIG1, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
+DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"]
 
+  #  Figure 2
+temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% RCPRegions & Prim=="Total")
+temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
+
+temp1 = subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears & Region %in% RCPRegions)
+temp1 = subset(temp1, select = -c(Scenario,Unit))
+
+temp = rbind(temp,temp1)
+temp$ID = paste(temp$Region, temp$Variable, temp$Year)
+
+# Separate datasets for results of each decomposition component
+temp.Base = subset(temp, ScenOrder == "SSP2_Baseline")
+temp.EffNew = subset(temp, ScenOrder == "SSP2_450_InsulNew")
+temp.EffNewRen = subset(temp, ScenOrder == "SSP2_450_InsulAll")
+temp.Tot = subset(temp, ScenOrder == "SSP2_450_Baseline")
+
+# Complete dataset
+Area.EffNew = temp.Base
+colnames(Area.EffNew)[colnames(Area.EffNew)=="value"] <- "max"
+Area.EffNew$min <- temp.EffNew[match(Area.EffNew$ID,temp.EffNew$ID),"value"]
+
+Area.EffNewRen = temp.EffNew
+colnames(Area.EffNewRen)[colnames(Area.EffNewRen)=="value"] <- "max"
+Area.EffNewRen$min <- temp.EffNewRen[match(Area.EffNewRen$ID,temp.EffNewRen$ID),"value"]
+
+Area.EffNewRenFuel = temp.EffNewRen
+colnames(Area.EffNewRenFuel)[colnames(Area.EffNewRenFuel)=="value"] <- "max"
+Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"value"]
+
+DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+
+DATA.FIG2$ID <- NULL
+DATA.FIG2$Variable = factor(DATA.FIG2$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
+rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+# 
 # ---- LABELS ----
 scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_Baseline"="2°C",
@@ -369,14 +393,9 @@ primheat_labels <- prim_labels[-10]
 
 # ---- FIGURES ----
 # ---- Figure 1: Fuels & Emissions ----
-DATA.FIG1 = rbind(DATA.FE,DATA.PV)
-DATA.FIG1 = subset(DATA.FIG1, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
-DATA.FIG1 = subset(DATA.FIG1, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
-DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"]
-
-axis_scale = 1/8
-left_axis = "Secondary Energy [EJ/yr]"
-right_axis = "Heating & Cooling Emissions [MtCO2/yr]"
+axis_scale1 = 1/8
+left_axis1 = "Secondary Energy [EJ/yr]"
+right_axis1 = "Heating & Cooling Emissions [MtCO2/yr]"
 
 FuelsEmis.BM <- ggplot() + 
   geom_bar(data=subset(DATA.FIG1, !Prim=="Elec" & (Region==ActiveRegion)), 
@@ -384,10 +403,10 @@ FuelsEmis.BM <- ggplot() +
   geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region==ActiveRegion)
             , aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region==ActiveRegion & Variable=="EmisCO2HeatCool")
-            , aes(x=Year,y = value/10e9 * axis_scale, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
+            , aes(x=Year,y = value/10e9 * axis_scale1, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
-  scale_y_continuous(name = left_axis, 
-                     sec.axis = sec_axis(~. * 1/axis_scale, name = right_axis))+
+  scale_y_continuous(name = left_axis1, 
+                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -409,10 +428,10 @@ FuelsEmis.BMR <- ggplot() +
   geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
-             , aes(x=Year,y = value/10e9 * axis_scale, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
+             , aes(x=Year,y = value/10e9 * axis_scale1, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
-  scale_y_continuous(name = left_axis, 
-                     sec.axis = sec_axis(~. * 1/axis_scale, name = right_axis))+
+  scale_y_continuous(name = left_axis1, 
+                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -430,53 +449,16 @@ FuelsEmis.BMR
 
 # 
 # ---- Figure 2: Decomposition ----
-temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &
-                     Region %in% RCPRegions & Prim=="Total")
-temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
-
-temp1 = subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears &
-                 Region %in% RCPRegions)
-temp1 = subset(temp1, select = -c(Scenario,Unit))
-
-temp = rbind(temp,temp1)
-temp$ID = paste(temp$Region, temp$Variable, temp$Year)
-
-  # Separate datasets for results of each decomposition component
-temp.Base = subset(temp, ScenOrder == "SSP2_Baseline")
-temp.EffNew = subset(temp, ScenOrder == "SSP2_450_InsulNew")
-temp.EffNewRen = subset(temp, ScenOrder == "SSP2_450_InsulAll")
-temp.Tot = subset(temp, ScenOrder == "SSP2_450_Baseline")
-
-  # Complete dataset
-Area.EffNew = temp.Base
-colnames(Area.EffNew)[colnames(Area.EffNew)=="value"] <- "max"
-Area.EffNew$min <- temp.EffNew[match(Area.EffNew$ID,temp.EffNew$ID),"value"]
-
-Area.EffNewRen = temp.EffNew
-colnames(Area.EffNewRen)[colnames(Area.EffNewRen)=="value"] <- "max"
-Area.EffNewRen$min <- temp.EffNewRen[match(Area.EffNewRen$ID,temp.EffNewRen$ID),"value"]
-
-Area.EffNewRenFuel = temp.EffNewRen
-colnames(Area.EffNewRenFuel)[colnames(Area.EffNewRenFuel)=="value"] <- "max"
-Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"value"]
-
-DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
-
-DATA.FIG2$ID <- NULL
-DATA.FIG2$Variable = factor(DATA.FIG2$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
-rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
-  
-# Figur
-axis_scale = 20
-left_axis = "Secondary Energy [EJ/yr]"
-right_axis = "Heating & Cooling Emissions [GtCO2/yr]"
+axis_scale2 = 20
+left_axis2 = "Secondary Energy [EJ/yr]"
+right_axis2 = "Heating & Cooling Emissions [GtCO2/yr]"
 
 Areas <- ggplot(data=DATA.FIG2) + 
   geom_ribbon(data=subset(DATA.FIG2, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale,ymax=max/1e12 * axis_scale, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale2,ymax=max/1e12 * axis_scale2, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  scale_y_continuous(name = left_axis, 
-                     sec.axis = sec_axis(~. * 1/axis_scale, name = right_axis))+
+  scale_y_continuous(name = left_axis2, 
+                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -906,10 +888,6 @@ AllEffect2
 # 
 # png(file = "output/BuildStocks/Fig2_Area.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Areas)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/Fig2_Bar.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(FEDecomp.BM)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Stocks_R.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)

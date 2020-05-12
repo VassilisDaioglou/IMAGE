@@ -345,8 +345,8 @@ var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "UeIntHeat"="Heating & Cooling \nIntensity (desired) \n(2010=1)",
                "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)",
-               "FECoolHeat"="Final Energy [EJ/yr] \nHeating & Cooling",
-               "EmisCO2HeatCool"="Emissions [kgCO2/cap/yr] \nHeating and Cooling")
+               "FECoolHeat"="Secondary Energy \nHeating & Cooling",
+               "EmisCO2HeatCool"="Emissions\nHeating and Cooling")
 
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
@@ -432,9 +432,14 @@ FuelsEmis.BMR
 # ---- Figure 2: Decomposition ----
 temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &
                      Region %in% RCPRegions & Prim=="Total")
-
 temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
-temp$ID = paste(temp$Region, temp$Year)
+
+temp1 = subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears &
+                 Region %in% RCPRegions)
+temp1 = subset(temp1, select = -c(Scenario,Unit))
+
+temp = rbind(temp,temp1)
+temp$ID = paste(temp$Region, temp$Variable, temp$Year)
 
   # Separate datasets for results of each decomposition component
 temp.Base = subset(temp, ScenOrder == "SSP2_Baseline")
@@ -458,14 +463,31 @@ Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"val
 DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 DATA.FIG2$ID <- NULL
-rm(temp,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
-# 
+DATA.FIG2$Variable = factor(DATA.FIG2$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
+rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+  
+  # Dataset for outlines
+DATA.FIG2line = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & 
+                               Region %in% RCPRegions & Prim=="Total")
+DATA.FIG2line= subset(DATA.FIG2line, select=-c(Prim,PrimOrder))
+ 
+DATA.FIG2line = rbind(DATA.FIG2line,
+                      subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears & Region %in% RCPRegions )
+                      )
+DATA.FIG2line$Variable = factor(DATA.FIG2line$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
+
+axis_scale = 20
+left_axis = "Secondary Energy [EJ/yr]"
+right_axis = "Heating & Cooling Emissions [GtCO2/yr]"
+
 Areas <- ggplot(data=DATA.FIG2) + 
-  geom_line(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears &
-                          Region %in% RCPRegions & Prim=="Total"), aes(x=Year, y=value/1e9, color=ScenOrder), 
-            size=0.5,alpha=1) +
-  geom_ribbon(aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5") +
+  # geom_line(data=DATA.FIG2line, aes(x=Year, y=value/1e9, color=ScenOrder), 
+  #           size=0.5,alpha=1) +
+  geom_ribbon(data=subset(DATA.FIG2, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30") +
+  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale,ymax=max/1e12 * axis_scale, fill=ScenOrder), alpha="0.5", colour="gray30") +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  scale_y_continuous(name = left_axis, 
+                     sec.axis = sec_axis(~. * 1/axis_scale, name = right_axis))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -481,7 +503,7 @@ Areas <- ggplot(data=DATA.FIG2) +
                     labels=c("Effect of Insulation \nin New Buildings",
                              "Effect of Retrofits",
                              "Effect of heating & \ncooling technology choices")) +
-  facet_grid(Region~., scales="free_y",labeller=labeller(Region=reg_labels)) +
+  facet_grid(Region~Variable, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Areas
 

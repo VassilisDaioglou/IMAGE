@@ -423,7 +423,7 @@ FuelsEmis.BMR <- ggplot() +
                     labels=primheat_labels) +
   scale_color_manual(values=c(CoolingElec="gray21",Emission="firebrick"),
                      name="",
-                     labels=c("Electricity for Cooling","Heating & Cooling Emissions")) +
+                     labels=c("Electricity for Cooling \n(left axis)","Heating & Cooling Emissions \n(right axis)")) +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.BMR
@@ -466,16 +466,7 @@ DATA.FIG2$ID <- NULL
 DATA.FIG2$Variable = factor(DATA.FIG2$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
   
-  # Dataset for outlines
-DATA.FIG2line = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & 
-                               Region %in% RCPRegions & Prim=="Total")
-DATA.FIG2line= subset(DATA.FIG2line, select=-c(Prim,PrimOrder))
- 
-DATA.FIG2line = rbind(DATA.FIG2line,
-                      subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears & Region %in% RCPRegions )
-                      )
-DATA.FIG2line$Variable = factor(DATA.FIG2line$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
-
+# Figur
 axis_scale = 20
 left_axis = "Secondary Energy [EJ/yr]"
 right_axis = "Heating & Cooling Emissions [GtCO2/yr]"
@@ -506,24 +497,6 @@ Areas <- ggplot(data=DATA.FIG2) +
 Areas
 
 #
-FEDecomp.BM <- ggplot() + 
-  geom_bar(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears2 & Region==ActiveRegion & Prim=="Total")
-           , aes(x=as.character(Year), y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
-  geom_bar(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears2 & Region==ActiveRegion)
-           , aes(x=as.character(Year), y = value/1e9, fill=ScenOrder),position="dodge", stat="identity") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_fill_manual(values=c("gray","firebrick", "skyblue","green3"),
-                      name="",
-                      breaks=ScenInsul,
-                      labels=scen_labels2) +
-  facet_wrap(.~Variable, scales="free_y", labeller=labeller(Variable=var_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FEDecomp.BM
-
-
 #
 # ---- FIG: Stocks ----
 Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), 

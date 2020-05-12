@@ -295,6 +295,9 @@ DATA.UV <- subset(DATA1, Variable=="UEUValue")
 # ---- ***Emissions*** ----
 DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
+# ---- ***Renovation Rate*** ----
+DATA.RR <- subset(DATA1, Variable=="InsulAverageRenovRate")
+
 # ---- DATASETS FOR FIGURES ----
   # Figure 1
 DATA.FIG1 = subset(DATA.FS, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears)

@@ -296,13 +296,13 @@ DATA.UV <- subset(DATA1, Variable=="UEUValue")
 DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
 # ---- DATASETS FOR FIGURES ----
-  # Figure 1
-DATA.FIG1 = rbind(DATA.FE,DATA.PV)
-DATA.FIG1 = subset(DATA.FIG1, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
-DATA.FIG1 = subset(DATA.FIG1, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
-DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"]
+  # Figure 2
+DATA.FIG2 = rbind(DATA.FE,DATA.PV)
+DATA.FIG2 = subset(DATA.FIG2, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
+DATA.FIG2 = subset(DATA.FIG2, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
+DATA.FIG2$value[DATA.FIG1$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG1$value[DATA.FIG2$Variable=="FEResElecPVHeatCool"]
 
-  #  Figure 2
+  #  Figure 3
 temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% RCPRegions & Prim=="Total")
 temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
 
@@ -331,10 +331,10 @@ Area.EffNewRenFuel = temp.EffNewRen
 colnames(Area.EffNewRenFuel)[colnames(Area.EffNewRenFuel)=="value"] <- "max"
 Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"value"]
 
-DATA.FIG2 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+DATA.FIG3 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
-DATA.FIG2$ID <- NULL
-DATA.FIG2$Variable = factor(DATA.FIG2$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
+DATA.FIG3$ID <- NULL
+DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 # 
 # ---- LABELS ----
@@ -392,52 +392,45 @@ prim_labels <-c("Coal"="Coal",
 primheat_labels <- prim_labels[-10] 
 
 # ---- FIGURES ----
-# ---- Figure 1: Fuels & Emissions ----
-axis_scale1 = 1/8
-left_axis1 = "Secondary Energy [EJ/yr]"
-right_axis1 = "Heating & Cooling Emissions [MtCO2/yr]"
-
-FuelsEmis.BM <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG1, !Prim=="Elec" & (Region==ActiveRegion)), 
-           aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.66, stat="identity") +
-  geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region==ActiveRegion)
-            , aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
-  geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region==ActiveRegion & Variable=="EmisCO2HeatCool")
-            , aes(x=Year,y = value/10e9 * axis_scale1, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
-  scale_y_continuous(name = left_axis1, 
-                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
+# ----- Figure 1: Stocks and Intensity
+Stck.S <- ggplot(data=subset(DATA.FS, Scenario %in% ScenStand & Region %in% ActiveRegion & Year %in% ActiveYears), 
+                 aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
+  geom_bar(stat="identity") +
+  # xlim(2010,2100) +
+  xlab("") + ylab("bill. m^2") +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_fill_manual(values=HeatECColour,
-                    name="Heating Fuels",
-                    breaks=HeatingCarriers,
-                    labels=primheat_labels) +
-  scale_color_manual(values=c(CoolingElec="gray21",Emission="firebrick"),
+  theme(legend.position="bottom") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
                     name="",
-                    labels=c("Electricity for Cooling","Heating & Cooling Emissions")) +
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
   facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FuelsEmis.BM
+Stck.S
+
+# ---- Figure 2: Fuels & Emissions ----
+axis_scale2 = 1/8
+left_axis2 = "Secondary Energy [EJ/yr]"
+right_axis2 = "Heating & Cooling Emissions [MtCO2/yr]"
 
 FuelsEmis.BMR <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG1, !(Prim=="Elec") & Region %in% RCPRegions), 
+  geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec") & Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.66, stat="identity") +
-  geom_line(data=subset(DATA.FIG1, Variable=="FECool" & Region %in% RCPRegions),
+  geom_line(data=subset(DATA.FIG2, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
-             , aes(x=Year,y = value/10e9 * axis_scale1, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
+             , aes(x=Year,y = value/10e9 * axis_scale2, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
-  scale_y_continuous(name = left_axis1, 
-                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
+  scale_y_continuous(name = left_axis2, 
+                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=HeatECColour,
-                    name="Heating Fuels",
+                    name="Heating Fuels \n(left axis)",
                     breaks=HeatingCarriers,
                     labels=primheat_labels) +
   scale_color_manual(values=c(CoolingElec="gray21",Emission="firebrick"),
@@ -448,17 +441,17 @@ FuelsEmis.BMR <- ggplot() +
 FuelsEmis.BMR
 
 # 
-# ---- Figure 2: Decomposition ----
-axis_scale2 = 20
-left_axis2 = "Secondary Energy [EJ/yr]"
-right_axis2 = "Heating & Cooling Emissions [GtCO2/yr]"
+# ---- Figure 3: Decomposition ----
+axis_scale3 = 20
+left_axis3 = "Secondary Energy [EJ/yr]"
+right_axis3 = "Heating & Cooling Emissions [GtCO2/yr]"
 
-Areas <- ggplot(data=DATA.FIG2) + 
-  geom_ribbon(data=subset(DATA.FIG2, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale2,ymax=max/1e12 * axis_scale2, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+Areas <- ggplot(data=DATA.FIG3) + 
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  scale_y_continuous(name = left_axis2, 
-                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
+  scale_y_continuous(name = left_axis3, 
+                     sec.axis = sec_axis(~. * 1/axis_scale3, name = right_axis3))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -878,15 +871,11 @@ AllEffect2
 
 #
 # # ---- OUTPUTS ----
-# png(file = "output/BuildStocks/Fig1.png", width = 8*ppi, height = 3.5*ppi, units = "px", res = ppi)
-# plot(FuelsEmis.BM)
-# dev.off()
-# #
-# png(file = "output/BuildStocks/Fig1_R.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BMR)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/Fig2_Area.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Areas)
 # dev.off()
 # 

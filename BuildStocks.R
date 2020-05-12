@@ -481,10 +481,8 @@ left_axis = "Secondary Energy [EJ/yr]"
 right_axis = "Heating & Cooling Emissions [GtCO2/yr]"
 
 Areas <- ggplot(data=DATA.FIG2) + 
-  # geom_line(data=DATA.FIG2line, aes(x=Year, y=value/1e9, color=ScenOrder), 
-  #           size=0.5,alpha=1) +
-  geom_ribbon(data=subset(DATA.FIG2, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30") +
-  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale,ymax=max/1e12 * axis_scale, fill=ScenOrder), alpha="0.5", colour="gray30") +
+  geom_ribbon(data=subset(DATA.FIG2, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG2, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale,ymax=max/1e12 * axis_scale, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   scale_y_continuous(name = left_axis, 
                      sec.axis = sec_axis(~. * 1/axis_scale, name = right_axis))+

@@ -428,20 +428,20 @@ axis_scale1 = 50
 StckUV.BMR <- ggplot() + 
   geom_line(data=subset(DATA.FIG1a, Variable=="FloorspaceTotal"),
             aes(x=Year,y = value/1e9), color="black",size=1, alpha=1) +
-  geom_line(data=subset(DATA.FIG1a, Variable=="UEUvalue"),
-            aes(x=Year,y = value * axis_scale1, color=ScenOrder),size=0.8, alpha=0.66) +
+  geom_point(data=subset(DATA.FIG1a, Variable=="UEUvalue"),
+            aes(x=Year,y = value * axis_scale1, shape=ScenOrder),size=1.0, alpha=0.66) +
   scale_y_continuous(name = left_axis1, 
                      sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("firebrick","forestgreen"),
-                    name="",
+  theme(legend.position="bottom") +
+  scale_shape_manual(values=c(1,8),
+                    name="U-Value projections \n(Right axis)",
                     breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
                     labels=c("Baseline","2C")) +
-  facet_grid(Region~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 StckUV.BMR
 
@@ -873,7 +873,7 @@ AllEffect2
 # plot(Stck.BMR)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/Fig1a.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/Fig1a.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()
 # 

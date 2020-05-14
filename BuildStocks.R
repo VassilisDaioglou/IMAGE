@@ -51,7 +51,7 @@ Regions = c("BRA","CAN","CEU","CHN","EAF","INDIA","INDO","JAP","KOR",'ME',"MEX",
             "World")
 
 ActiveYears = c("2010","2020","2030","2040","2050","2060","2070","2080","2090","2100")
-ActiveYears2 = c("2040","2060","2080","2100")
+ActiveYears2 = c("2030","2050","2075","2100")
 
 ActiveRegion <- "World"
 ActiveRegions =c("World","BRA","CHN","USA","WEU")
@@ -301,6 +301,20 @@ DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolp
 # ---- ***Renovation Rate*** ----
 DATA.RR <- subset(DATA1, Variable=="InsulAverageRenovRate")
 
+# ---- DATASET FOR TABLEv1 ----
+DATA.T1 = rbind(
+  subset(DATA.INV, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears2),
+  subset(DATA.RR, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears2))
+DATA.T1a = subset(DATA.T1, Variable=="InvInsulRenov")
+DATA.T1a = spread(DATA.T1a, Year, value)
+
+DATA.T1b = subset(DATA.T1, Variable=="InvInsulTotal")
+DATA.T1b = spread(DATA.T1b, Year, value)
+
+DATA.T1c = subset(DATA.T1, Variable=="InsulAverageRenovRate")
+DATA.T1c = spread(DATA.T1c, Year, value)
+
+# 
 # ---- DATASETS FOR FIGURES ----
   # Figure 1
 DATA.FIG1 = subset(DATA.FS, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears)

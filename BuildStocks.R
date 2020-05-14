@@ -2,9 +2,12 @@
 # R script to process the results of the TIMER Building Stocks & Renovation 
 # Vassilis Daioglou, November 2019
 # 
-#  Make appropriate to read IAMC template outputs
-#  Vassilis Daioglou, April 2020
+# Make appropriate to read IAMC template outputs
+# Vassilis Daioglou, April 2020
 #
+# Reformulate for Paper on energy efficiency and technology choice
+# Vassilis Daioglou, May 2020
+# 
 # This script processes and presents the results of a number of scenarios 
 # Aimed at showing the impacts on energy use and CO2 emissions of:
 # (i) Building insulation and renovation
@@ -290,7 +293,7 @@ DATA.UE$val_2020 <- NULL
 
 #
 # ---- ***UValues*** ----
-DATA.UV <- subset(DATA1, Variable=="UEUValue")
+DATA.UV <- subset(DATA1, Variable=="UEUvalue")
 
 # ---- ***Emissions*** ----
 DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
@@ -301,6 +304,9 @@ DATA.RR <- subset(DATA1, Variable=="InsulAverageRenovRate")
 # ---- DATASETS FOR FIGURES ----
   # Figure 1
 DATA.FIG1 = subset(DATA.FS, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears)
+
+DATA.FIG1a = rbind(subset(DATA1, Variable == "FloorspaceTotal" & Scenario == "SSP2_Baseline" & Region %in% RCPRegions & Year %in% ActiveYears),
+                   subset(DATA.UV, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears))
 
   # Figure 2
 DATA.FIG2 = rbind(DATA.FE,DATA.PV)
@@ -413,6 +419,32 @@ Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.BMR
+
+
+left_axis1 = "Floorspace [bill m^2]"
+right_axis1 = "Aggregate U-Value of building envelope[W/m^2/K]"
+axis_scale1 = 50
+
+StckUV.BMR <- ggplot() + 
+  geom_line(data=subset(DATA.FIG1a, Variable=="FloorspaceTotal"),
+            aes(x=Year,y = value/1e9), color="black",size=1, alpha=1) +
+  geom_line(data=subset(DATA.FIG1a, Variable=="UEUvalue"),
+            aes(x=Year,y = value * axis_scale1, color=ScenOrder),size=0.8, alpha=0.66) +
+  scale_y_continuous(name = left_axis1, 
+                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("firebrick","forestgreen"),
+                    name="",
+                    breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
+                    labels=c("Baseline","2C")) +
+  facet_grid(Region~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+StckUV.BMR
+
 #
 # ---- Figure 2: Fuels & Emissions ----
 axis_scale2 = 1/8
@@ -426,9 +458,6 @@ FuelsEmis.BMR <- ggplot() +
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
              , aes(x=Year,y = value/10e9 * axis_scale2, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
-  scale_y_continuous(name = left_axis2, 
-                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -842,6 +871,10 @@ AllEffect2
 # # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Fig1.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Stck.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig1a.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(StckUV.BMR)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)

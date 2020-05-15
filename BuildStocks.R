@@ -84,7 +84,7 @@ ECColour=c("black","navyblue","purple",
 
 HeatECColour=c("black","navyblue","purple",
            "skyblue","forestgreen","brown","bisque",
-           "gray","orange","coral1",
+           "gray","goldenrod4","lightsalmon",
            "black")
 
 data_Baseline <- "data/BuildStocks/BuildingStocks/SSP2_Baseline.xlsx"
@@ -486,11 +486,14 @@ right_axis2 = "Heating & Cooling Emissions [MtCO2/yr]"
 
 FuelsEmis.BMR <- ggplot() + 
   geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec") & Region %in% RCPRegions), 
-           aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.66, stat="identity") +
+           aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.7, stat="identity") +
   geom_line(data=subset(DATA.FIG2, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
-             , aes(x=Year,y = value/10e9 * axis_scale2, colour="Emission"),size=3, alpha=1, shape=10, stroke=1.1) +
+             , aes(x=Year,y = value/10e9 * axis_scale2, colour="Emission"),size=2, alpha=1, shape=10, stroke=1.1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  scale_y_continuous(name = left_axis2, 
+                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +

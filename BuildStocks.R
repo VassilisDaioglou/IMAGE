@@ -451,22 +451,6 @@ primheat_labels <- prim_labels[-10]
 
 # ---- FIGURES ----
 # ----- Figure 1: Stocks ----
-Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
-  geom_bar(stat="identity") +
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
-                    name="Insulation level",
-                    breaks=c("1","2","3","4","5","6"),
-                    labels=c("1","2","3","4","5","6")) +
-  facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-Stck.BMR
-
-
 left_axis1 = "Floorspace [bill m^2]"
 right_axis1 = "Aggregate U-Value of building envelope[W/m^2/K]"
 axis_scale1 = 50
@@ -556,7 +540,23 @@ Areas <- ggplot(data=DATA.FIG3) +
 Areas
 
 #
-# ---- Figure S1: Intensity ----
+# ---- Figure S1: Insulation level Stocks ----
+Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
+                    name="Insulation level",
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
+  facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Stck.BMR
+
+# ---- Figure S2: Intensity ----
 UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEHeatCoolpfs" & Year %in% ActiveYears & Region %in% RCPRegions)
                     , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
@@ -577,7 +577,7 @@ UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEH
 UEInt.BMR
 #
 
-# ---- Figure S2: Energy Independence ----
+# ---- Figure S3: Energy Independence ----
 EnIndep.BMRQ <- ggplot() + 
   geom_jitter(data=subset(DATA.ID, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog1)
             , aes(x=Year,y = value, shape=DemogOrder), size=2, width=1, alpha=0.5, colour="black") +
@@ -607,9 +607,34 @@ EnIndep.BMRQ <- ggplot() +
 EnIndep.BMRQ
 
 #
+# # ---- OUTPUTS ----
+# png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
+# plot(StckUV.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(FuelsEmis.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(Areas)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/FigS1.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(Stck.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/FigS2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(UEInt.BMR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/FigS3.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(EnIndep.BMRQ)
+# dev.off()
+
 # ---- FIG: UE Total ----
 UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)
-                       , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
+                        , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   xlim(2020,2100) +
   xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
@@ -626,7 +651,7 @@ UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variabl
 UECoolHeat.SV
 
 UECoolHeat.SRV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region %in% ActiveRegions)
-                        , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
+                         , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   # xlim(2010,2100) +
   xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
@@ -645,7 +670,7 @@ UECoolHeat.SRV
 # 
 # ---- FIG: FE Heat ----
 FEHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
-                  , aes(x=Year,y = value, fill=Prim)) + 
+                   , aes(x=Year,y = value, fill=Prim)) + 
   geom_bar(stat="identity") +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -664,7 +689,7 @@ FEHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEH
 FEHeat.S
 
 FEHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & !(Prim=="Total"))
-                   , aes(x=Year,y = value/1e9, fill=Prim)) + 
+                    , aes(x=Year,y = value/1e9, fill=Prim)) + 
   geom_bar(stat="identity") +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -675,9 +700,9 @@ FEHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FE
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   scale_fill_manual(values=c("black","gray","maroon","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
-                      name="",
-                      breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                      labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
+                    name="",
+                    breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
+                    labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
   facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FEHeat.SR
@@ -702,7 +727,7 @@ FECool.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FEC
 FECool.S
 
 FECool.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECool" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Elec")
-                   , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
+                    , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   # xlim(2010,2100) +
   xlab("") + ylab("EJ/yr") +
@@ -721,7 +746,7 @@ FECool.SR
 # 
 # ---- FIG: FE Total ----
 FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
-                   , aes(x=Year,y = value/1e9, colour=Scenario)) + 
+                       , aes(x=Year,y = value/1e9, colour=Scenario)) + 
   geom_line(size=1, alpha=1) +
   # xlim(2010,2100) +
   xlab("") + ylab("EJ/yr") +
@@ -738,7 +763,7 @@ FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable==
 FECoolHeat.S
 
 FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Total")
-                    , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
+                        , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   # xlim(2010,2100) +
   xlab("") + ylab("EJ/yr") +
@@ -756,7 +781,7 @@ FECoolHeat.SR
 
 FECoolHeat.SRC <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FECoolHeat" & Year %in% ActiveYears 
                                      & Region %in% ActiveRegions)
-                    , aes(x=Year,y = value/1e9, fill=Prim)) + 
+                         , aes(x=Year,y = value/1e9, fill=Prim)) + 
   geom_bar(stat="identity") +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -778,7 +803,7 @@ FECoolHeat.SRC
 # 
 # ---- FIG: Emissions ----
 Emis.S <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region==ActiveRegion)
-                  , aes(x=Year,y = value, colour=ScenOrder)) + 
+                 , aes(x=Year,y = value, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -797,7 +822,7 @@ Emis.S <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% Active
 Emis.S
 
 Emis.SR <- ggplot(data=subset(DATA.EM, Scenario %in% ScenInsul & Year %in% ActiveYears & Region %in% ActiveRegions)
-                 , aes(x=Year,y = value, colour=ScenOrder)) + 
+                  , aes(x=Year,y = value, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -817,7 +842,7 @@ Emis.SR
 
 # ---- FIG: Carbon Contents ----
 CC.R <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & (Scenario=="SSP2_Baseline"|Scenario=="SSP2_450_Baseline"))
-                , aes(x=Year,y = value, colour=ScenOrder)) + 
+               , aes(x=Year,y = value, colour=ScenOrder)) + 
   geom_line(size=1,alpha=0.8) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -836,7 +861,7 @@ CC.R
 
 
 CC.SRV <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & Scenario %in% ScenInsul)
-               , aes(x=Year,y = value, colour=ScenOrder)) + 
+                 , aes(x=Year,y = value, colour=ScenOrder)) + 
   geom_line(size=1,alpha=0.8) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -856,9 +881,9 @@ CC.SRV
 #
 # ---- FIG: Combined Results ----
 BaseEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
-                                  !(Variable=="RenovationRate") &
-                                  (Scen=="SSP2"))
-                    , aes(x=Year,y = value, colour=Scen)) + 
+                                   !(Variable=="RenovationRate") &
+                                   (Scen=="SSP2"))
+                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(size=1,alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2010,2100) +
@@ -876,9 +901,9 @@ BaseEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
 BaseEffect
 
 MitigEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
-                                   !(Variable=="RenovationRate") &
-                                   (Scen=="SSP2"|Scen=="SSP2_450"))
-                     , aes(x=Year,y = value, colour=Scen)) + 
+                                    !(Variable=="RenovationRate") &
+                                    (Scen=="SSP2"|Scen=="SSP2_450"))
+                      , aes(x=Year,y = value, colour=Scen)) + 
   geom_line(size=1,alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2010,2100) +
@@ -896,10 +921,10 @@ MitigEffect <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
 MitigEffect
 
 AllEffect1 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
-                                  !(Variable=="RenovationRate") &
-                                  (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR") & 
-                                  !(Scen=="SSP2_450_NIR"&Variable=="UeIntHeat"))
-                    , aes(x=Year,y = value, colour=Scen)) + 
+                                   !(Variable=="RenovationRate") &
+                                   (Scen=="SSP2"|Scen=="SSP2_450"|Scen=="SSP2_450_NIR") & 
+                                   !(Scen=="SSP2_450_NIR"&Variable=="UeIntHeat"))
+                     , aes(x=Year,y = value, colour=Scen)) + 
   geom_ribbon(aes(ymin=Min,ymax=Max, fill=Variable, colour= NA), alpha="0.5") +
   geom_line(size=1,alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
@@ -914,9 +939,9 @@ AllEffect1 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
                       breaks=c("SSP2","SSP2_450","SSP2_450_NIR"),
                       labels=c("Baseline","Mitig.","Mitig No Improv. Insul.")) +
   scale_fill_manual(values=c("azure3","azure3","azure3"),
-                      name="",
-                      breaks=c("UeIntHeat","HeatCoolDemand_pc","ResiCO2EmisHeatCool"),
-                      labels=c("","",""), guide=FALSE) +
+                    name="",
+                    breaks=c("UeIntHeat","HeatCoolDemand_pc","ResiCO2EmisHeatCool"),
+                    labels=c("","",""), guide=FALSE) +
   facet_grid(Var_Order~Reg_Order, scales="free_y",labeller=labeller(Reg_Order=reg_labels, Scen=scen_labels, Var_Order=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 AllEffect1
@@ -949,32 +974,6 @@ AllEffect2 <- ggplot(data=subset(DATA.TRQS, TURQ=="Total" &
 AllEffect2
 
 #
-# # ---- OUTPUTS ----
-# png(file = "output/BuildStocks/Fig1.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(Stck.BMR)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/Fig1a.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
-# plot(StckUV.BMR)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(FuelsEmis.BMR)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(Areas)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/FigS1.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(UEInt.BMR)
-# dev.off()
-# 
-# png(file = "output/BuildStocks/FigS2.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(EnIndep.BMRQ)
-# dev.off()
-# 
-
 # ---- OTHER OUTPUTS ----
 # png(file = "output/BuildStocks/Stocks_R.png", width = 8*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Stck.R)

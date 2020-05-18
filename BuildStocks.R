@@ -378,9 +378,22 @@ Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"val
 
 DATA.FIG3 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
+#  Add total emissions/energy for each scenario
+temp$ID = paste(temp$Region, temp$ScenOrder, temp$Variable, temp$Year)
+DATA.FIG3$ID = paste(DATA.FIG3$Region, DATA.FIG3$ScenOrder, DATA.FIG3$Variable, DATA.FIG3$Year)
+
+DATA.FIG3$value <- temp[match(DATA.FIG3$ID,temp$ID),"value"]
+
+temp$min <- NA
+temp$max <- NA
+
+#  Add emission and energy projection for the mitigation scenarios
+DATA.FIG3 = rbind(DATA.FIG3,subset(temp, ScenOrder == "SSP2_450_Baseline"))
+
 DATA.FIG3$ID <- NULL
 DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+
 # 
 # ---- LABELS ----
 scen_labels <-c("SSP2_Baseline"="Baseline",
@@ -516,8 +529,10 @@ left_axis3 = "Secondary Energy [EJ/yr]"
 right_axis3 = "Heating & Cooling Emissions [GtCO2/yr]"
 
 Areas <- ggplot(data=DATA.FIG3) + 
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e9, color=ScenOrder),size=0.75, alpha=1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   scale_y_continuous(name = left_axis3, 
                      sec.axis = sec_axis(~. * 1/axis_scale3, name = right_axis3))+
@@ -526,11 +541,11 @@ Areas <- ggplot(data=DATA.FIG3) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   xlab("") + ylab("EJ/yr") +
-  scale_colour_manual(values=c("black","black","black","black"),
+  scale_colour_manual(values=c("firebrick","forestgreen","forestgreen","forestgreen"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
-                    labels=c("","","",""), guide=FALSE) +
-  scale_fill_manual(values=c("forestgreen","firebrick","skyblue"),
+                    labels=c("Baseline","x","y","2C")) +
+  scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                     labels=c("Effect of Insulation \nin New Buildings",

@@ -752,7 +752,7 @@ EnIndep.MRQ
 # plot(Emis.decomp)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/FigS3_Mitig.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/FigS3_Mitig.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(EnIndep.MRQ)
 # dev.off()
 # 

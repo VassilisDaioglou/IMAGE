@@ -511,7 +511,7 @@ FuelsEmis.Aggr <- ggplot() +
   geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|(Variable=="FECool"&Prim=="Total")) & Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
-             , aes(x=Year,y = value/1e12 * axis_scale2), colour="black",size=2, alpha=1, shape=10, stroke=1.1) +
+             , aes(x=Year,y = value/1e12 * axis_scale2, colour=Variable),size=2, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   scale_y_continuous(name = left_axis2, 
                      sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
@@ -523,6 +523,9 @@ FuelsEmis.Aggr <- ggplot() +
                     name="Final Energy",
                     breaks=c("FEHeat","FECool"),
                     labels=c("Heating ","Cooling")) +
+  scale_color_manual(values="black",
+                     name="",
+                     labels="Direct + Indirect \nHeating & Cooling emissions \n(right axis)") +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.Aggr
@@ -531,7 +534,7 @@ FuelsEmis.AggrGlob <- ggplot() +
   geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|(Variable=="FECool"&Prim=="Total")) & Region == "World"), 
            aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region == "World" & Variable=="EmisCO2HeatCool")
-             , aes(x=Year,y = value/1e12 * axis_scale2), colour="black",size=2, alpha=1, shape=10, stroke=1.1) +
+             , aes(x=Year,y = value/1e12 * axis_scale2, colour=Variable),size=2, alpha=1, shape=10, stroke=1.1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   scale_y_continuous(name = left_axis2, 
                      sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
@@ -543,6 +546,9 @@ FuelsEmis.AggrGlob <- ggplot() +
                     name="Final Energy",
                     breaks=c("FEHeat","FECool"),
                     labels=c("Heating ","Cooling")) +
+  scale_color_manual(values="black",
+                     name="",
+                     labels="Direct + Indirect \nHeating & Cooling emissions \n(right axis)") +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.AggrGlob

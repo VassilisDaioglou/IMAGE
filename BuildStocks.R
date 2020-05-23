@@ -318,6 +318,9 @@ DATA.ID$Demographic <- substr(DATA.ID$Variable, start=11, stop=20)
 DATA.ID$DemogOrder = factor(DATA.ID$Demographic, levels =c("Total","Urban","Rural",
                                                  "U1","U2","U3","U4","U5",
                                                  "R1","R2","R3","R4","R5"))
+DATA.ID$DemogQ = substr(DATA.ID$DemogOrder, start=2, stop=2)
+DATA.ID$DemogQ = as.numeric(DATA.ID$DemogQ)
+DATA.ID$DemogTUR = substr(DATA.ID$DemogOrder, start=1, stop=1)
 
 #
 # ---- DATASET FOR TABLEv1 ----
@@ -676,6 +679,28 @@ EnIndep.BMRQ <- ggplot() +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 EnIndep.BMRQ
 
+EnIndep.MRQ <- ggplot() + 
+  geom_line(data=subset(DATA.ID, Scenario == "SSP2_450_Baseline" & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog)
+            , aes(x=Year,y = value, colour=DemogOrder, alpha=DemogQ/5), size=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  xlab("") + ylab("Fraction of Final Energy Independence [-]") +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","black","black","black","black",
+                               "deepskyblue","deepskyblue","deepskyblue","deepskyblue","deepskyblue"),
+                      name="Demographic:",
+                      breaks=c( "U1","","","","",
+                                "R1","","","",""),
+                      labels=c( "Urban","","","","",
+                                "Rural","","","","")) +
+  scale_alpha(guide=FALSE) +
+  facet_wrap(Region~., nrow = 2, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+EnIndep.MRQ
+
 #
 # # ---- OUTPUTS ----
 # png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
@@ -715,7 +740,10 @@ EnIndep.BMRQ
 # plot(Emis.decomp)
 # dev.off()
 # 
-
+# png(file = "output/BuildStocks/FigS3_Mitig.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(EnIndep.MRQ)
+# dev.off()
+# 
 
 # ---- FIG: UE Total ----
 UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)

@@ -653,9 +653,9 @@ UEInt.BMR
 # ---- Figure S3: Energy Independence ----
 EnIndep.BMRQ <- ggplot() + 
   geom_jitter(data=subset(DATA.ID, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog1)
-            , aes(x=Year,y = value, shape=DemogOrder), size=2, width=1, alpha=0.5, colour="black") +
+            , aes(x=Year,y = value, shape=DemogOrder, colour=DemogOrder), size=2, width=1, alpha=1, stroke=1) +
   geom_line(data=subset(DATA.ID, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog)
-            , aes(x=Year,y = value, colour=DemogOrder), size=0.5, alpha=1) +
+            , aes(x=Year,y = value, colour=DemogOrder, alpha=DemogQ/5), size=0.5) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
   xlab("") + ylab("Fraction of Final Energy Independence [-]") +
@@ -667,14 +667,23 @@ EnIndep.BMRQ <- ggplot() +
                       name="Demographic",
                       breaks=c( "Total","Urban","Rural"),
                       labels=c( "Total","Urban","Rural")) +
-  scale_colour_manual(values=c("gray80","gray60","gray40","gray20","gray10",
-                               # "lightgreen","green","green3","green4","darkgreen"),
-                               "lightskyblue1","lightskyblue","deepskyblue","dodgerblue2","dodgerblue3"),
-                      name="Quintile",
-                      breaks=c( "U1","U2","U3","U4","U5",
-                                "R1","R2","R3","R4","R5"),
-                      labels=c( "U1","U2","U3","U4","U5",
-                                "R1","R2","R3","R4","R5")) +
+  scale_colour_manual(values=c("deepskyblue","deepskyblue","deepskyblue","deepskyblue","deepskyblue",
+                               "deepskyblue","red",
+                               "black","black","black","black","black",
+                               "black"),
+                      name="Demographic:",
+                      breaks=c( "R1","R2","R3","R4","R5",
+                                "Rural","Total",
+                                "U1","U2","U3","U4","U5",
+                                "Urban"),
+                      labels=c( "Rural","","","","",
+                                "Rural","Total",
+                                "Urban","","","","",
+                                "Urban"),
+                      guide=FALSE) +
+  scale_alpha(range=c(0.2,1),
+              name="Quintile \n(Shade)",
+              labels=c("1","2","3","4","5")) +
   facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 EnIndep.BMRQ
@@ -696,7 +705,10 @@ EnIndep.MRQ <- ggplot() +
                                 "R1","","","",""),
                       labels=c( "Urban","","","","",
                                 "Rural","","","","")) +
-  scale_alpha(guide=FALSE) +
+  scale_alpha(range=c(0.2,1),
+              name="Quintile \n(Shade)",
+              labels=c("1","2","3","4","5")) +
+  # scale_alpha(guide=FALSE) +
   facet_wrap(Region~., nrow = 2, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 EnIndep.MRQ

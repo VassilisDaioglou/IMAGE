@@ -343,10 +343,11 @@ DATA.FIG1a = rbind(subset(DATA1, Variable == "FloorspaceTotal" & Scenario == "SS
 
   # Figure 2
 DATA.FIG2 = rbind(DATA.FE,DATA.PV)
-DATA.FIG2 = subset(DATA.FIG2, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & !(Prim=="Total"))
+DATA.FIG2 = subset(DATA.FIG2, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions)
 DATA.FIG2 = subset(DATA.FIG2, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
 DATA.FIG2$value[DATA.FIG2$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG2$value[DATA.FIG2$Variable=="FEResElecPVHeatCool"]
-
+#  Remove duplicates
+DATA.FIG2<-DATA.FIG2[!duplicated(DATA.FIG2),]
   #  Figure 3
 temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% RCPRegions & Prim=="Total")
 temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
@@ -482,7 +483,7 @@ left_axis2 = "Secondary Energy [EJ/yr]"
 right_axis2 = "Heating & Cooling Emissions [MtCO2/yr]"
 
 FuelsEmis.BMR <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec") & Region %in% RCPRegions), 
+  geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec"|Prim=="Total") & Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.7, stat="identity") +
   geom_line(data=subset(DATA.FIG2, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
@@ -505,6 +506,26 @@ FuelsEmis.BMR <- ggplot() +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.BMR
+
+FuelsEmis.Aggr <- ggplot() + 
+  geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|Variable=="FECool") & Region %in% RCPRegions), 
+           aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
+  geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2HeatCool")
+             , aes(x=Year,y = value/10e9 * axis_scale2), colour="black",size=2, alpha=1, shape=10, stroke=1.1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  scale_y_continuous(name = left_axis2, 
+                     sec.axis = sec_axis(~. * 1/axis_scale2, name = right_axis2))+
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("skyblue","firebrick"),
+                    name="Final Energy",
+                    breaks=c("FeHeat","FeCool"),
+                    labels=c("Heating ","Cooling")) +
+  facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FuelsEmis.Aggr
 
 # 
 # ---- Figure 3: Decomposition ----
@@ -631,6 +652,13 @@ EnIndep.BMRQ
 # png(file = "output/BuildStocks/FigS3.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(EnIndep.BMRQ)
 # dev.off()
+
+# 
+# png(file = "output/BuildStocks/Fig2_Aggregate.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(FuelsEmis.Aggr)
+# dev.off()
+# 
+
 
 # ---- FIG: UE Total ----
 UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)

@@ -629,6 +629,25 @@ Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Stck.BMR
 
+StckUV.MR <- ggplot() + 
+  geom_bar(data=subset(DATA.FIG1, Scenario == "SSP2_450_Baseline"),aes(x=Year,y = value/1e9, fill=InsulLevel), stat="identity") +
+  geom_point(data=subset(DATA.FIG1a, Variable=="UEUvalue" & Scenario == "SSP2_450_Baseline"),
+             aes(x=Year,y = value * axis_scale1),size=1.0, alpha=0.66) +
+  scale_y_continuous(name = left_axis1, 
+                     sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_fill_manual(values=c("firebrick","chocolate1","yellow","cornflowerblue","chartreuse","forestgreen"),
+                    name="Insulation level",
+                    breaks=c("1","2","3","4","5","6"),
+                    labels=c("1","2","3","4","5","6")) +
+  facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+StckUV.MR
+
 # ---- Figure S2: Intensity ----
 UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEHeatCoolpfs" & Year %in% ActiveYears & Region %in% RCPRegions)
                     , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
@@ -754,6 +773,10 @@ EnIndep.MRQ
 # 
 # png(file = "output/BuildStocks/FigS3_Mitig.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(EnIndep.MRQ)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Fig1_InsulLev.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
+# plot(StckUV.MR)
 # dev.off()
 # 
 

@@ -336,6 +336,8 @@ DATA.T1b = spread(DATA.T1b, Year, value)
 DATA.T1c = subset(DATA.T1, Variable=="InsulAverageRenovRate")
 DATA.T1c = spread(DATA.T1c, Year, value)
 
+DATA.T1 = spread(DATA.T1, Year, value)
+
 # 
 # ---- DATASETS FOR FIGURES ----
   # Figure 1
@@ -734,6 +736,8 @@ EnIndep.MRQ
 
 #
 # # ---- OUTPUTS ----
+# write.xlsx(DATA.T1, file="output/BuildStocks/Table1.xlsx", sheetName="Table 1", append=FALSE, row.names=FALSE, showNA = TRUE)
+
 # png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()

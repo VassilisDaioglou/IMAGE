@@ -737,7 +737,7 @@ EnIndep.MRQ
 #
 # # ---- OUTPUTS ----
 # write.xlsx(DATA.T1, file="output/BuildStocks/Table1.xlsx", sheetName="Table 1", append=FALSE, row.names=FALSE, showNA = TRUE)
-
+# 
 # png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()
@@ -761,8 +761,8 @@ EnIndep.MRQ
 # png(file = "output/BuildStocks/FigS3.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(EnIndep.BMRQ)
 # dev.off()
-
-# 
+# #
+# #
 # png(file = "output/BuildStocks/Fig2_Aggregate.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.Aggr)
 # dev.off()
@@ -782,7 +782,7 @@ EnIndep.MRQ
 # png(file = "output/BuildStocks/Fig1_InsulLev.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.MR)
 # dev.off()
-# 
+#
 
 # ---- FIG: UE Total ----
 UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)

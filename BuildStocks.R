@@ -325,7 +325,7 @@ DATA.UE$val_2020 <- NULL
 DATA.UV <- subset(DATA1, Variable=="UEUvalue")
 
 # ---- ***Emissions*** ----
-DATA.EM <- subset(DATA1, Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
+DATA.EM <- subset(DATA1, Variable=="EmisCO2DirectHeatCool"|Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
 # ---- ***Renovation Rate*** ----
 DATA.RR <- subset(DATA1, Variable=="InsulAverageRenovRate")

@@ -535,6 +535,7 @@ FuelsEmis.BMR <- ggplot() +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.BMR
 
+axis_scale2 = 15
 FuelsEmis.Aggr <- ggplot() + 
   geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|(Variable=="FECool"&Prim=="Total")) & Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
@@ -547,7 +548,7 @@ FuelsEmis.Aggr <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("deepskyblue","firebrick1"),
+  scale_fill_manual(values=c("dodgerblue","firebrick"),
                     name="Final Energy",
                     breaks=c("FEHeat","FECool"),
                     labels=c("Heating ","Cooling")) +

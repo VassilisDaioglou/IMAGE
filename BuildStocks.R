@@ -379,7 +379,7 @@ DATA.FIG2<-DATA.FIG2[!duplicated(DATA.FIG2),]
 temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% RCPRegions & Prim=="Total")
 temp = subset(temp, select = -c(Scenario,Unit,Prim,PrimOrder))
 
-temp1 = subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2HeatCool" & Year %in% ActiveYears & Region %in% RCPRegions)
+temp1 = subset(DATA.EM, Scenario %in% ScenInsul & Variable=="EmisCO2DirectHeatCool" & Year %in% ActiveYears & Region %in% RCPRegions)
 temp1 = subset(temp1, select = -c(Scenario,Unit))
 
 temp = rbind(temp,temp1)
@@ -419,7 +419,7 @@ temp$max <- NA
 DATA.FIG3 = rbind(DATA.FIG3,subset(temp, ScenOrder == "SSP2_450_Baseline"))
 
 DATA.FIG3$ID <- NULL
-DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2HeatCool"))
+DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2DirectHeatCool"))
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 # 
@@ -456,7 +456,8 @@ var_labels <-c("RenovationRate"="Renovation \nRate \n(%)",
                "HeatCoolDemand_pc"="Heating & Cooling \nDemand \n(2010=1)",
                "ResiCO2EmisHeatCool"="Heating & Cooling \nEmissions \n(2010=1)",
                "FECoolHeat"="Secondary Energy \nHeating & Cooling",
-               "EmisCO2HeatCool"="Emissions\nHeating and Cooling")
+               "EmisCO2HeatCool"="Emissions\nHeating and Cooling",
+               "EmisCO2DirectHeatCool"="Emissions\nHeating and Cooling")
 
 turq_labels <-c("1"="Total","2"="Urban","3"="Rural")
 
@@ -588,9 +589,9 @@ right_axis3 = expression(paste("Heating & Cooling Emissions", "[Gt",CO[2],"/yr]"
                          
 Areas <- ggplot(data=DATA.FIG3) + 
   geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
   geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e9, color=ScenOrder),size=0.75, alpha=1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   scale_y_continuous(name = left_axis3, 
                      sec.axis = sec_axis(~. * 1/axis_scale3, name = right_axis3))+
@@ -614,8 +615,8 @@ Areas <- ggplot(data=DATA.FIG3) +
 Areas
 
 Emis.decomp <- ggplot(data=DATA.FIG3) + 
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12, ymax=max/1e12, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2HeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12, color=ScenOrder),size=0.75, alpha=1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12, ymax=max/1e12, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +

@@ -332,7 +332,7 @@ DATA.AGE2$Variable <- "Floorspace"
 DATA.AGE = rbind(DATA.AGE1,DATA.AGE2)
 
 DATA.AGE <- DATA.AGE[c("Scenario","Region","Year","Variable","AgeCohort","Unit","value","ScenOrder")]
-
+DATA.AGE$AgeCohortOrder = factor(DATA.AGE$AgeCohort, levels=c("<10","11to20years","21to30years","31to40years","41to50years",">51"))
 rm(DATA.AGE1,DATA.AGE2)
 # ---- ***Cost Components (COST) ***
 DATA.COST <- subset(DATA1, Unit == "$/m2")
@@ -713,6 +713,42 @@ StckUV.MR <- ggplot() +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 StckUV.MR
 
+#
+# ---- Figure XX: Age Cohorts ----
+Floorspace.BAR <- ggplot(data=subset(DATA.AGE, Scenario=="SSP2_Baseline" & Variable=="Floorspace" & Region %in% RCPRegions & Year %in% ActiveYears)
+                   ,aes(x=Year,y = value/1e9, fill=AgeCohortOrder)) + 
+  geom_bar(stat="identity") +
+  ylab(left_axis1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("gray90","gray70","gray50","gray30","gray20","black"),
+                    name="Age Cohort \n(years since construction)",
+                    breaks=c("<10","11to20years","21to30years","31to40years","41to50years",">51"),
+                    labels=c("< 10 years","11 to 20","21 to 30","31 to 40","41 to 50","> 51")) +
+  facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Floorspace.BAR
+
+FloorspaceFrac.BAR <- ggplot(data=subset(DATA.AGE, Scenario=="SSP2_Baseline" & Variable=="FloorspaceFrac" & Region %in% RCPRegions & Year %in% ActiveYears)
+                         ,aes(x=Year,y = value*100, fill=AgeCohortOrder)) + 
+  geom_bar(stat="identity") +
+  ylab("% of floorspace") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_fill_manual(values=c("gray90","gray70","gray50","gray30","gray20","black"),
+                    name="Age Cohort \n(years since construction)",
+                    breaks=c("<10","11to20years","21to30years","31to40years","41to50years",">51"),
+                    labels=c("< 10 years","11 to 20","21 to 30","31 to 40","41 to 50","> 51")) +
+  facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels)) + 
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+FloorspaceFrac.BAR
+
 # ---- Figure S2: Intensity ----
 UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEHeatCoolpfs" & Year %in% ActiveYears & Region %in% RCPRegions)
                     , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
@@ -846,6 +882,14 @@ EnIndep.MRQ
 # plot(StckUV.MR)
 # dev.off()
 #
+# png(file = "output/BuildStocks/AgeCohortFrac.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
+# plot(FloorspaceFrac.BAR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/AgeCohort.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
+# plot(Floorspace.BAR)
+# dev.off()
+# 
 
 # ---- FIG: UE Total ----
 UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)

@@ -182,6 +182,9 @@ DATA$Variable <- gsub("per capita","pc",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("per floorspace","pfs",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Population","Pop",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Independence","Indep",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Age Cohort","AgeCoh",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("10 years or less","<10",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("51 years or more",">51",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
@@ -235,6 +238,7 @@ colnames(DATA.R2)[colnames(DATA.R2)=="valueCor"] <- "value"
 # 
   # Identify Variables whose RCP regional data will be FLOORSPACE weighted 
 DATA.R3 = subset(DATA, Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|Variable=="UEUvalue"|
+                   Variable=="AgeCohFrac"|
                    Variable=="FEResIndepTotal"|Variable=="FEResIndepUrban"|Variable=="FEResIndepRural"|
                    Variable=="FEResIndepU1"|Variable=="FEResIndepU2"|Variable=="FEResIndepU3"|Variable=="FEResIndepU4"|Variable=="FEResIndepU5"|
                    Variable=="FEResIndepR1"|Variable=="FEResIndepR2"|Variable=="FEResIndepR3"|Variable=="FEResIndepR4"|Variable=="FEResIndepR5")
@@ -262,7 +266,7 @@ colnames(DATA.R3)[colnames(DATA.R3)=="valueCor"] <- "value"
 DATA1 = rbind(DATA.R1,DATA.R2,DATA.R3)
 rm(DATA, DATA.R1, DATA.R2, DATA.R3)
 # SEPARATE DATASETS
-# ---- ***Final Energy*** ----
+# ---- ***Final Energy (FE)*** ----
 DATA.FE <- subset(DATA1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
                  |Variable=="FEHeatModBio"|Variable=="FEHeatOil"|Variable=="FEHeatSecHeat"|Variable=="FEHeatTradBio")
 DATA.FE$Prim <- DATA.FE$Variable
@@ -291,14 +295,14 @@ rm(temp)
 
 DATA.FE$PrimOrder  =factor(DATA.FE$Prim, levels = EnergyCarriers)
 
-# ---- *** Rooftop PV *** ----
+# ---- *** Rooftop PV (PV)*** ----
 DATA.PV <- subset(DATA1, Variable=="FEResExportElec"|Variable=="FEResGenerationElec"|Variable=="FEResNetElec"|Variable=="FEResElecPVHeatCool")
 DATA.PV$Prim <- "ElecPV"
 DATA.PV$PrimOrder  =factor(DATA.PV$Prim, levels = EnergyCarriers)
-# ---- ***Carbon Contents*** ----
+# ---- ***Carbon Contents (CC)*** ----
 DATA.CC <- subset(DATA1, Variable=="CCElec"|Variable=="CCHeat")
 
-# ---- ***Floorspace*** ----
+# ---- ***Floorspace (FS)*** ----
 DATA.FS <- subset(DATA1, Variable=="InsulFloorspaceLevel1"|Variable=="InsulFloorspaceLevel2"|Variable=="InsulFloorspaceLevel3"|
                     Variable=="InsulFloorspaceLevel4"|Variable=="InsulFloorspaceLevel5"|Variable=="InsulFloorspaceLevel6")
 DATA.FS$InsulLevel <- DATA.FS$Variable
@@ -306,10 +310,13 @@ DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
 DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
 DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value","ScenOrder")]
 
-# ---- ***Investments*** ----
+# --- ***Age Cohorts (AGE)*** ----
+DATA.AGE <- subset(DATA1, Variable=="AgeCoh"|Variable=="AgeCohFrac")
+
+# ---- ***Investments (INV)*** ----
 DATA.INV <- subset(DATA1, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")
 
-# ---- ***Useful Energy*** ----
+# ---- ***Useful Energy (UE)*** ----
 DATA.UE <- subset(DATA1, Variable=="UEHeatCoolpc"|Variable=="UEHeatCoolpfs"|Variable=="UEHeatCool"|Variable=="UEIntHeat")
   # Normalise to 2020 value
 DATA.UE$ID = paste(DATA.UE$Scenario,DATA.UE$Region,DATA.UE$Variable)
@@ -321,16 +328,16 @@ DATA.UE$ID <- NULL
 DATA.UE$val_2020 <- NULL
 
 #
-# ---- ***UValues*** ----
+# ---- ***UValues (UV)*** ----
 DATA.UV <- subset(DATA1, Variable=="UEUvalue")
 
-# ---- ***Emissions*** ----
+# ---- ***Emissions (EM)*** ----
 DATA.EM <- subset(DATA1, Variable=="EmisCO2DirectHeatCool"|Variable=="EmisCO2HeatCool"|Variable=="EmisCO2HeatCoolpc")
 
-# ---- ***Renovation Rate*** ----
+# ---- ***Renovation Rate (RR)*** ----
 DATA.RR <- subset(DATA1, Variable=="InsulAverageRenovRate")
 
-# ---- ***Energy Independence*** ----
+# ---- ***Energy Independence (ID)*** ----
 DATA.ID <- subset(DATA1,      Variable=="FEResIndepTotal"|Variable=="FEResIndepUrban"|Variable=="FEResIndepRural"|
                               Variable=="FEResIndepU1"|Variable=="FEResIndepU2"|Variable=="FEResIndepU3"|Variable=="FEResIndepU4"|Variable=="FEResIndepU5"|
                               Variable=="FEResIndepR1"|Variable=="FEResIndepR2"|Variable=="FEResIndepR3"|Variable=="FEResIndepR4"|Variable=="FEResIndepR5")

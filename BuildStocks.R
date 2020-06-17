@@ -185,6 +185,8 @@ DATA$Variable <- gsub("Independence","Indep",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Age Cohort","AgeCoh",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("10 years or less","<10",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("51 years or more",">51",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Cost Component","CostFrac",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Capital","Cap",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
@@ -237,11 +239,11 @@ DATA.R2 = subset(DATA.R2, select = -c(value,ID,Pop))
 colnames(DATA.R2)[colnames(DATA.R2)=="valueCor"] <- "value"
 # 
   # Identify Variables whose RCP regional data will be FLOORSPACE weighted 
-DATA.R3 = subset(DATA, Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|Variable=="UEUvalue"|
+DATA.R3 = subset(DATA, Unit=="$/m2" | (Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|Variable=="UEUvalue"|
                    Variable=="AgeCohFrac"|
                    Variable=="FEResIndepTotal"|Variable=="FEResIndepUrban"|Variable=="FEResIndepRural"|
                    Variable=="FEResIndepU1"|Variable=="FEResIndepU2"|Variable=="FEResIndepU3"|Variable=="FEResIndepU4"|Variable=="FEResIndepU5"|
-                   Variable=="FEResIndepR1"|Variable=="FEResIndepR2"|Variable=="FEResIndepR3"|Variable=="FEResIndepR4"|Variable=="FEResIndepR5")
+                   Variable=="FEResIndepR1"|Variable=="FEResIndepR2"|Variable=="FEResIndepR3"|Variable=="FEResIndepR4"|Variable=="FEResIndepR5"))
 DATA.R3$ID = paste(DATA.R3$Scenario,DATA.R3$Region,DATA.R3$Year)
 DATA.R3$FS <- Weights[match(DATA.R3$ID, Weights$ID),"FloorspaceTotal"] 
 DATA.R3 = DATA.R3 %>% mutate(FSWeight = value * FS)
@@ -310,8 +312,19 @@ DATA.FS$InsulLevel <- gsub("InsulFloorspaceLevel","",DATA.FS$InsulLevel,fixed=F)
 DATA.FS$Variable = substr(DATA.FS$Variable, start=6, stop=15)
 DATA.FS <- DATA.FS[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value","ScenOrder")]
 
-# --- ***Age Cohorts (AGE)*** ----
+# ---- ***Age Cohorts (AGE)*** ----
 DATA.AGE <- subset(DATA1, Variable=="AgeCoh"|Variable=="AgeCohFrac")
+
+# ---- ***Cost Components (COST) ***
+DATA.COST <- subset(DATA1, Unit == "$/m2")
+DATA.COST$InsulLevel <- DATA.COST$Variable
+DATA.COST$InsulLevel <- gsub("CostFracLevel","",DATA.COST$InsulLevel,fixed=F)
+DATA.COST$InsulLevel <- gsub("Cap","",DATA.COST$InsulLevel,fixed=F)
+DATA.COST$InsulLevel <- gsub("Heat","",DATA.COST$InsulLevel,fixed=F)
+DATA.COST$InsulLevel <- gsub("Cool","",DATA.COST$InsulLevel,fixed=F)
+DATA.COST$InsulLevel <- gsub("Total","",DATA.COST$InsulLevel,fixed=F)
+DATA.COST$Variable = substr(DATA.COST$Variable, start=13, stop=18)
+DATA.COST <- DATA.COST[c("Scenario","Region","Year","Variable","InsulLevel","Unit","value","ScenOrder")]
 
 # ---- ***Investments (INV)*** ----
 DATA.INV <- subset(DATA1, Variable=="InvInsulRenov"|Variable=="InvInsulTotal")

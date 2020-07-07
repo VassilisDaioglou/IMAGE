@@ -473,7 +473,7 @@ rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.Eff
 # 
 # ---- DATASET FOR SUPPLEMENTARY DATA ----
 ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
-                                         "SSP2_Basline",
+                                         "SSP2_Baseline",
                                          "SSP3_Baseline",
                                          "SSP4_Baseline",
                                          "SSP5_Baseline",
@@ -486,8 +486,8 @@ ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
                                           "SSP4",
                                           "SSP5",
                                           "2°C",
-                                          "NewInsul",
-                                          "AllInsul"))
+                                          "AllInsul",
+                                          "NewInsul"))
 
 SupData.FE = rbind(DATA.FE, DATA.PV)
 SupData.FE = subset(SupData.FE, Variable=="FEHeat"|Variable=="FECool"|Variable=="FEResGenerationElec")
@@ -531,7 +531,6 @@ SupData.RR$ScenOrder <- NULL
 SupData.RR = SupData.RR[,c(6,4,3,1,2,5)]
 colnames(SupData.RR)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
 SupData.RR$Variable = gsub("InsulAverageRenovRate","Average Renovation rate since 2020",SupData.RR$Variable)
-
 
 #
 # ---- LABELS ----
@@ -962,6 +961,27 @@ EnIndep.MRQ
 # plot(FloorspaceFrac.BAR)
 # dev.off()
 # 
+
+# ---- SUPPLEMENTARY DATA OUTPUT ----
+# wb <- createWorkbook()
+# 
+# addWorksheet(wb, "Final Energy")
+# writeDataTable(wb, sheet = "Final Energy", x = SupData.FE)
+# 
+# addWorksheet(wb, "Useful Energy")
+# writeDataTable(wb, sheet = "Useful Energy", x = SupData.UE)
+# 
+# addWorksheet(wb, "Emissions")
+# writeDataTable(wb, sheet = "Emissions", x = SupData.EM)
+# 
+# addWorksheet(wb, "Floor Space")
+# writeDataTable(wb, sheet = "Floor Space", x = SupData.FS)
+# 
+# addWorksheet(wb, "Renovation Rate")
+# writeDataTable(wb, sheet = "Renovation Rate", x = SupData.RR)
+# 
+# saveWorkbook(wb, "output/BuildStocks/IMAGE_Residential_Supplementary_Data.xlsx", overwrite = TRUE)
+#
 # ---- FIG: UValues per Level ----
 UVLevel.BLR <- ggplot(data=subset(DATA.UVL, Scenario=="SSP2_Baseline"  & Region %in% RCPRegions & Year %in% ActiveYears)
                       ,aes(x=Year,y = value, colour=InsulLevel)) + 

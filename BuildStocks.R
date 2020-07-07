@@ -471,6 +471,35 @@ DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2Di
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 # 
+# ---- DATASET FOR SUPPLEMENTARY DATA ----
+SupData.FE = rbind(DATA.FE, DATA.PV)
+SupData.FE = subset(SupData.FE, Variable=="FEHeat"|Variable=="FECool"|Variable=="FEResGenerationElec")
+SupData.FE = subset(SupData.FE, select = -c(Scenario,Prim))
+SupData.FE = SupData.FE[,c(5,1,2,3,7,4,6)]
+colnames(SupData.FE)[] <- c("Scenario","Region","Year","Variable","Energy Carrier","Unit","Value")
+
+SupData.FS = DATA.FS
+SupData.FS = subset(SupData.FS, select = -c(Scenario))
+SupData.FS = SupData.FS[,c(7,1,2,3,4,5,6)]
+colnames(SupData.FS)[] <- c("Scenario","Region","Year","Variable","Insulation Level","Unit","Value")
+
+SupData.UE = subset(DATA.UE, Variable == "UEHeatCool")
+SupData.UE = subset(SupData.UE, select = -c(Scenario, Normalised_2020))
+SupData.UE = SupData.UE[,c(4,5,3,1,2,6)]
+colnames(SupData.UE)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
+
+SupData.EM = subset(DATA.EM, Variable == "EmisCO2DirectHeatCool"|Variable=="EmisCO2HeatCool")
+SupData.EM = subset(SupData.EM, select = -c(Scenario))
+SupData.EM = SupData.EM[,c(4,5,3,1,2,6)]
+colnames(SupData.EM)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
+
+SupData.RR = subset(DATA.RR, Year %in% ActiveYears2)
+SupData.RR = subset(SupData.RR, select = -c(Scenario))
+SupData.RR = SupData.RR[,c(4,5,3,1,2,6)]
+colnames(SupData.RR)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
+
+
+#
 # ---- LABELS ----
 scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_Baseline"="2°C",

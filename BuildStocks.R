@@ -596,7 +596,7 @@ axis_scale1 = 50
 
 StckUV.BMR <- ggplot() + 
   geom_line(data=subset(DATA.FIG1a, Variable=="FloorspaceTotal"),
-            aes(x=Year,y = value/1e9), color="black",size=1, alpha=1) +
+            aes(x=Year,y = value/1e9, color=Variable), size=1, alpha=1) +
   geom_point(data=subset(DATA.FIG1a, Variable=="UEUvalue"),
             aes(x=Year,y = value * axis_scale1, shape=ScenOrder),size=1.0, alpha=0.66) +
   scale_y_continuous(name = left_axis1, 
@@ -605,15 +605,15 @@ StckUV.BMR <- ggplot() +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
+  theme(legend.position="bottom", legend.box="vertical", legend.direction = "horizontal", legend.spacing.y=unit(0.01,"cm")) +
+  scale_colour_manual(values="black",name="Floorspace (Left axis)",breaks="FloorspaceTotal",labels="", guide="legend") +
   scale_shape_manual(values=c(1,8),
-                    name="U-Value projections \n(Right axis)",
+                    name="U-Value (Right axis)",
                     breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
                     labels=c("Baseline","2C")) +
   facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 StckUV.BMR
-
 #
 # ---- Figure 2: Fuels & Emissions ----
 axis_scale2 = 8
@@ -658,13 +658,13 @@ FuelsEmis.Aggr <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("dodgerblue","firebrick","lightsalmon"),
+  scale_fill_manual(values=c("dodgerblue","firebrick","gold2"),
                     name="Final Energy \n(left axis)",
                     breaks=c("FEHeat","FECool","FEResElecPVHeatCool"),
                     labels=c("Heating ","Cooling","Rooftop Photovoltaic \n(Generation)")) +
   scale_color_manual(values="black",
                      name="",
-                     labels="Direct + Indirect \nHeating & Cooling emissions \n(right axis)") +
+                     labels="Direct Heating & \nCooling emissions \n(right axis)") +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.Aggr
@@ -908,12 +908,12 @@ EnIndep.MRQ
 # # ---- OUTPUTS ----
 # write.xlsx(DATA.T1, file="output/BuildStocks/Table1.xlsx", sheetName="Table 1", append=FALSE, row.names=FALSE, showNA = TRUE)
 # 
-# png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5.5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(FuelsEmis.BMR)
+# plot(FuelsEmis.Aggr)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)

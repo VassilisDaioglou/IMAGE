@@ -614,8 +614,8 @@ primheat_labels <- prim_labels[-10]
 
 # ---- FIGURES ----
 # ----- Figure 1: Stocks ----
-left_axis1 = "Floorspace [bill m^2]"
-right_axis1 = "Aggregate U-Value of building envelope[W/m^2/K]"
+left_axis1 = expression(paste("Floorspace [bill m"^"2","]"))
+right_axis1 = expression(paste("Aggregate U-Value of building envelope[W/m"^"2","/K]"))
 axis_scale1 = 50
 
 StckUV.BMR <- ggplot() + 
@@ -634,7 +634,7 @@ StckUV.BMR <- ggplot() +
   scale_shape_manual(values=c(1,8),
                     name="U-Value (Right axis)",
                     breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
-                    labels=c("Baseline","2C")) +
+                    labels=c("Baseline","2°C")) +
   facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 StckUV.BMR
@@ -738,7 +738,7 @@ Areas <- ggplot(data=DATA.FIG3) +
   scale_colour_manual(values=c("firebrick","forestgreen","forestgreen","forestgreen"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
-                    labels=c("Baseline","x","y","2C")) +
+                    labels=c("Baseline","x","y","2°C")) +
   scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
@@ -761,7 +761,7 @@ Emis.decomp <- ggplot(data=DATA.FIG3) +
   scale_colour_manual(values=c("firebrick","forestgreen","forestgreen","forestgreen"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
-                      labels=c("Baseline","x","y","2C")) +
+                      labels=c("Baseline","x","y","2°C")) +
   scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
@@ -812,6 +812,7 @@ FloorspaceFrac.BAR
 Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) + 
   geom_bar(stat="identity") +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
+  ylab(left_axis1) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +

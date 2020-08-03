@@ -492,6 +492,7 @@ ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
 SupData.FE = rbind(DATA.FE, DATA.PV)
 SupData.FE = subset(SupData.FE, Variable=="FEHeat"|Variable=="FECool"|Variable=="FEResGenerationElec")
 SupData.FE = subset(SupData.FE, select = -c(Scenario,Prim))
+SupData.FE = subset(SupData.FE, !(Variable=="FEHeat" & PrimOrder=="Elec"))
 SupData.FE$ScenName = ScenarioDF[match(SupData.FE$ScenOrder,ScenarioDF$Scenario),"ScenLabel"]
 SupData.FE$ScenOrder <- NULL
 SupData.FE = SupData.FE[,c(7,1,2,3,6,4,5)]
@@ -499,6 +500,7 @@ colnames(SupData.FE)[] <- c("Scenario","Region","Year","Variable","Energy Carrie
 SupData.FE$Variable = gsub("FEHeat","Heating",SupData.FE$Variable)
 SupData.FE$Variable = gsub("FECool","Cooling",SupData.FE$Variable)
 SupData.FE$Variable = gsub("FEResGenerationElec","Rooftop PV Generation",SupData.FE$Variable)
+SupData.FE =SupData.FE[!duplicated(SupData.FE),]
 
 SupData.FS = DATA.FS
 SupData.FS = subset(SupData.FS, select = -c(Scenario))
@@ -506,6 +508,7 @@ SupData.FS$ScenName = ScenarioDF[match(SupData.FS$ScenOrder,ScenarioDF$Scenario)
 SupData.FS$ScenOrder <- NULL
 SupData.FS = SupData.FS[,c(7,1,2,3,4,5,6)]
 colnames(SupData.FS)[] <- c("Scenario","Region","Year","Variable","Insulation Level","Unit","Value")
+SupData.FS =SupData.FS[!duplicated(SupData.FS),]
 
 SupData.UE = subset(DATA.UE, Variable == "UEHeatCool")
 SupData.UE = subset(SupData.UE, select = -c(Scenario, Normalised_2020))
@@ -514,6 +517,7 @@ SupData.UE$ScenOrder <- NULL
 SupData.UE = SupData.UE[,c(6,4,3,1,2,5)]
 colnames(SupData.UE)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
 SupData.UE$Variable = gsub("UEHeatCool","Heating & Cooling Useful Energy Demand",SupData.UE$Variable)
+SupData.UE =SupData.UE[!duplicated(SupData.UE),]
 
 SupData.EM = subset(DATA.EM, Variable == "EmisCO2DirectHeatCool"|Variable=="EmisCO2HeatCool")
 SupData.EM = subset(SupData.EM, select = -c(Scenario))
@@ -523,6 +527,7 @@ SupData.EM = SupData.EM[,c(6,4,3,1,2,5)]
 colnames(SupData.EM)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
 SupData.EM$Variable = gsub("EmisCO2DirectHeatCool","Heating & Cooling Direct Emissions",SupData.EM$Variable)
 SupData.EM$Variable = gsub("EmisCO2HeatCool","Heating & Cooling Direct & Indirect Emissions",SupData.EM$Variable)
+SupData.EM =SupData.EM[!duplicated(SupData.EM),]
 
 SupData.RR = subset(DATA.RR, Year %in% ActiveYears2)
 SupData.RR = subset(SupData.RR, select = -c(Scenario))
@@ -531,6 +536,7 @@ SupData.RR$ScenOrder <- NULL
 SupData.RR = SupData.RR[,c(6,4,3,1,2,5)]
 colnames(SupData.RR)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
 SupData.RR$Variable = gsub("InsulAverageRenovRate","Average Renovation rate since 2020",SupData.RR$Variable)
+SupData.RR =SupData.RR[!duplicated(SupData.RR),]
 
 #
 # ---- LABELS ----

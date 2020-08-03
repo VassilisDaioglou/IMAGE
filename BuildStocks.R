@@ -471,6 +471,24 @@ DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2Di
 rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 # 
+# ---- BASLINE AND MITIGATION COMPARISON ----
+Compare = subset(DATA.FE, Scenario %in% ScenBase & Region %in% RCPRegions & Year %in% ActiveYears)
+Compare = subset(Compare, select=-c(ScenOrder,PrimOrder))
+Compare =Compare[!duplicated(Compare),]
+
+  # Comparison between Baseline and Mitigation
+Compare.Scen = spread(Compare, Scenario, value)
+Compare.Scen = Compare.Scen %>% mutate(MitigChange_Perc = (SSP2_450_Baseline - SSP2_Baseline)/SSP2_Baseline * 100)
+Compare.Scen = subset(Compare.Scen, Region %in% RCPRegions & Year %in% ActiveYears2 & Prim == "Total" & Variable != "FECoolHeat")
+
+  # Comparison between 2020 and Mitigation
+Compare.Time = subset(Compare, (Year=="2020"|Year=="2050"|Year=="2100") & Scenario == "SSP2_450_Baseline")
+Compare.Time = spread(Compare.Time, Year, value)
+colnames(Compare.Time)[6:8] <- c("x2020","x2050","x2100")
+Compare.Time = Compare.Time %>% mutate(PercChang_20_50 = (x2050 - x2020)/x2020 * 100)
+Compare.Time = Compare.Time %>% mutate(PercChang_20_100 = (x2100 - x2020)/x2020 * 100)
+Compare.Time = subset(Compare.Time, Region %in% RCPRegions & Prim == "Total" & Variable != "FECoolHeat")
+
 # ---- DATASET FOR SUPPLEMENTARY DATA ----
 ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
                                          "SSP2_Baseline",
@@ -945,8 +963,8 @@ EnIndep.MRQ
 # #
 # #
 # # ---- OTHER OUTPUTS ----
-# png(file = "output/BuildStocks/Other/Fig2_Aggregate.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(FuelsEmis.Aggr)
+# png(file = "output/BuildStocks/Other/Fig2_Fuels.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(FuelsEmis.BMR)
 # dev.off()
 # 
 # png(file = "output/BuildStocks/Other/Fig2_AggregateGlobal.png", width = 7*ppi, height = 3*ppi, units = "px", res = ppi)

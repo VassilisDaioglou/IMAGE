@@ -942,9 +942,9 @@ EnIndep.MRQ
 # plot(FuelsEmis.Aggr)
 # dev.off()
 # 
-png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-plot(Areas)
-dev.off()
+# png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# plot(Areas)
+# dev.off()
 # 
 # png(file = "output/BuildStocks/FigS1.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Floorspace.BAR)

@@ -15,8 +15,8 @@
 # 
 # For this a number of scenarios are run with TIMER:
 # 1. Baseline (SSP2)
-# 2. InsulNew (No retrofits - but improvements of marginal stock allowed - Energy Carrier market shares same as baseline)
-# 3. InsulAll (All insulation (new + retrofit) allowed - Energy Carrier market shares same as baseline)
+# 2. InsulNew (No renovations - but improvements of marginal stock allowed - Energy Carrier market shares same as baseline)
+# 3. InsulAll (All insulation (new + renovation) allowed - Energy Carrier market shares same as baseline)
 # 4. Demand (Reduced demand of energy services in residential sector)	
 # 5. Floorspace (Reduced residential floorspace)
 # 6. Full (Demand + Floorspace from above)	
@@ -563,12 +563,12 @@ scen_labels <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_Full"="Full \n2°C",
                 "SSP2_450_Demand"="Demand \n2°C",
                 "SSP2_450_Floorspace"="Floorspace \n2°C",
-                "SSP2_450_InsulAll"="New and Retrofit \n2°C",
+                "SSP2_450_InsulAll"="New and Renovations \n2°C",
                 "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
 
 scen_labels2 <-c("SSP2_Baseline"="Baseline",
                 "SSP2_450_Baseline"="2°C",
-                "SSP2_450_InsulAll"="New and Retrofit \n2°C",
+                "SSP2_450_InsulAll"="New and Renovations \n2°C",
                 "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
 
 scen_labels3 <-c("SSP2_Baseline"="Effect of Insulation \nin New Buildings",
@@ -743,7 +743,7 @@ Areas <- ggplot(data=DATA.FIG3) +
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                     labels=c("Effect of Insulation \nin New Buildings",
-                             "Effect of Retrofits",
+                             "Effect of Renovations",
                              "Effect of heating & \ncooling technology choices")) +
   facet_grid(Region~Variable, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -766,7 +766,7 @@ Emis.decomp <- ggplot(data=DATA.FIG3) +
                     name="",
                     breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
                     labels=c("Effect of Insulation \nin New Buildings",
-                             "Effect of Retrofits",
+                             "Effect of Renovations",
                              "Effect of heating & \ncooling technology choices")) +
   facet_wrap(.~Region, nrow = 2, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -942,9 +942,9 @@ EnIndep.MRQ
 # plot(FuelsEmis.Aggr)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
-# plot(Areas)
-# dev.off()
+png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+plot(Areas)
+dev.off()
 # 
 # png(file = "output/BuildStocks/FigS1.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Floorspace.BAR)
@@ -1042,7 +1042,7 @@ UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variabl
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UECoolHeat.SV
@@ -1059,7 +1059,7 @@ UECoolHeat.SRV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variab
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 UECoolHeat.SRV
@@ -1118,7 +1118,7 @@ FECool.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FE
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FECool.SR
@@ -1137,7 +1137,7 @@ FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable==
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FECoolHeat.S
@@ -1154,7 +1154,7 @@ FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FECoolHeat.SR
@@ -1213,7 +1213,7 @@ CC.SRV <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & Scenario %in% 
   scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
                       name="",
                       breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Retrofits - 2°C","No Improv. Insul. - 2°C")) +
+                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
   facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 CC.SRV

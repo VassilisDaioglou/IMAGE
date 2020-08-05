@@ -852,8 +852,7 @@ UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEH
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
-  # ylim(0,1.2) +
-  xlab("") + ylab("Useful Energy Intensity for Heating and Cooling [kJ/m^2, 2020 = 1]") +
+  xlab("") + ylab(expression(paste("Useful Energy Intensity for Heating and Cooling [kJ/m"^"2",", 2020 = 1]"))) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +

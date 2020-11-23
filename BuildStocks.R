@@ -1,28 +1,22 @@
 # ---- INFORMATION ----
 # R script to process the results of the TIMER Building Stocks & Renovation 
-# Vassilis Daioglou, November 2019
-# 
-# Make appropriate to read IAMC template outputs
-# Vassilis Daioglou, April 2020
-#
-# Reformulate for Paper on energy efficiency and technology choice
-# Vassilis Daioglou, May 2020
+# Author: Vassilis Daioglou
+# Reference: Daioglou  et al. (in preparation)
 # 
 # This script processes and presents the results of a number of scenarios 
-# Aimed at showing the impacts on energy use and CO2 emissions of:
+# aimed at showing projections of energy use and CO2 emissions of the residential sector
+# and the effect of:
 # (i) Building insulation and renovation
-# (ii) How these contrast behavioural (demand) changes
+# (ii) Changing heating technology selection
+# (iii) Impact of climate policy (carbon price) on the aboce
 # 
-# For this a number of scenarios are run with TIMER:
+# TIMER Scenario runs:
 # 1. Baseline (SSP2)
-# 2. InsulNew (No renovations - but improvements of marginal stock allowed - Energy Carrier market shares same as baseline)
-# 3. InsulAll (All insulation (new + renovation) allowed - Energy Carrier market shares same as baseline)
-# 4. Demand (Reduced demand of energy services in residential sector)	
-# 5. Floorspace (Reduced residential floorspace)
-# 6. Full (Demand + Floorspace from above)	
+# 2. Baseline, InsulNew (No renovations - but improvements of marginal stock allowed)
+# 3. Mitigation (SSP2 - RCP 2.6)
+# 4. Mitigation, InsulNew (No renovations - but improvements of marginal stock allowed - Energy Carrier market shares same as baseline)
+# 5. Mitigation, InsulAll (All insulation (new + renovation) allowed - Energy Carrier market shares same as baseline)
 #
-# Baseline repeated for a mitigation scenario (450)
-# All other only for mitigation in order to decompose how they contribute to mitigation
 # ---- START ----
 # clear memory
 rm(list=ls()) 
@@ -60,12 +54,11 @@ RCPRegions =c("OECD90","REF","ASIA","MAF","LAM","World")
 ActiveDemog =c("U1","U2","U3","U4","U5","R1","R2","R3","R4","R5")
 ActiveDemog1 =c("Total","Urban","Rural")
 
-Scenarios = c("SSP2_Baseline",
-              "SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
-ScenBase  =c("SSP2_Baseline","SSP2_450_Baseline")
-ScenStand = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Full","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_InsulAll","SSP2_450_InsulNew")
-ScenInsul = c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline")
-ScenBehav = c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full")
+Scenarios = c("SSP2_Baseline","SSP2_InsulNew",
+              "SSP2_SPA0_26I_D_Baseline","SSP2_SPA0_26I_D_Full","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_InsulNew")
+ScenBase  =c("SSP2_Baseline","SSP2_SPA0_26I_D_Baseline")
+ScenStand = c("SSP2_Baseline","SSP2_InsulNew","SSP2_SPA0_26I_D_Baseline","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_InsulNew")
+ScenInsul = c("SSP2_Baseline","SSP2_InsulNew","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline")
 
 EnergyCarriers = c("Coal","Oil","Gas",
                    "Hydrogen","ModBio","TradBio","SecHeat",
@@ -94,19 +87,14 @@ data_SSP3 <- "data/BuildStocks/BuildingStocks/SSP3_Baseline.xlsx"
 data_SSP4 <- "data/BuildStocks/BuildingStocks/SSP4_Baseline.xlsx"
 data_SSP5 <- "data/BuildStocks/BuildingStocks/SSP5_Baseline.xlsx"
 
+data_SSP2_norenov <- "data/BuildStocks/BuildingStocks/SSP2_InsulNew.xlsx"
+
   # Mitigation Scenarios
-data_SSP1_mitig <- "data/BuildStocks/BuildingStocks/SSP1_450_Baseline.xlsx"
-data_SSP2_mitig <- "data/BuildStocks/BuildingStocks/SSP2_450_Baseline.xlsx"
-data_SSP3_mitig <- "data/BuildStocks/BuildingStocks/SSP3_450_Baseline.xlsx"
-data_SSP4_mitig <- "data/BuildStocks/BuildingStocks/SSP4_450_Baseline.xlsx"
-data_SSP5_mitig <- "data/BuildStocks/BuildingStocks/SSP5_450_Baseline.xlsx"
+data_SSP2_mitig <- "data/BuildStocks/BuildingStocks/SSP2_SPA0_26I_D_Baseline.xlsx"
 
   # Sensitivity Scenarios
-# data_mitig_Full <- "data/BuildStocks/BuildingStocks/SSP2_450_Full.xlsx"
-# data_mitig_Demand <- "data/BuildStocks/BuildingStocks/SSP2_450_Demand.xlsx"
-# data_mitig_Floorspace <- "data/BuildStocks/BuildingStocks/SSP2_450_Floorspace.xlsx"
-data_mitig_InsulAll <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulAll.xlsx"
-data_mitig_InsulNew <- "data/BuildStocks/BuildingStocks/SSP2_450_InsulNew.xlsx"
+data_mitig_InsulAll <- "data/BuildStocks/BuildingStocks/SSP2_SPA0_26I_D_InsulAll.xlsx"
+data_mitig_InsulNew <- "data/BuildStocks/BuildingStocks/SSP2_SPA0_26I_D_InsulNew.xlsx"
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -117,49 +105,37 @@ setwd("C:/Users/Asus/Documents/Github/IMAGE/")
   # Read Data Files for Baseline Scenario
 Baseline = rbind(read.xlsx(data_SSP1, sheet = "data"),
                  read.xlsx(data_SSP2, sheet = "data"),
+                 read.xlsx(data_SSP2_norenov, sheet = "data"),
                  read.xlsx(data_SSP3, sheet = "data"),
                  read.xlsx(data_SSP4, sheet = "data"),
                  read.xlsx(data_SSP5, sheet = "data"))
 
-# Mitigation = rbind(read.xlsx(data_SSP1_mitig, sheet = "data"),
-#                    read.xlsx(data_SSP2_mitig, sheet = "data"),
-#                    read.xlsx(data_SSP3_mitig, sheet = "data"),
-#                    read.xlsx(data_SSP4_mitig, sheet = "data"),
-#                    read.xlsx(data_SSP5_mitig, sheet = "data"))
 Mitigation = read.xlsx(data_SSP2_mitig, sheet = "data")
 
-# Demand_450 = read.xlsx(data_mitig_Demand, sheet = "data")
-# Floorspace_450 = read.xlsx(data_mitig_Floorspace, sheet = "data")
-# Full_450 = read.xlsx(data_mitig_Full, sheet = "data")
 InsulAll_450 = read.xlsx(data_mitig_InsulAll, sheet = "data")
 InsulNew_450 = read.xlsx(data_mitig_InsulNew, sheet = "data")
 
 rm(data_SSP1,data_SSP2,data_SSP3,data_SSP4,data_SSP5,
-   data_SSP1_mitig,data_SSP2_mitig,data_SSP3_mitig,data_SSP4_mitig,data_SSP5_mitig,
-   # data_mitig_Full,data_mitig_Demand,data_mitig_Floorspace,
+   data_SSP2_norenov,
+   data_SSP2_mitig,
    data_mitig_InsulAll,data_mitig_InsulNew)
 #
 # ---- MUNGING ----
 # Create Single Dataset
 Baseline = melt(Baseline, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-
 Mitigation = melt(Mitigation, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-# Full_450 = melt(Full_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-# Demand_450 = melt(Demand_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
-# Floorspace_450 = melt(Floorspace_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 InsulAll_450 = melt(InsulAll_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 InsulNew_450 = melt(InsulNew_450, id.vars=c("Model","Scenario","Region","Variable","Unit"))
 
 DATA = rbind(Baseline,
              Mitigation,
-             # Full_450,Demand_450,Floorspace_450,
              InsulAll_450,InsulNew_450)
-rm(Baseline,Mitigation,
-   # Full_450,Demand_450,Floorspace_450,
-   InsulAll_450,InsulNew_450)
+
 DATA$Model <- NULL
 colnames(DATA)[5] <- "Year"
 
+rm(Baseline,Mitigation,
+   InsulAll_450,InsulNew_450)
 # Rename Variables
 DATA$Variable <- gsub("[[:punct:]]","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Residential","Res",DATA$Variable,fixed=F)
@@ -192,31 +168,34 @@ DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
 
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP1_Baseline","SSP2_Baseline","SSP3_Baseline","SSP4_Baseline","SSP5_Baseline",
-                                                 "SSP2_450_Demand","SSP2_450_Floorspace","SSP2_450_Full","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"))
+                                                 "SSP2_InsulNew",
+                                                 "SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline"))
+#
 # ---- RCP REGION DEFINITON ----
+get.RCP5 <- function(dataframe,spread_var){
+  dataframe = dataframe %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
+  dataframe = dataframe %>% mutate(REF=CEU+RUS+STAN+UKR)
+  dataframe = dataframe %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
+  dataframe = dataframe %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
+  dataframe = dataframe %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
+  dataframe = melt(dataframe,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+  colnames(dataframe)[colnames(dataframe)=="variable"]<-"Region"
+  dataframe
+}
   # First determing wieghting factors population & floorspace
 Weights = subset(DATA, Variable=="Pop"|Variable=="FloorspaceTotal")
 Weights = spread(Weights,Region,value)
-Weights = Weights %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
-Weights = Weights %>% mutate(REF=CEU+RUS+STAN+UKR)
-Weights = Weights %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
-Weights = Weights %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
-Weights = Weights %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
-Weights = melt(Weights,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
+Weights = get.RCP5(Weights)
 Weights$Unit <- NULL
 Weights = spread(Weights,Variable,value)
-colnames(Weights)[colnames(Weights)=="variable"]<-"Region"
+# colnames(Weights)[colnames(Weights)=="variable"]<-"Region"
 Weights$ID = paste(Weights$Scenario,Weights$Region,Weights$Year)
+  
   # Identify variables whose regions can be summed (i.e. absolute measures)
 DATA.R1 = subset(DATA, Unit=="kgCO2/yr"|Unit=="GJ"|Unit=="m2"|Unit=="Bn$")
 DATA.R1 = spread(DATA.R1,Region,value)
-DATA.R1 = DATA.R1 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
-DATA.R1 = DATA.R1 %>% mutate(REF=CEU+RUS+STAN+UKR)
-DATA.R1 = DATA.R1 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
-DATA.R1 = DATA.R1 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
-DATA.R1 = DATA.R1 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
-DATA.R1 = melt(DATA.R1,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
-colnames(DATA.R1)[colnames(DATA.R1)=="variable"]<-"Region"
+DATA.R1 = get.RCP5(DATA.R1)
+
   # Identify Variables whose RCP regional data will be POPULATION weighted 
 DATA.R2 = subset(DATA, Variable=="CCElec"|Variable=="CCHeat"|Variable=="EmisCO2HeatCoolpc"|Variable=="UEHeatCoolpc")
 DATA.R2$ID = paste(DATA.R2$Scenario,DATA.R2$Region,DATA.R2$Year)
@@ -224,14 +203,7 @@ DATA.R2$Pop <- Weights[match(DATA.R2$ID, Weights$ID),"Pop"]
 DATA.R2 = DATA.R2 %>% mutate(PopWeight = value * Pop)
 DATA.R2 = subset(DATA.R2, select=-c(value,Pop,ID))
 DATA.R2 = spread(DATA.R2,Region,PopWeight)
-DATA.R2 = DATA.R2 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
-DATA.R2 = DATA.R2 %>% mutate(REF=CEU+RUS+STAN+UKR)
-DATA.R2 = DATA.R2 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
-DATA.R2 = DATA.R2 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
-DATA.R2 = DATA.R2 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
-DATA.R2 = melt(DATA.R2,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
-colnames(DATA.R2)[colnames(DATA.R2)=="variable"]<-"Region"
-
+DATA.R2 = get.RCP5(DATA.R2)
 DATA.R2$ID = paste(DATA.R2$Scenario,DATA.R2$Region,DATA.R2$Year)
 DATA.R2$Pop <- Weights[match(DATA.R2$ID, Weights$ID),"Pop"] 
 DATA.R2 = DATA.R2 %>% mutate(valueCor = value / Pop)
@@ -250,14 +222,7 @@ DATA.R3$FS <- Weights[match(DATA.R3$ID, Weights$ID),"FloorspaceTotal"]
 DATA.R3 = DATA.R3 %>% mutate(FSWeight = value * FS)
 DATA.R3 = subset(DATA.R3, select=-c(value,FS,ID))
 DATA.R3 = spread(DATA.R3,Region,FSWeight)
-DATA.R3 = DATA.R3 %>% mutate(OECD90=CAN+JAP+OCE+TUR+USA+WEU)
-DATA.R3 = DATA.R3 %>% mutate(REF=CEU+RUS+STAN+UKR)
-DATA.R3 = DATA.R3 %>% mutate(ASIA=CHN+INDIA+INDO+KOR+RSAS+SEAS)
-DATA.R3 = DATA.R3 %>% mutate(MAF=EAF+ME+NAF+RSAF+SAF+WAF)
-DATA.R3 = DATA.R3 %>% mutate(LAM=BRA+MEX+RCAM+RSAM)
-DATA.R3 = melt(DATA.R3,id.vars=c("Scenario","Variable","Unit","Year","ScenOrder"), na.rm=FALSE )
-colnames(DATA.R3)[colnames(DATA.R3)=="variable"]<-"Region"
-
+DATA.R3 = get.RCP5(DATA.R3)
 DATA.R3$ID = paste(DATA.R3$Scenario,DATA.R3$Region,DATA.R3$Year)
 DATA.R3$FS <- Weights[match(DATA.R3$ID, Weights$ID),"FloorspaceTotal"] 
 DATA.R3 = DATA.R3 %>% mutate(valueCor = value / FS)
@@ -267,7 +232,7 @@ colnames(DATA.R3)[colnames(DATA.R3)=="valueCor"] <- "value"
 #
   # Final Data Set
 DATA1 = rbind(DATA.R1,DATA.R2,DATA.R3)
-rm(DATA, DATA.R1, DATA.R2, DATA.R3)
+rm(DATA, DATA.R1, DATA.R2, DATA.R3, Weights)
 # SEPARATE DATASETS
 # ---- ***Final Energy (FE)*** ----
 DATA.FE <- subset(DATA1, Variable=="FECoolElec"|Variable=="FEHeatCoal"|Variable=="FEHeatElecResistance"|Variable=="FEHeatElecHeatpump"|Variable=="FEHeatGas"|Variable=="FEHeatHydrogen"
@@ -434,25 +399,25 @@ temp = rbind(temp,temp1)
 temp$ID = paste(temp$Region, temp$Variable, temp$Year)
 
 # Separate datasets for results of each decomposition component
+temp.BaseNoRenov = subset(temp, ScenOrder == "SSP2_InsulNew")
 temp.Base = subset(temp, ScenOrder == "SSP2_Baseline")
-temp.EffNew = subset(temp, ScenOrder == "SSP2_450_InsulNew")
-temp.EffNewRen = subset(temp, ScenOrder == "SSP2_450_InsulAll")
-temp.Tot = subset(temp, ScenOrder == "SSP2_450_Baseline")
+temp.EffNew = subset(temp, ScenOrder == "SSP2_SPA0_26I_D_InsulNew")
+temp.EffNewRen = subset(temp, ScenOrder == "SSP2_SPA0_26I_D_InsulAll")
+temp.Tot = subset(temp, ScenOrder == "SSP2_SPA0_26I_D_Baseline")
 
 # Complete dataset
-Area.EffNew = temp.Base
-colnames(Area.EffNew)[colnames(Area.EffNew)=="value"] <- "max"
-Area.EffNew$min <- temp.EffNew[match(Area.EffNew$ID,temp.EffNew$ID),"value"]
+decompose <- function(dataframe1,dataframe2){
+  colnames(dataframe1)[colnames(dataframe1)=="value"] <- "max"
+  dataframe1$min <- dataframe2[match(dataframe1$ID,dataframe2$ID),"value"]
+  dataframe1
+}
 
-Area.EffNewRen = temp.EffNew
-colnames(Area.EffNewRen)[colnames(Area.EffNewRen)=="value"] <- "max"
-Area.EffNewRen$min <- temp.EffNewRen[match(Area.EffNewRen$ID,temp.EffNewRen$ID),"value"]
-
-Area.EffNewRenFuel = temp.EffNewRen
-colnames(Area.EffNewRenFuel)[colnames(Area.EffNewRenFuel)=="value"] <- "max"
-Area.EffNewRenFuel$min <- temp.Tot[match(Area.EffNewRenFuel$ID,temp.Tot$ID),"value"]
-
-DATA.FIG3 = rbind(Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+Area.Base = decompose(temp.BaseNoRenov,temp.Base)
+Area.EffNew = decompose(temp.Base, temp.EffNew)
+Area.EffNewRen = decompose(temp.EffNew, temp.EffNewRen)
+Area.EffNewRenFuel = decompose(temp.EffNewRen,temp.Tot)
+                          
+DATA.FIG3 = rbind(Area.Base,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 #  Add total emissions/energy for each scenario
 temp$ID = paste(temp$Region, temp$ScenOrder, temp$Variable, temp$Year)
@@ -464,11 +429,12 @@ temp$min <- NA
 temp$max <- NA
 
 #  Add emission and energy projection for the mitigation scenarios
-DATA.FIG3 = rbind(DATA.FIG3,subset(temp, ScenOrder == "SSP2_450_Baseline"))
+DATA.FIG3 = rbind(DATA.FIG3,subset(temp, ScenOrder == "SSP2_SPA0_26I_D_Baseline"))
 
 DATA.FIG3$ID <- NULL
 DATA.FIG3$Variable = factor(DATA.FIG3$Variable, levels=c("FECoolHeat","EmisCO2DirectHeatCool"))
-rm(temp,temp1,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
+rm(temp,temp1,temp.BaseNoRenov,temp.Base,temp.EffNew,temp.EffNewRen,temp.Tot,
+   Area.EffNew,Area.EffNewRen,Area.EffNewRenFuel)
 
 # 
 # ---- BASLINE AND MITIGATION COMPARISON ----
@@ -478,11 +444,11 @@ Compare =Compare[!duplicated(Compare),]
 
   # Comparison between Baseline and Mitigation
 Compare.Scen = spread(Compare, Scenario, value)
-Compare.Scen = Compare.Scen %>% mutate(MitigChange_Perc = (SSP2_450_Baseline - SSP2_Baseline)/SSP2_Baseline * 100)
+Compare.Scen = Compare.Scen %>% mutate(MitigChange_Perc = (SSP2_SPA0_26I_D_Baseline - SSP2_Baseline)/SSP2_Baseline * 100)
 Compare.Scen = subset(Compare.Scen, Region %in% RCPRegions & Year %in% ActiveYears2 & Prim == "Total" & Variable != "FECoolHeat")
 
   # Comparison between 2020 and Mitigation
-Compare.Time = subset(Compare, (Year=="2020"|Year=="2050"|Year=="2100") & Scenario == "SSP2_450_Baseline")
+Compare.Time = subset(Compare, (Year=="2020"|Year=="2050"|Year=="2100") & Scenario == "SSP2_SPA0_26I_D_Baseline")
 Compare.Time = spread(Compare.Time, Year, value)
 colnames(Compare.Time)[6:8] <- c("x2020","x2050","x2100")
 Compare.Time = Compare.Time %>% mutate(PercChang_20_50 = (x2050 - x2020)/x2020 * 100)
@@ -492,14 +458,16 @@ Compare.Time = subset(Compare.Time, Region %in% RCPRegions & Prim == "Total" & V
 # ---- DATASET FOR SUPPLEMENTARY DATA ----
 ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
                                          "SSP2_Baseline",
+                                         "SSP2_InsulNew",
                                          "SSP3_Baseline",
                                          "SSP4_Baseline",
                                          "SSP5_Baseline",
-                                         "SSP2_450_Baseline",
-                                         "SSP2_450_InsulAll",
-                                         "SSP2_450_InsulNew"),
+                                         "SSP2_SPAo_26I_D_Baseline",
+                                         "SSP2_SPAo_26I_D_InsulAll",
+                                         "SSP2_SPAo_26I_D_InsulNew"),
                            ScenLabel = c("SSP1",
                                           "SSP2",
+                                          "SSP2 NewIsul",
                                           "SSP3",
                                           "SSP4",
                                           "SSP5",
@@ -559,22 +527,25 @@ SupData.RR =SupData.RR[!duplicated(SupData.RR),]
 #
 # ---- LABELS ----
 scen_labels <-c("SSP2_Baseline"="Baseline",
-                "SSP2_450_Baseline"="2°C",
-                "SSP2_450_Full"="Full \n2°C",
-                "SSP2_450_Demand"="Demand \n2°C",
-                "SSP2_450_Floorspace"="Floorspace \n2°C",
-                "SSP2_450_InsulAll"="New and Renovations \n2°C",
-                "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
+                "SSP2_InsulNew"="Baseline - No Renovations",
+                "SSP2_SPA0_26I_D_Baseline"="2°C",
+                "SSP2_SPA0_26I_D_Full"="Full \n2°C",
+                "SSP2_SPA0_26I_D_Demand"="Demand \n2°C",
+                "SSP2_SPA0_26I_D_Floorspace"="Floorspace \n2°C",
+                "SSP2_SPA0_26I_D_InsulAll"="New and Renovations \n2°C",
+                "SSP2_SPA0_26I_D_InsulNew"="New Building \nInsulation - 2°C")
 
 scen_labels2 <-c("SSP2_Baseline"="Baseline",
-                "SSP2_450_Baseline"="2°C",
-                "SSP2_450_InsulAll"="New and Renovations \n2°C",
-                "SSP2_450_InsulNew"="New Building \nInsulation - 2°C")
+                 "SSP2_InsulNew"="Baseline - No Renovations",
+                 "SSP2_SPA0_26I_D_Baseline"="2°C",
+                "SSP2_SPA0_26I_D_InsulAll"="New and Renovations \n2°C",
+                "SSP2_SPA0_26I_D_InsulNew"="New Building \nInsulation - 2°C")
 
 scen_labels3 <-c("SSP2_Baseline"="Effect of Insulation \nin New Buildings",
-                 "SSP2_450_InsulNew"="Effect of Retrooofits",
-                 "SSP2_450_InsulAll"="Effect of heating & /n cooling technology choices",
-                 "SSP2_450_Baseline"="Total")
+                 "SSP2_InsulNew"="Baseline - No Renovations",
+                 "SSP2_SPA0_26I_D_InsulNew"="Effect of Retrooofits",
+                 "SSP2_SPA0_26I_D_InsulAll"="Effect of heating & /n cooling technology choices",
+                 "SSP2_SPA0_26I_D_Baseline"="Total")
 
 
 reg_labels <-c("BRA"="Brazil","CAN"="Canada","CEU"="Central Europe","CHN"="China+","EAF"="Eastern Africa",
@@ -633,7 +604,7 @@ StckUV.BMR <- ggplot() +
   scale_colour_manual(values="black",name="Floorspace (Left axis)",breaks="FloorspaceTotal",labels="", guide="legend") +
   scale_shape_manual(values=c(1,8),
                     name="U-Value (Right axis)",
-                    breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
+                    breaks=c("SSP2_Baseline","SSP2_SPA0_26I_D_Baseline"),
                     labels=c("Baseline","2°C")) +
   facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -682,7 +653,7 @@ FuelsEmis.Aggr <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("dodgerblue","firebrick","gold2"),
+  scale_fill_manual(values=c("firebrick","dodgerblue","gold2"),
                     name="Final Energy \n(left axis)",
                     breaks=c("FEHeat","FECool","FEResElecPVHeatCool"),
                     labels=c("Heating ","Cooling","Rooftop Photovoltaic \n(Generation)")) +
@@ -705,7 +676,7 @@ FuelsEmis.AggrGlob <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("deepskyblue","firebrick1"),
+  scale_fill_manual(values=c("firebrick1","deepskyblue"),
                     name="Final Energy",
                     breaks=c("FEHeat","FECool"),
                     labels=c("Heating ","Cooling")) +
@@ -723,10 +694,14 @@ left_axis3 = "Secondary Energy [EJ/yr]"
 right_axis3 = expression(paste("Heating & Cooling Emissions", "[Gt",CO[2],"/yr]",""))
                          
 Areas <- ggplot(data=DATA.FIG3) + 
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e9, color=ScenOrder),size=0.75, alpha=1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="FECoolHeat" & !ScenOrder=="SSP2_SPA0_26I_D_Baseline"), 
+              aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_SPA0_26I_D_Baseline"), 
+              aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase), 
+            aes(x=Year,y = value/1e9, color=ScenOrder),size=0.75, alpha=1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), 
+            aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   scale_y_continuous(name = left_axis3, 
                      sec.axis = sec_axis(~. * 1/axis_scale3, name = right_axis3))+
@@ -735,38 +710,42 @@ Areas <- ggplot(data=DATA.FIG3) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   xlab("") + ylab("EJ/yr") +
-  scale_colour_manual(values=c("firebrick","forestgreen","forestgreen","forestgreen"),
+  scale_colour_manual(values=c("gray","firebrick","forestgreen","forestgreen","forestgreen"),
                     name="",
-                    breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
-                    labels=c("Baseline","x","y","2°C")) +
-  scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
+                    breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline"),
+                    labels=c("NoRenov","Baseline","x","y","2°C")) +
+  scale_fill_manual(values=c("gray75","green3","darkorchid4","skyblue"),
                     name="",
-                    breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                    labels=c("Effect of Insulation \nin New Buildings",
-                             "Effect of Renovations",
+                    breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll"),
+                    labels=c("Effect of Renovation \nin Baseline",
+                             "Effect of Insulation \nin New Buildings",
+                             "Effect of Renovations \n(mitigation)",
                              "Effect of heating & \ncooling technology choices")) +
   facet_grid(Region~Variable, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Areas
 
 Emis.decomp <- ggplot(data=DATA.FIG3) + 
-  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_450_Baseline"), aes(x=Year, ymin=min/1e12, ymax=max/1e12, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), aes(x=Year,y = value/1e12, color=ScenOrder),size=0.75, alpha=1) +
+  geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_SPA0_26I_D_Baseline"), 
+              aes(x=Year, ymin=min/1e12, ymax=max/1e12, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), 
+            aes(x=Year,y = value/1e12, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
+  theme(legend.position="bottom", legend.box = "vertical") +
   xlab("") + ylab(right_axis3) +
-  scale_colour_manual(values=c("firebrick","forestgreen","forestgreen","forestgreen"),
+  scale_colour_manual(values=c("gray","firebrick","forestgreen","forestgreen","forestgreen"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll","SSP2_450_Baseline"),
-                      labels=c("Baseline","x","y","2°C")) +
-  scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
+                      breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline"),
+                      labels=c("NoRenov","Baseline","x","y","2°C")) +
+  scale_fill_manual(values=c("gray75","green3","darkorchid4","skyblue"),
                     name="",
-                    breaks=c("SSP2_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                    labels=c("Effect of Insulation \nin New Buildings",
-                             "Effect of Renovations",
+                    breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll"),
+                    labels=c("Effect of Renovation \nin Baseline",
+                             "Effect of Insulation \nin New Buildings",
+                             "Effect of Renovations \n(mitigation)",
                              "Effect of heating & \ncooling technology choices")) +
   facet_wrap(.~Region, nrow = 2, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -826,8 +805,8 @@ Stck.BMR <- ggplot(data=DATA.FIG1,aes(x=Year,y = value/1e9, fill=InsulLevel)) +
 Stck.BMR
 
 StckUV.MR <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG1, Scenario == "SSP2_450_Baseline"),aes(x=Year,y = value/1e9, fill=InsulLevel), stat="identity") +
-  geom_point(data=subset(DATA.FIG1a, Variable=="UEUvalue" & Scenario == "SSP2_450_Baseline"),
+  geom_bar(data=subset(DATA.FIG1, Scenario == "SSP2_SPA0_26I_D_Baseline"),aes(x=Year,y = value/1e9, fill=InsulLevel), stat="identity") +
+  geom_point(data=subset(DATA.FIG1a, Variable=="UEUvalue" & Scenario == "SSP2_SPA0_26I_D_Baseline"),
              aes(x=Year,y = value * axis_scale1),size=1.0, alpha=0.66) +
   scale_y_continuous(name = left_axis1, 
                      sec.axis = sec_axis(~. * 1/axis_scale1, name = right_axis1))+
@@ -859,7 +838,7 @@ UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEH
   theme(legend.position="right") +
   scale_colour_manual(values=c("black","green3"),
                       name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
+                      breaks=c("SSP2_Baseline","SSP2_SPA0_26I_D_Baseline"),
                       labels=c("Baseline","2°C")) +
   facet_wrap(Region~., nrow=3, labeller=labeller(Region=reg_labels)) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
@@ -905,7 +884,7 @@ EnIndep.BMRQ <- ggplot() +
 EnIndep.BMRQ
 
 EnIndep.MRQ <- ggplot() + 
-  geom_line(data=subset(DATA.ID, Scenario == "SSP2_450_Baseline" & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog)
+  geom_line(data=subset(DATA.ID, Scenario == "SSP2_SPA0_26I_D_Baseline" & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog)
             , aes(x=Year,y = value, colour=DemogOrder, alpha=DemogQ/5), size=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   xlim(2020,2100) +
@@ -932,53 +911,52 @@ EnIndep.MRQ
 #
 # # ---- OUTPUTS FOR MANUSCRIPT ----
 # write.xlsx(DATA.T1, file="output/BuildStocks/Table1.xlsx", sheetName="Table 1", append=FALSE, row.names=FALSE, showNA = TRUE)
-# 
+#
 # png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5.5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.Aggr)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Areas)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/FigS1.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Floorspace.BAR)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/FigS2.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Stck.BMR)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/FigS3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(UEInt.BMR)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/FigS4.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(EnIndep.BMRQ)
 # dev.off()
-# #
 # #
 # # ---- OTHER OUTPUTS ----
 # png(file = "output/BuildStocks/Other/Fig2_Fuels.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BMR)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Other/Fig2_AggregateGlobal.png", width = 7*ppi, height = 3*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.AggrGlob)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Other/Fig3_Emis.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Emis.decomp)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Other/FigS3_Mitig.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(EnIndep.MRQ)
 # dev.off()
-# 
+#
 # png(file = "output/BuildStocks/Other/Fig1_InsulLev.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.MR)
 # dev.off()
@@ -986,8 +964,7 @@ EnIndep.MRQ
 # png(file = "output/BuildStocks/Other/AgeCohortFrac.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(FloorspaceFrac.BAR)
 # dev.off()
-# 
-
+#
 # ---- SUPPLEMENTARY DATA OUTPUT ----
 # wb <- createWorkbook()
 # 
@@ -1007,265 +984,3 @@ EnIndep.MRQ
 # writeDataTable(wb, sheet = "Renovation Rate", x = SupData.RR)
 # 
 # saveWorkbook(wb, "output/BuildStocks/IMAGE_Residential_Supplementary_Data.xlsx", overwrite = TRUE)
-#
-# ---- FIG: UValues per Level ----
-UVLevel.BLR <- ggplot(data=subset(DATA.UVL, Scenario=="SSP2_Baseline"  & Region %in% RCPRegions & Year %in% ActiveYears)
-                      ,aes(x=Year,y = value, colour=InsulLevel)) + 
-  geom_line() +
-  ylab("W/m^2/K") +
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("gray90","gray70","gray50","gray30","gray20","black"),
-                      name="Insulation Level",
-                      breaks=c("1","2","3","4","5","6"),
-                      labels=c("1","2","3","4","5","6")) +
-  facet_wrap(Region~., nrow=2, scales="free_y", labeller=labeller(Region=reg_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-UVLevel.BLR
-
-#
-
-# ---- FIG: UE Total ----
-UECoolHeat.SV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region==ActiveRegion)
-                        , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
-  geom_line(size=1, alpha=1) +
-  xlim(2020,2100) +
-  xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  facet_grid(Variable~., scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-UECoolHeat.SV
-
-UECoolHeat.SRV <- ggplot(data=subset(DATA.UE, Scenario %in% ScenInsul & (!Variable=="UEIntHeat") & Year %in% ActiveYears & Region %in% ActiveRegions)
-                         , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
-  geom_line(size=1, alpha=1) +
-  # xlim(2010,2100) +
-  xlab("") + ylab("kJ/m^2/HDD, normalised to 2020") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-UECoolHeat.SRV
-
-# 
-# ---- FIG: FE Heat ----
-FEHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region==ActiveRegion & !(Prim=="Total"))
-                   , aes(x=Year,y = value, fill=Prim)) + 
-  geom_bar(stat="identity") +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  # ylim(0,1.2) +
-  xlab("") + ylab("GJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("black","gray","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
-                      name="",
-                      breaks=c("Coal","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                      labels=c("Coal","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
-  facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FEHeat.S
-
-FEHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FEHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & !(Prim=="Total"))
-                    , aes(x=Year,y = value/1e9, fill=Prim)) + 
-  geom_bar(stat="identity") +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  # ylim(0,1.2) +
-  xlab("") + ylab("EJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_fill_manual(values=c("black","gray","maroon","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
-                    name="",
-                    breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                    labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
-  facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FEHeat.SR
-
-#
-# ---- FIG: FE Cool ----
-FECool.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECool" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Elec")
-                    , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
-  geom_line(size=1, alpha=1) +
-  # xlim(2010,2100) +
-  xlab("") + ylab("EJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FECool.SR
-
-# 
-# ---- FIG: FE Total ----
-FECoolHeat.S <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region==ActiveRegion & Prim=="Total")
-                       , aes(x=Year,y = value/1e9, colour=Scenario)) + 
-  geom_line(size=1, alpha=1) +
-  # xlim(2010,2100) +
-  xlab("") + ylab("EJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  # facet_grid(.~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FECoolHeat.S
-
-FECoolHeat.SR <- ggplot(data=subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% ActiveRegions & Prim=="Total")
-                        , aes(x=Year,y = value/1e9, colour=ScenOrder)) + 
-  geom_line(size=1, alpha=1) +
-  # xlim(2010,2100) +
-  xlab("") + ylab("EJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="bottom") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  facet_grid(.~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FECoolHeat.SR
-
-FECoolHeat.SRC <- ggplot(data=subset(DATA.FE, Scenario %in% ScenStand & Variable=="FECoolHeat" & Year %in% ActiveYears 
-                                     & Region %in% ActiveRegions)
-                         , aes(x=Year,y = value/1e9, fill=Prim)) + 
-  geom_bar(stat="identity") +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  # ylim(0,1.2) +
-  xlab("") + ylab("EJ/yr") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_fill_manual(values=c("black","gray","maroon","orange","skyblue", "navyblue","forestgreen","purple","bisque","brown"),
-                    name="",
-                    breaks=c("Coal","Elec","ElecResistance","ElecHeatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio"),
-                    labels=c("Coal","Elec","Elec-Resistance","Elec-Heatpump","Gas","Hydrogen","ModBio","Oil","SecHeat","TradBio")) +
-  facet_grid(Region~ScenOrder, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-FECoolHeat.SRC
-
-# 
-# ---- FIG: Carbon Contents ----
-CC.R <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & (Scenario=="SSP2_Baseline"|Scenario=="SSP2_450_Baseline"))
-               , aes(x=Year,y = value, colour=ScenOrder)) + 
-  geom_line(size=1,alpha=0.8) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  xlab("") + ylab("kgC/GJ") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("black","green3"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline"),
-                      labels=c("Baseline","2°C")) +
-  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-CC.R
-
-
-CC.SRV <- ggplot(data=subset(DATA.CC, Region %in% ActiveRegions & Scenario %in% ScenInsul)
-                 , aes(x=Year,y = value, colour=ScenOrder)) + 
-  geom_line(size=1,alpha=0.8) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') + 
-  xlim(2020,2100) +
-  xlab("") + ylab("kgC/GJ") +
-  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-  theme(legend.position="right") +
-  scale_colour_manual(values=c("black","green3","firebrick", "skyblue"),
-                      name="",
-                      breaks=c("SSP2_Baseline","SSP2_450_Baseline","SSP2_450_InsulNew","SSP2_450_InsulAll"),
-                      labels=c("Baseline","2°C","No Renovations - 2°C","No Improv. Insul. - 2°C")) +
-  facet_grid(Variable~Region, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels, Variable=cc_labels)) + 
-  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-CC.SRV
-
-#
-# ---- FIG: Cost Component ----
-# plot_list = list()
-# for(i in c(2020,2050,2100)){
-#   Costs.Abs <- ggplot(data=subset(CostComponent, (TURQ==1) & 
-#                                     Region %in% Regions & 
-#                                     (Year==i) &
-#                                     (Scen=="SSP2"|Scen=="SSP2_450") &
-#                                     (variable=="CapitalNorm"|variable=="HeatFNorm"|variable=="CoolFNorm"))
-#                       , aes(x=EffLevel,y = value, fill=variable)) + 
-#     geom_bar(stat="identity") +
-#     xlab("") + ylab("") +
-#     theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-#     theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-#     theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-#     theme(legend.position="right") +
-#     scale_fill_manual(values=c("gray","firebrick","cornflowerblue"),
-#                       name="",
-#                       breaks=c("CapitalNorm","HeatFNorm","CoolFNorm"),
-#                       labels=c("Capital Costs","Heating Fuel","Cooling Fuel")) +
-#     
-#     facet_grid(Region~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
-#     theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-#   Costs.Abs
-#   plot_list[[i]] = Costs.Abs
-# }
-# plot_list[[2020]]
-# plot_list[[2100]]
-# 
-# Costs.WEU <- ggplot(data=subset(CostComponent, (TURQ==1) & 
-#                                   Region == 11  & 
-#                                   (Year==2020|Year==2050|Year==2100) &
-#                                   (Scen=="SSP2"|Scen=="SSP2_450") &
-#                                   (variable=="CapitalNorm"|variable=="HeatFNorm"|variable=="CoolFNorm"))
-#                     , aes(x=EffLevel,y = value, fill=variable)) + 
-#   geom_bar(stat="identity") +
-#   xlab("Efficiency Level") + ylab("Cost relative to 2020 - Efficiency Level = 1") +
-#   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank()) + 
-#   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
-#   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
-#   theme(legend.position="right") +
-#   scale_x_continuous(breaks=c(1,2,3,4,5,6)) + 
-#   scale_fill_manual(values=c("gray","firebrick","cornflowerblue"),
-#                     name="",
-#                     breaks=c("CapitalNorm","HeatFNorm","CoolFNorm"),
-#                     labels=c("Capital Costs","Heating Fuel","Cooling Fuel")) +
-#   facet_grid(Year~Scen, scales="free_y", labeller=labeller(Region=reg_labels, Scen=scen_labels)) + 
-#   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-# Costs.WEU
-# 
-# #
-

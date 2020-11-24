@@ -57,6 +57,7 @@ ActiveDemog1 =c("Total","Urban","Rural")
 Scenarios = c("SSP2_Baseline","SSP2_InsulNew",
               "SSP2_SPA0_26I_D_Baseline","SSP2_SPA0_26I_D_Full","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_InsulNew")
 ScenBase  =c("SSP2_Baseline","SSP2_SPA0_26I_D_Baseline")
+ScenBase2  =c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_Baseline")
 ScenStand = c("SSP2_Baseline","SSP2_InsulNew","SSP2_SPA0_26I_D_Baseline","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_InsulNew")
 ScenInsul = c("SSP2_Baseline","SSP2_InsulNew","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline")
 
@@ -698,9 +699,9 @@ Areas <- ggplot(data=DATA.FIG3) +
               aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
   geom_ribbon(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & !ScenOrder=="SSP2_SPA0_26I_D_Baseline"), 
               aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour="gray30", size=0.1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase), 
+  geom_line(data=subset(DATA.FIG3, Variable=="FECoolHeat" & ScenOrder %in% ScenBase2), 
             aes(x=Year,y = value/1e9, color=ScenOrder),size=0.75, alpha=1) +
-  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase), 
+  geom_line(data=subset(DATA.FIG3, Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase2), 
             aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=0.75, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
   scale_y_continuous(name = left_axis3, 
@@ -710,10 +711,10 @@ Areas <- ggplot(data=DATA.FIG3) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
   xlab("") + ylab("EJ/yr") +
-  scale_colour_manual(values=c("gray","firebrick","forestgreen","forestgreen","forestgreen"),
+  scale_colour_manual(values=c("gray50","firebrick","forestgreen","forestgreen","forestgreen"),
                     name="",
                     breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll","SSP2_SPA0_26I_D_Baseline"),
-                    labels=c("NoRenov","Baseline","x","y","2°C")) +
+                    labels=c("Baseline (No renovations)","Baseline","x","y","2°C")) +
   scale_fill_manual(values=c("gray75","green3","darkorchid4","skyblue"),
                     name="",
                     breaks=c("SSP2_InsulNew","SSP2_Baseline","SSP2_SPA0_26I_D_InsulNew","SSP2_SPA0_26I_D_InsulAll"),
@@ -911,31 +912,31 @@ EnIndep.MRQ
 #
 # # ---- OUTPUTS FOR MANUSCRIPT ----
 # write.xlsx(DATA.T1, file="output/BuildStocks/Table1.xlsx", sheetName="Table 1", append=FALSE, row.names=FALSE, showNA = TRUE)
-#
+# 
 # png(file = "output/BuildStocks/Fig1.png", width = 7*ppi, height = 5.5*ppi, units = "px", res = ppi)
 # plot(StckUV.BMR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Fig2.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.Aggr)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Fig3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Areas)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/FigS1.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Floorspace.BAR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/FigS2.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(Stck.BMR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/FigS3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(UEInt.BMR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/FigS4.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(EnIndep.BMRQ)
 # dev.off()
@@ -944,28 +945,28 @@ EnIndep.MRQ
 # png(file = "output/BuildStocks/Other/Fig2_Fuels.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.BMR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Other/Fig2_AggregateGlobal.png", width = 7*ppi, height = 3*ppi, units = "px", res = ppi)
 # plot(FuelsEmis.AggrGlob)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Other/Fig3_Emis.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(Emis.decomp)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Other/FigS3_Mitig.png", width = 7*ppi, height = 6*ppi, units = "px", res = ppi)
 # plot(EnIndep.MRQ)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Other/Fig1_InsulLev.png", width = 7*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(StckUV.MR)
 # dev.off()
-#
+# 
 # png(file = "output/BuildStocks/Other/AgeCohortFrac.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(FloorspaceFrac.BAR)
 # dev.off()
-#
-# ---- SUPPLEMENTARY DATA OUTPUT ----
+# 
+# # ---- SUPPLEMENTARY DATA OUTPUT ----
 # wb <- createWorkbook()
 # 
 # addWorksheet(wb, "Final Energy")

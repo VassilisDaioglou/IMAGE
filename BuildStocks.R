@@ -463,18 +463,18 @@ ScenarioDF <- data.frame(Scenario = c("SSP1_Baseline",
                                          "SSP3_Baseline",
                                          "SSP4_Baseline",
                                          "SSP5_Baseline",
-                                         "SSP2_SPAo_26I_D_Baseline",
-                                         "SSP2_SPAo_26I_D_InsulAll",
-                                         "SSP2_SPAo_26I_D_InsulNew"),
+                                         "SSP2_SPA0_26I_D_Baseline",
+                                         "SSP2_SPA0_26I_D_InsulAll",
+                                         "SSP2_SPA0_26I_D_InsulNew"),
                            ScenLabel = c("SSP1",
                                           "SSP2",
                                           "SSP2 NewIsul",
                                           "SSP3",
                                           "SSP4",
                                           "SSP5",
-                                          "2°C",
-                                          "AllInsul",
-                                          "NewInsul"))
+                                          "SSP2 - 2°C",
+                                          "SSP2 - 2°C - AllInsul",
+                                          "SSP2 - 2°C - NewInsul"))
 
 SupData.FE = rbind(DATA.FE, DATA.PV)
 SupData.FE = subset(SupData.FE, Variable=="FEHeat"|Variable=="FECool"|Variable=="FEResGenerationElec")
@@ -499,11 +499,13 @@ SupData.FS =SupData.FS[!duplicated(SupData.FS),]
 
 SupData.UE = subset(DATA.UE, Variable == "UEHeatCool")
 SupData.UE = subset(SupData.UE, select = -c(Scenario, Normalised_2020))
+SupData.UE = rbind(SupData.UE, subset(DATA.UV, select = -c(Scenario)))
 SupData.UE$ScenName = ScenarioDF[match(SupData.UE$ScenOrder,ScenarioDF$Scenario),"ScenLabel"]
 SupData.UE$ScenOrder <- NULL
 SupData.UE = SupData.UE[,c(6,4,3,1,2,5)]
 colnames(SupData.UE)[] <- c("Scenario","Region","Year","Variable","Unit","Value")
 SupData.UE$Variable = gsub("UEHeatCool","Heating & Cooling Useful Energy Demand",SupData.UE$Variable)
+SupData.UE$Variable = gsub("UEUvalue","Aggregate Residential U-Value",SupData.UE$Variable)
 SupData.UE =SupData.UE[!duplicated(SupData.UE),]
 
 SupData.EM = subset(DATA.EM, Variable == "EmisCO2DirectHeatCool"|Variable=="EmisCO2HeatCool")

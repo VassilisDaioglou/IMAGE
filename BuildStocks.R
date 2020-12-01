@@ -164,9 +164,13 @@ DATA$Variable <- gsub("10 years or less","<10",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("51 years or more",">51",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Cost Component","CostFrac",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("Capital","Cap",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("ElecRes","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("ElecSolarRes","",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("Fixed","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 
 DATA$Year = as.numeric(substr(DATA$Year, start=1, stop=4))
+DATA$value = as.numeric(as.character(DATA$value))
 
 DATA$ScenOrder = factor(DATA$Scenario, levels =c("SSP1_Baseline","SSP2_Baseline","SSP3_Baseline","SSP4_Baseline","SSP5_Baseline",
                                                  "SSP2_InsulNew",
@@ -212,7 +216,8 @@ DATA.R2 = subset(DATA.R2, select = -c(value,ID,Pop))
 colnames(DATA.R2)[colnames(DATA.R2)=="valueCor"] <- "value"
 # 
   # Identify Variables whose RCP regional data will be FLOORSPACE weighted 
-DATA.R3 = subset(DATA, (Unit=="$/m2"|Unit=="W/m^2/K") | (Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|
+DATA.R3 = subset(DATA, (Unit=="$/m2"|Unit=="W/m^2/K"|Unit=="US$2010/kW/yr"|Unit=="US$2010/kW") | 
+                   (Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|
                    Variable=="FloorspaceAgeCohFrac<10"|Variable=="FloorspaceAgeCohFrac11to20years"|Variable=="FloorspaceAgeCohFrac21to30years"|
                    Variable=="FloorspaceAgeCohFrac31to40years"|Variable=="FloorspaceAgeCohFrac41to50years"|Variable=="FloorspaceAgeCohFrac>51"|
                    Variable=="FEResIndepTotal"|Variable=="FEResIndepUrban"|Variable=="FEResIndepRural"|
@@ -268,6 +273,12 @@ DATA.FE$PrimOrder  =factor(DATA.FE$Prim, levels = EnergyCarriers)
 DATA.PV <- subset(DATA1, Variable=="FEResExportElec"|Variable=="FEResGenerationElec"|Variable=="FEResNetElec"|Variable=="FEResElecPVHeatCool")
 DATA.PV$Prim <- "ElecPV"
 DATA.PV$PrimOrder  =factor(DATA.PV$Prim, levels = EnergyCarriers)
+# ---- *** Rooftop PV Cost (PVC)*** ----
+DATA.PVC <- subset(DATA1, Variable=="CapCostPV"|Variable=="OMCostPV")
+DATA.PVC$Unit <- "$2010/kWe"
+DATA.PVC = spread(DATA.PVC,Variable,value)
+DATA.PVC = DATA.PVC %>% mutate(TotalCostPV = CapCostPV + OMCostPV)
+DATA.PVC = melt(DATA.PVC, id.vars=c("Scenario","Unit","Year","ScenOrder","Region"))
 # ---- ***Carbon Contents (CC)*** ----
 DATA.CC <- subset(DATA1, Variable=="CCElec"|Variable=="CCHeat")
 
@@ -828,6 +839,26 @@ StckUV.MR <- ggplot() +
 StckUV.MR
 
 #
+# ---- Figure XX: PV Costs ----
+PVCost.BR <- ggplot(data=subset(DATA.PVC, Scenario == "SSP2_SPA0_26I_D_Baseline" & variable=="TotalCostPV" & Year %in% ActiveYears & Region %in% RCPRegions & !Region=="World")
+                    , aes(x=Year,y = value, colour=Region)) + 
+  geom_line(size=1, alpha=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  xlim(2020,2100) +
+  ylim(0,2000) +
+  xlab("") + ylab(expression(paste("Capital + O&M Cost for residential PV [$"[2010],"/kW"[e],"]"))) +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  scale_colour_manual(values=c("dodgerblue","firebrick","darkgoldenrod1","dimgray","forestgreen"),
+                      name="",
+                      breaks=c("OECD90","REF","ASIA","MAF","LAM"),
+                      labels=c("OECD","Reforming \nEconomies","Asia","Middle East \n& Africa","Latin \nAmerica")) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+PVCost.BR
+#
+
 # ---- Figure S3: Intensity ----
 UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEHeatCoolpfs" & Year %in% ActiveYears & Region %in% RCPRegions)
                     , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 

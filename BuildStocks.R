@@ -32,6 +32,7 @@ library(stringr)
 library(xlsx)
 library(openxlsx)
 library(ggpubr)
+library(gridExtra)
 
 # ---- INPUTS: Constants ----
 ppi <- 300
@@ -216,7 +217,7 @@ DATA.R2 = subset(DATA.R2, select = -c(value,ID,Pop))
 colnames(DATA.R2)[colnames(DATA.R2)=="valueCor"] <- "value"
 # 
   # Identify Variables whose RCP regional data will be FLOORSPACE weighted 
-DATA.R3 = subset(DATA, (Unit=="$/m2"|Unit=="W/m^2/K"|Unit=="US$2010/kW/yr"|Unit=="US$2010/kW") | 
+DATA.R3 = subset(DATA, (Unit=="$/m2"|Unit=="W/m^2/K"|Unit=="US$2010/kW/yr"|Unit=="US$2010/kW"|Unit=="US$/kWhe") | 
                    (Variable=="InsulAverageRenovRate"|Variable=="UEHeatCoolpfs"|Variable=="UEIntHeat"|
                    Variable=="FloorspaceAgeCohFrac<10"|Variable=="FloorspaceAgeCohFrac11to20years"|Variable=="FloorspaceAgeCohFrac21to30years"|
                    Variable=="FloorspaceAgeCohFrac31to40years"|Variable=="FloorspaceAgeCohFrac41to50years"|Variable=="FloorspaceAgeCohFrac>51"|
@@ -277,8 +278,22 @@ DATA.PV$PrimOrder  =factor(DATA.PV$Prim, levels = EnergyCarriers)
 DATA.PVC <- subset(DATA1, Variable=="CapCostPV"|Variable=="OMCostPV")
 DATA.PVC$Unit <- "$2010/kWe"
 DATA.PVC = spread(DATA.PVC,Variable,value)
-DATA.PVC = DATA.PVC %>% mutate(TotalCostPV = CapCostPV + OMCostPV)
+DATA.PVC = DATA.PVC %>% mutate(TotalInvPV = CapCostPV + OMCostPV)
 DATA.PVC = melt(DATA.PVC, id.vars=c("Scenario","Unit","Year","ScenOrder","Region"))
+colnames(DATA.PVC)[6] <- "Variable"
+
+DATA.PVC = rbind(DATA.PVC,subset(DATA1, Unit=="US$/kWhe"))
+
+
+DATA.PVC$Demographic <- substr(DATA.PVC$Variable, start=15, stop=20)
+DATA.PVC$Demographic[DATA.PVC$Demographic == ""] <- "Total"
+DATA.PVC$DemogOrder = factor(DATA.PVC$Demographic, levels =c("Total","Urban","Rural",
+                                                           "U1","U2","U3","U4","U5",
+                                                           "R1","R2","R3","R4","R5"))
+DATA.PVC$DemogQ = substr(DATA.PVC$DemogOrder, start=2, stop=2)
+DATA.PVC$DemogQ = as.numeric(DATA.PVC$DemogQ)
+DATA.PVC$DemogTUR = substr(DATA.PVC$DemogOrder, start=1, stop=1)
+
 # ---- ***Carbon Contents (CC)*** ----
 DATA.CC <- subset(DATA1, Variable=="CCElec"|Variable=="CCHeat")
 
@@ -839,14 +854,15 @@ StckUV.MR <- ggplot() +
 StckUV.MR
 
 #
-# ---- Figure XX: PV Costs ----
-PVCost.BR <- ggplot(data=subset(DATA.PVC, Scenario == "SSP2_SPA0_26I_D_Baseline" & variable=="TotalCostPV" & Year %in% ActiveYears & Region %in% RCPRegions & !Region=="World")
+# ---- Figure S3: PV Costs ----
+PVInv.BR <- ggplot(data=subset(DATA.PVC, Scenario == "SSP2_SPA0_26I_D_Baseline" & Variable=="TotalInvPV" & Year %in% ActiveYears & Region %in% RCPRegions & !Region=="World")
                     , aes(x=Year,y = value, colour=Region)) + 
   geom_line(size=1, alpha=1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  ggtitle("A. Residential PV Investment Costs") +
   xlim(2020,2100) +
   ylim(0,2000) +
-  xlab("") + ylab(expression(paste("Capital + O&M Cost for residential PV [$"[2010],"/kW"[e],"]"))) +
+  xlab("") + ylab(expression(paste("Capital + O&M Cost [$"[2010],"/kW"[e],"]"))) +
   theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
   theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
@@ -856,10 +872,42 @@ PVCost.BR <- ggplot(data=subset(DATA.PVC, Scenario == "SSP2_SPA0_26I_D_Baseline"
                       breaks=c("OECD90","REF","ASIA","MAF","LAM"),
                       labels=c("OECD","Reforming \nEconomies","Asia","Middle East \n& Africa","Latin \nAmerica")) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
-PVCost.BR
-#
+PVInv.BR
 
-# ---- Figure S3: Intensity ----
+PVLCOE.MRQ <- ggplot() + 
+  geom_line(data=subset(DATA.PVC, Scenario == "SSP2_SPA0_26I_D_Baseline" & Unit == "US$/kWhe" & 
+                          Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog & !Region=="World")
+            , aes(x=Year,y = value, colour=DemogOrder, alpha=DemogQ/5), size=1) +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  ggtitle("B. Residential PV Levelized Costs of Electricity") +
+  xlim(2020,2100) + ylim(0,1) +
+  xlab("") + ylab(expression(paste("$"[2010],"/kWh"[e]))) +
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
+  theme(text= element_text(size=FSizeLeg, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="bottom") +
+  scale_colour_manual(values=c("black","black","black","black","black",
+                               "deepskyblue","deepskyblue","deepskyblue","deepskyblue","deepskyblue"),
+                      name="Demographic:",
+                      breaks=c( "U1","","","","",
+                                "R1","","","",""),
+                      labels=c( "Urban","","","","",
+                                "Rural","","","","")) +
+  scale_alpha(range=c(0.2,1),
+              name="Quintile \n(Shade)",
+              labels=c("1","2","3","4","5")) +
+  # scale_alpha(guide=FALSE) +
+  facet_wrap(Region~., nrow = 2, labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+PVLCOE.MRQ
+
+lay<-rbind(1,1,1,1,
+           2,2,2,2,2,2,2,2) 
+ResPV <- grid.arrange(PVInv.BR,PVLCOE.MRQ, layout_matrix=lay)
+
+# 
+#
+# ---- Figure S4: Intensity ----
 UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEHeatCoolpfs" & Year %in% ActiveYears & Region %in% RCPRegions)
                     , aes(x=Year,y = Normalised_2020, colour=ScenOrder)) + 
   geom_line(size=1, alpha=1) +
@@ -879,7 +927,7 @@ UEInt.BMR <- ggplot(data=subset(DATA.UE, Scenario %in% ScenBase & Variable=="UEH
 UEInt.BMR
 #
 
-# ---- Figure S4: Energy Independence ----
+# ---- Figure S5: Energy Independence ----
 EnIndep.BMRQ <- ggplot() + 
   geom_jitter(data=subset(DATA.ID, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions & Demographic %in% ActiveDemog1)
             , aes(x=Year,y = value, shape=DemogOrder, colour=DemogOrder), size=2, width=1, alpha=1, stroke=1) +
@@ -966,11 +1014,15 @@ EnIndep.MRQ
 # plot(Stck.BMR)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/FigS3.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/FigS3.png", width = 5*ppi, height = 7*ppi, units = "px", res = ppi)
+# plot(ResPV)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/FigS4.png", width = 7*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(UEInt.BMR)
 # dev.off()
 # 
-# png(file = "output/BuildStocks/FigS4.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
+# png(file = "output/BuildStocks/FigS5.png", width = 6*ppi, height = 8*ppi, units = "px", res = ppi)
 # plot(EnIndep.BMRQ)
 # dev.off()
 # #

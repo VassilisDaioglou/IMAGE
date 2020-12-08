@@ -411,9 +411,8 @@ DATA.FIG1a = rbind(subset(DATA1, Variable == "FloorspaceTotal" & Scenario == "SS
   # Figure 2
 DATA.FIG2 = rbind(DATA.FE,DATA.PV)
 DATA.FIG2 = subset(DATA.FIG2, Scenario %in% ScenBase & Year %in% ActiveYears & Region %in% RCPRegions)
-DATA.FIG2 = subset(DATA.FIG2, Variable=="FEHeat"|Variable=="FEResElecPVHeatCool"|Variable=="FECool")
-DATA.FIG2$value[DATA.FIG2$Variable=="FEResElecPVHeatCool"] <- -1 * DATA.FIG2$value[DATA.FIG2$Variable=="FEResElecPVHeatCool"]
-#  Remove duplicates
+DATA.FIG2 = subset(DATA.FIG2, Variable=="FEHeat"|Variable=="FECool"|Variable=="FEResGenerationElec"|Variable=="FEResElecPVHeatCool")
+DATA.FIG2$value[DATA.FIG2$Variable=="FEResGenerationElec"] <- -1 * DATA.FIG2$value[DATA.FIG2$Variable=="FEResGenerationElec"]
 DATA.FIG2<-DATA.FIG2[!duplicated(DATA.FIG2),]
   #  Figure 3
 temp = subset(DATA.FE, Scenario %in% ScenInsul & Variable=="FECoolHeat" & Year %in% ActiveYears & Region %in% RCPRegions & Prim=="Total")
@@ -630,6 +629,7 @@ StckUV.BMR <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="bottom", legend.box="vertical", legend.direction = "horizontal", legend.spacing.y=unit(0.01,"cm")) +
+  guides(shape = guide_legend(order = 2),col = guide_legend(order = 1)) +
   scale_colour_manual(values="black",name="Floorspace (Left axis)",breaks="FloorspaceTotal",labels="", guide="legend") +
   scale_shape_manual(values=c(1,8),
                     name="U-Value (Right axis)",
@@ -645,7 +645,9 @@ left_axis2 = "Final Energy [EJ/yr]"
 right_axis2 = expression(paste("Heating & Cooling Emissions", "[Gt",CO[2],"/yr]",""))
 
 FuelsEmis.BMR <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec"|Prim=="Total") & Region %in% RCPRegions), 
+  geom_bar(data=subset(DATA.FIG2, !(Prim=="Elec"|Prim=="Total") & 
+                         !(Variable=="FEResElecPVHeTcOOL") & 
+                         Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=PrimOrder),alpha=0.7, stat="identity") +
   geom_line(data=subset(DATA.FIG2, Variable=="FECool" & Region %in% RCPRegions),
             aes(x=Year,y = value/1e9, color="CoolingElec"),size=1, alpha=1, linetype="dashed") +
@@ -671,7 +673,10 @@ FuelsEmis.BMR
 
 axis_scale2 = 17
 FuelsEmis.Aggr <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|(Variable=="FECool"&Prim=="Total")|(Prim=="ElecPV")) & Region %in% RCPRegions), 
+  geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|
+                                     (Variable=="FECool"&Prim=="Total")|
+                                     (Variable=="FEResGenerationElec"&Prim=="ElecPV")) & 
+                         Region %in% RCPRegions), 
            aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region %in% RCPRegions & Variable=="EmisCO2DirectHeatCool")
              , aes(x=Year,y = value/1e12 * axis_scale2, colour=Variable),size=2, alpha=0.8, shape=10, stroke=1.1) +
@@ -684,7 +689,7 @@ FuelsEmis.Aggr <- ggplot() +
   theme(legend.position="right") +
   scale_fill_manual(values=c("firebrick","dodgerblue","gold2"),
                     name="Final Energy \n(left axis)",
-                    breaks=c("FEHeat","FECool","FEResElecPVHeatCool"),
+                    breaks=c("FEHeat","FECool","FEResGenerationElec"),
                     labels=c("Heating ","Cooling","Rooftop Photovoltaic \n(Generation)")) +
   scale_color_manual(values="black",
                      name="",

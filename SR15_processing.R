@@ -32,6 +32,7 @@ DATA=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574413368.csv", sep=",", d
 DATA2=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574423068.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with Prim Bio in baselines
 AFOLU=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1574430547.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with AFOLU emissions in Mitigation Scenarios
 PRIM=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1585815642.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with AFOLU emissions in Mitigation Scenarios
+BECCS=read.csv("data/SR15/iamc-1.5c-explorer_snapshot_1624800641.csv", sep=",", dec=".", stringsAsFactors = FALSE) # Separate dataset with BECCS CDR
 
 # ---- DATA STRUCTURE ----
 # Re-structure and Clean dataframe
@@ -40,10 +41,11 @@ DATA = subset(DATA, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2
 DATA2 = subset(DATA2, select=-c(X2005))
 AFOLU = subset(AFOLU, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 PRIM = subset(PRIM, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
+BECCS = subset(BECCS, select=-c(X2000,X2005,X2015,X2025,X2035,X2045,X2055,X2065,X2075,X2085,X2095))
 
-DATA = rbind(DATA,DATA2,AFOLU,PRIM)
+DATA = rbind(DATA,DATA2,AFOLU,PRIM,BECCS)
 
-rm(DATA2, AFOLU, PRIM)
+rm(DATA2, AFOLU, PRIM, BECCS)
   # Fix years and values
 DATA=melt(DATA, id.vars=c("Model","Scenario","Region","Variable","Unit"), na.rm=TRUE)
 colnames(DATA)[6] <- "Year"
@@ -103,6 +105,7 @@ DATA$Variable <- gsub("woCCS","",DATA$Variable,fixed=F)
 DATA$Variable <- paste(DATA$Variable,"-",DATA$Unit)
 DATA$Variable <- gsub("[[:space:]]","",DATA$Variable,fixed=F)
 DATA$Variable <- gsub("million","M",DATA$Variable,fixed=F)
+DATA$Variable <- gsub("CarbonSequestration","",DATA$Variable,fixed=F)
 
   # Re-structure to have variables as columns
 DATA$Unit <- NULL
@@ -146,7 +149,8 @@ Mitigation$var_Order = factor(Mitigation$variable, levels=c("Prim-EJ/yr",
                                                             "PrimBiomasswCCS-EJ/yr",
                                                             "FracCCS",
                                                             "LandCoverEnergyCrops-Mha",
-                                                            "EmisCO2AFOLU-MtCO2/yr"))
+                                                            "EmisCO2AFOLU-MtCO2/yr",
+                                                            "CCSBiomass-MtCO2/yr"))
 #
 # Sensitivity Runs
 Sensitivity = subset(Mitigation, Project=="EMF33")
@@ -186,10 +190,8 @@ Sensitivity.MinMax$var_Order = factor(Sensitivity.MinMax$variable, levels=c("Pri
                                                                             "PrimBiomasswCCS-EJ/yr",
                                                                             "FracCCS",
                                                                             "LandCoverEnergyCrops-Mha",
-                                                                            "EmisCO2AFOLU-MtCO2/yr"))
-#
-
-
+                                                                            "EmisCO2AFOLU-MtCO2/yr",
+                                                                            "CCSBiomass-MtCO2/yr"))
 #
 # ---- DATA Checks ----
 # Ad hoc checks on data to inspect results
@@ -209,6 +211,35 @@ Paris$ID = paste(Paris$Model,Paris$Scenario)
 length(unique(Paris$ID))
 
 # 
+# ---- BECCS CDR Statistics ----
+BECCS_Stats = subset(DATA, select=c('Model','Scenario','Region','Year','Target','CCSBiomass-MtCO2/yr'))
+BECCS_Stats = subset(BECCS_Stats, Year == 2030 | Year == 2050 | Year == 2100)
+colnames(BECCS_Stats)[6] <- "BiomassCDR_MtCO2pyr"
+BECCS_Stats = na.omit(BECCS_Stats)
+q = c(0.05,0.1,0.25,0.5,0.75,0.9,0.95)
+
+# This doesnt work for some reason
+# BECCS_Stats.quantile <- BECCS_Stats
+# BECCS_Stats.quantiles %>%
+#   group_by(Year) %>%
+#   summarize(quant05 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[1]),
+#             quant01 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[2]),
+#             quant25 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[3]),
+#             quant50 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[4]),
+#             quant75 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[5]),
+#             quant90 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[6]),
+#             quant95 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[7]))
+
+b2030 = subset(BECCS_Stats, Year == 2030)
+BECCS_CDR_2030 = quantile(b2030$BiomassCDR_MtCO2py, probs = q)
+
+b2050 = subset(BECCS_Stats, Year == 2050)
+BECCS_CDR_2050 = quantile(b2050$BiomassCDR_MtCO2py, probs = q)
+
+b2100 = subset(BECCS_Stats, Year == 2100)
+BECCS_CDR_2100 = quantile(b2100$BiomassCDR_MtCO2py, probs = q)
+
+#
 # ---- LABELS ----
 #var labels with text wraps                
 var_labels <- c("Prim-EJ/yr"="Total Primary Energy \nEJ/yr",

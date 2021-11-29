@@ -211,24 +211,13 @@ Paris$ID = paste(Paris$Model,Paris$Scenario)
 length(unique(Paris$ID))
 
 # 
-# ---- BECCS CDR Statistics ----
+# ---- Statistics ----
+# BECCS deployment
 BECCS_Stats = subset(DATA, select=c('Model','Scenario','Region','Year','Target','CCSBiomass-MtCO2/yr'))
 BECCS_Stats = subset(BECCS_Stats, Year == 2030 | Year == 2050 | Year == 2100)
 colnames(BECCS_Stats)[6] <- "BiomassCDR_MtCO2pyr"
 BECCS_Stats = na.omit(BECCS_Stats)
 q = c(0.05,0.1,0.25,0.5,0.75,0.9,0.95)
-
-# This doesnt work for some reason
-# BECCS_Stats.quantile <- BECCS_Stats
-# BECCS_Stats.quantiles %>%
-#   group_by(Year) %>%
-#   summarize(quant05 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[1]),
-#             quant01 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[2]),
-#             quant25 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[3]),
-#             quant50 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[4]),
-#             quant75 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[5]),
-#             quant90 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[6]),
-#             quant95 = quantile(BECCS_Stats$BiomassCDR_MtCO2pyr, probs = q[7]))
 
 b2030 = subset(BECCS_Stats, Year == 2030)
 BECCS_CDR_2030 = quantile(b2030$BiomassCDR_MtCO2py, probs = q)
@@ -238,6 +227,14 @@ BECCS_CDR_2050 = quantile(b2050$BiomassCDR_MtCO2py, probs = q)
 
 b2100 = subset(BECCS_Stats, Year == 2100)
 BECCS_CDR_2100 = quantile(b2100$BiomassCDR_MtCO2py, probs = q)
+
+# Primary Bioenergy use in mitigation scenarios
+PrimBio_Stats = subset(Mitigation, select=c('Model','Scenario','Region','Year','Target','variable','value'))
+PrimBio_Stats = subset(PrimBio_Stats, Year == 2100 & Region == "World" & variable == "PrimBiomass-EJ/yr")
+PrimBio_Stats = na.omit(PrimBio_Stats)
+q = c(0.05,0.1,0.25,0.5,0.75,0.9,0.95)
+PrimBio_q = quantile(PrimBio_Stats$value, probs = q)
+
 
 #
 # ---- LABELS ----

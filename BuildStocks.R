@@ -785,6 +785,38 @@ Emis.decomp <- ggplot(data=DATA.FIG3) +
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 Emis.decomp
 
+
+Simplified <- ggplot(data=subset(DATA.FIG3, Region=="World")) + 
+  geom_ribbon(data=subset(DATA.FIG3, Region=="World" & Variable=="FECoolHeat" & !(ScenOrder=="SSP2_SPA2_26I_D_Baseline"|ScenOrder=="SSP2_InsulNew")), 
+              aes(x=Year, ymin=min/1e9,ymax=max/1e9, fill=ScenOrder), alpha="0.5", colour=NA, size=0.1) +
+  geom_ribbon(data=subset(DATA.FIG3, Region=="World" & Variable=="EmisCO2DirectHeatCool" & !(ScenOrder=="SSP2_SPA2_26I_D_Baseline"|ScenOrder=="SSP2_InsulNew")), 
+              aes(x=Year, ymin=min/1e12 * axis_scale3,ymax=max/1e12 * axis_scale3, fill=ScenOrder), alpha="0.5", colour=NA, size=0.1) +
+  geom_line(data=subset(DATA.FIG3, Region=="World" & Variable=="FECoolHeat" & ScenOrder %in% ScenBase2 & !ScenOrder=="SSP2_InsulNew"), 
+            aes(x=Year,y = value/1e9, color=ScenOrder),size=1, alpha=1, linetype="dashed") +
+  geom_line(data=subset(DATA.FIG3, Region=="World" & Variable=="EmisCO2DirectHeatCool" & ScenOrder %in% ScenBase2 & !ScenOrder=="SSP2_InsulNew"), 
+            aes(x=Year,y = value/1e12 * axis_scale3, color=ScenOrder),size=1, alpha=1, linetype="dashed") +
+  geom_hline(yintercept=0,size = 0.1, colour='black') + 
+  scale_y_continuous(name = left_axis3, 
+                     sec.axis = sec_axis(~. * 1/axis_scale3, name = right_axis3))+
+  theme_bw() +  theme(panel.grid.minor=element_blank(), panel.grid.major=element_line(colour="gray80", size = 0.3)) + 
+  theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
+  theme(legend.position="right") +
+  xlab("") + ylab("EJ/yr") +
+  scale_colour_manual(values=c("firebrick","forestgreen"),
+                      name="",
+                      breaks=c("SSP2_Baseline","SSP2_SPA2_26I_D_Baseline"),
+                      labels=c("Baseline","2°C")) +
+  scale_fill_manual(values=c("green3","darkorchid4","skyblue"),
+                    name="",
+                    breaks=c("SSP2_Baseline","SSP2_SPA2_26I_D_InsulNew","SSP2_SPA2_26I_D_InsulAll"),
+                    labels=c("Effect of Insulation \nin New Buildings",
+                             "Effect of Renovations \n(mitigation)",
+                             "Effect of heating & \ncooling technology choices")) +
+  facet_grid(.~Variable, scales="free_y",labeller=labeller(Region=reg_labels, Variable=var_labels)) +
+  theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
+Simplified
+
 #
 # ---- Figure S1: Age Cohorts ----
 Floorspace.BAR <- ggplot(data=subset(DATA.AGE, Scenario=="SSP2_Baseline" & Variable=="Floorspace" & Region %in% RCPRegions & Year %in% ActiveYears)
@@ -1054,6 +1086,10 @@ EnIndep.MRQ
 # 
 # png(file = "output/BuildStocks/Other/AgeCohortFrac.png", width = 8*ppi, height = 5*ppi, units = "px", res = ppi)
 # plot(FloorspaceFrac.BAR)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Other/Decomposition_Simplified.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
+# plot(Simplified)
 # dev.off()
 # 
 # # ---- SUPPLEMENTARY DATA OUTPUT ----

@@ -699,7 +699,9 @@ FuelsEmis.Aggr <- ggplot() +
 FuelsEmis.Aggr
 
 FuelsEmis.AggrGlob <- ggplot() + 
-  geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|(Variable=="FECool"&Prim=="Total")) & Region == "World"), 
+  geom_bar(data=subset(DATA.FIG2, ((Variable=="FEHeat"&Prim=="Total")|
+                                     (Variable=="FECool"&Prim=="Total")|
+                                     (Variable=="FEResGenerationElec"&Prim=="ElecPV")) & Region == "World"), 
            aes(x=Year,y = value/1e9, fill=Variable),alpha=0.7, stat="identity") +
   geom_point(data=subset(DATA.EM, Scenario %in% ScenBase& Year %in% ActiveYears & Region == "World" & Variable=="EmisCO2DirectHeatCool")
              , aes(x=Year,y = value/1e12 * axis_scale2, colour=Variable),size=2, alpha=1, shape=10, stroke=1.1) +
@@ -710,13 +712,13 @@ FuelsEmis.AggrGlob <- ggplot() +
   theme(text= element_text(size=FSizeStrip, face="plain"), axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), axis.text.y = element_text(size=FSizeAxis)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.2)) +
   theme(legend.position="right") +
-  scale_fill_manual(values=c("firebrick1","deepskyblue"),
-                    name="Final Energy",
-                    breaks=c("FEHeat","FECool"),
-                    labels=c("Heating ","Cooling")) +
+  scale_fill_manual(values=c("firebrick","dodgerblue","gold2"),
+                    name="Final Energy \n(left axis)",
+                    breaks=c("FEHeat","FECool","FEResGenerationElec"),
+                    labels=c("Heating ","Cooling","Rooftop Photovoltaic \n(Generation)")) +
   scale_color_manual(values="black",
                      name="",
-                     labels="Direct + Indirect \nHeating & Cooling emissions \n(right axis)") +
+                     labels="Direct Heating & \nCooling emissions \n(right axis)") +
   facet_grid(Region~ScenOrder, scales="free_y", labeller=labeller(Region=reg_labels, ScenOrder=scen_labels)) + 
   theme(strip.text.x = element_text(size = FSizeStrip, face="bold"), strip.text.y = element_text(size = FSizeStrip, face="bold"))
 FuelsEmis.AggrGlob
@@ -1090,6 +1092,10 @@ EnIndep.MRQ
 # 
 # png(file = "output/BuildStocks/Other/Decomposition_Simplified.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
 # plot(Simplified)
+# dev.off()
+# 
+# png(file = "output/BuildStocks/Other/EnergyAndEmissions_Global.png", width = 8*ppi, height = 3*ppi, units = "px", res = ppi)
+# plot(FuelsEmis.AggrGlob)
 # dev.off()
 # 
 # # ---- SUPPLEMENTARY DATA OUTPUT ----

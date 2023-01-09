@@ -112,53 +112,26 @@ growthrate <- DATA %>%
   
 growthrate$ID <- paste(growthrate$variable, growthrate$region, growthrate$year, sep="_")
 
-# ---- FINAL DATASET ----
-# FINAL <- data.frame(variable = unique(growthrate$variable),
-#                     unit = unique(growthrate$unit)) %>%
-#         arrange(variable) # Sort by indicator
-# 
-# # Expand selection and add region column (IMAGE Region #)
-# FINAL <- FINAL %>%
-#   slice(rep(1:n(), each = length(unique(RMapping$IMAGE_Region))))
-# FINAL$region <- 1:27
-# 
-# # Expand selection and add year column (2021-2060)
-# FINAL <- FINAL %>%
-#   slice(rep(1:n(), each = length(unique(growthrate$year))))
-# FINAL$year <- min(unique((growthrate$year))):max(unique((growthrate$year)))
-# 
-# # Populate values of growthrates
-# FINAL$region_ID <- RMapping[match(FINAL$region, RMapping$IMAGE_Region), "Region_ID"] 
-# FINAL$ID <- paste(FINAL$variable, FINAL$region_ID, FINAL$year, sep="_")
-# FINAL$value <- growthrate[match(FINAL$ID, growthrate$ID), "change"] 
-# FINAL <- FINAL %>% 
-#   subset(select=-c(region_ID, ID)) %>%
-#   replace(is.na(.), 0) 
+# ---- FINAL DATASET GROWTHRATE ----
+FINAL.gr <- growthrate
+FINAL.gr$IMAGE_region = RMapping[match(FINAL.gr$region, RMapping$Region_ID), "IMAGE_Region"] 
 
-FINAL <- growthrate
-FINAL$IMAGE_region = RMapping[match(FINAL$region, RMapping$Region_ID), "IMAGE_Region"] 
-
-FINAL <- FINAL %>% 
+FINAL.gr <- FINAL.gr %>% 
   subset(select = -c(region, ID)) %>%
   arrange(IMAGE_region, variable, year)
-  
 
-# Calculate dacadal averages  
-FINAL <- FINAL %>%
-  mutate(Decade = (as.numeric(substr(Year, start=3, stop=3)) + 1) * 10) 
-FINAL <- aggregate(FINAL$value, by=list(Indicator=FINAL$Indicator,
-                                          Unit=FINAL$Unit,
-                                          Region=FINAL$Region,
-                                          Scenario=FINAL$Scenario,
-                                          Decade=FINAL$Decade), FUN = mean, na.rm=F) %>%
-  rename(., value = x) %>%
-  subset(!Decade==70) %>%
-  spread(Region, value) 
+# ---- FINAL DATASET ABSOLUTE ----
+FINAL.abs <- DATA
+FINAL.abs$IMAGE_region = RMapping[match(FINAL.abs$region, RMapping$Region_ID), "IMAGE_Region"] 
+FINAL.abs <- FINAL.abs %>% 
+  subset(select = -region) %>%
+  arrange(IMAGE_region, variable, year)
+
 #
 # ---- FIGURES ----
 # ---- Fig: Material demand per region ----
 MatDem <- 
-  ggplot(data=FINAL) +
+  ggplot(data=FINAL.gr) +
   geom_line(aes(x=year, y=change, colour = variable), alpha = 1, size = 1) +
   geom_hline(yintercept=0,size = 0.1, colour='black') +
   labs(x = "",
@@ -201,11 +174,11 @@ dev.off()
 #
 # ---- OUTPUTS ----
 # Make dataframe which can be exported in a format relevant for TIMER
-ForTIMER <- FINAL %>%
+ForTIMER <- FINAL.abs %>%
   subset(select=-unit) %>%
   rename("t" = "year") %>%
   mutate(IMAGE_region = gsub("^","class_", IMAGE_region)) %>%
-  spread(key = 'IMAGE_region', value = 'change') %>%
+  spread(key = 'IMAGE_region', value = 'value') %>%
   select(variable, t, class_1, class_2, class_3, class_4, class_5, class_6, class_7, class_8, class_9, class_10,
          class_11, class_12, class_13, class_14, class_15, class_16, class_17, class_18, class_19, class_20, 
          class_21, class_22, class_23, class_24, class_25, class_26, class_27)
@@ -216,10 +189,7 @@ ForTIMER.ce <- ForTIMER %>%
   subset(select=-variable) %>%
   # Add historic values
   rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(2019,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  # Add COVID-19 effect
-  rbind(c(2020,0.97,0.985,0.94,0.94,0.94,0.94,0.93,0,0,0,0.92,0.94,0.95,0.95,0.95,0.95,0.93,0.9,0.99,0.9,0.95,0.95,0.99,0.93,0.95,0,0)) %>%
-  rbind(c(2021,0.98,0.976,0.96,0.96,0.96,0.96,0.9533,0,0,0,0.9467,0.96,0.9667,0.9667,0.9667,0.9667,0.9533,0.9333,0.9933,0.9333,0.9667,0.9667,0.9933,0.9533,0.9667,0,0)) %>%
+  rbind(c(2022,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   # Add end of projection values (i.e. no exogenous change after 2060)
   rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   arrange(t)
@@ -229,10 +199,7 @@ ForTIMER.st <- ForTIMER %>%
   subset(select=-variable)%>%
   # Add historic values
   rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(2019,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  # Add COVID-19 effect
-  rbind(c(2020,0.97,0.985,0.94,0.94,0.94,0.94,0.93,0,0,0,0.92,0.94,0.95,0.95,0.95,0.95,0.93,0.9,0.99,0.9,0.95,0.95,0.99,0.93,0.95,0,0)) %>%
-  rbind(c(2021,0.98,0.976,0.96,0.96,0.96,0.96,0.9533,0,0,0,0.9467,0.96,0.9667,0.9667,0.9667,0.9667,0.9533,0.9333,0.9933,0.9333,0.9667,0.9667,0.9933,0.9533,0.9667,0,0)) %>%
+  rbind(c(2022,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   # Add end of projection values (i.e. no exogenous change after 2060)
   rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   arrange(t)

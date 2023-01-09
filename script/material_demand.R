@@ -200,9 +200,46 @@ dev.off()
 
 #
 # ---- OUTPUTS ----
+# Make dataframe which can be exported in a format relevant for TIMER
+ForTIMER <- FINAL %>%
+  subset(select=-unit) %>%
+  rename("t" = "year") %>%
+  mutate(IMAGE_region = gsub("^","class_", IMAGE_region)) %>%
+  spread(key = 'IMAGE_region', value = 'change') %>%
+  select(variable, t, class_1, class_2, class_3, class_4, class_5, class_6, class_7, class_8, class_9, class_10,
+         class_11, class_12, class_13, class_14, class_15, class_16, class_17, class_18, class_19, class_20, 
+         class_21, class_22, class_23, class_24, class_25, class_26, class_27)
+
+# Separate datastes for Concrete and Steel and add historic and future values
+ForTIMER.ce <- ForTIMER %>%
+  subset(variable == "demand_concrete") %>%
+  subset(select=-variable) %>%
+  # Add historic values
+  rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  rbind(c(2019,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  # Add COVID-19 effect
+  rbind(c(2020,0.97,0.985,0.94,0.94,0.94,0.94,0.93,0,0,0,0.92,0.94,0.95,0.95,0.95,0.95,0.93,0.9,0.99,0.9,0.95,0.95,0.99,0.93,0.95,0,0)) %>%
+  rbind(c(2021,0.98,0.976,0.96,0.96,0.96,0.96,0.9533,0,0,0,0.9467,0.96,0.9667,0.9667,0.9667,0.9667,0.9533,0.9333,0.9933,0.9333,0.9667,0.9667,0.9933,0.9533,0.9667,0,0)) %>%
+  # Add end of projection values (i.e. no exogenous change after 2060)
+  rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  arrange(t)
+
+ForTIMER.st <- ForTIMER %>%
+  subset(variable == "demand_steel") %>%
+  subset(select=-variable)%>%
+  # Add historic values
+  rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  rbind(c(2019,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  # Add COVID-19 effect
+  rbind(c(2020,0.97,0.985,0.94,0.94,0.94,0.94,0.93,0,0,0,0.92,0.94,0.95,0.95,0.95,0.95,0.93,0.9,0.99,0.9,0.95,0.95,0.99,0.93,0.95,0,0)) %>%
+  rbind(c(2021,0.98,0.976,0.96,0.96,0.96,0.96,0.9533,0,0,0,0.9467,0.96,0.9667,0.9667,0.9667,0.9667,0.9533,0.9333,0.9933,0.9333,0.9667,0.9667,0.9933,0.9533,0.9667,0,0)) %>%
+  # Add end of projection values (i.e. no exogenous change after 2060)
+  rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  arrange(t)
+
 # Dataset per 'Scenario' with annual changes 
-dataset_names <- list("concrete" = subset(spread(FINAL, IMAGE_region, change), variable == "demand_concrete"),
-                      'steel' = subset(spread(FINAL, IMAGE_region, change), variable == "demand_steel"))
-#export each data frame to separate sheets in same Excel file
-openxlsx::write.xlsx(dataset_names, file = paste0(output_location,"demand_changes.xlsx")) 
+dataset_names <- list("concrete" = ForTIMER.ce,
+                      'steel' = ForTIMER.st)
+#export each data frames to separate sheets in same Excel file
+openxlsx::write.xlsx(dataset_names, file = paste0(output_location,"demand_changes.xlsx"))
   

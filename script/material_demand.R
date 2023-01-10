@@ -199,7 +199,7 @@ ForTIMER.st <- ForTIMER %>%
   subset(select=-variable)%>%
   # Add historic values
   rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(t_scen,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  rbind(c(t_scen-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   # Add end of projection values (i.e. no exogenous change after 2060)
   rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   arrange(t)

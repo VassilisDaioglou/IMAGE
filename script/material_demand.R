@@ -54,7 +54,7 @@ FSizeLeg = 9
 
 scenario <- "SSP2_CP"
 
-t_scen <- 2025
+t_scen <- 2020
 
 RMapping <- data.frame(IMAGE_Region = c(1,2,3,4,5,6,7,8,9,10,
                                         11,12,13,14,15,16,17,18,19,20,
@@ -189,7 +189,7 @@ ForTIMER.ce <- ForTIMER %>%
   subset(select=-variable) %>%
   # Add historic values
   rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(2022,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  rbind(c(t_scen-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   # Add end of projection values (i.e. no exogenous change after 2060)
   rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   arrange(t)
@@ -199,7 +199,7 @@ ForTIMER.st <- ForTIMER %>%
   subset(select=-variable)%>%
   # Add historic values
   rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(2022,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+  rbind(c(t_scen,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   # Add end of projection values (i.e. no exogenous change after 2060)
   rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
   arrange(t)

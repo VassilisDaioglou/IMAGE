@@ -92,7 +92,7 @@ for (i in scenarios) {
   }
 }
 
-rm(DATA_location, DATA_date, 
+rm(DATA_location,  
    columns, data_in, data,
    i, j)
 
@@ -219,42 +219,30 @@ for (i in variables) {
   dev.off()
   
 }
-
+#
 # ---- OUTPUTS ----
 # Make dataframe which can be exported in a format relevant for TIMER
-ForTIMER <- FINAL.abs %>%
-  subset(select=-unit) %>%
-  rename("t" = "year") %>%
-  mutate(IMAGE_region = gsub("^","class_", IMAGE_region)) %>%
-  spread(key = 'IMAGE_region', value = 'value') %>%
-  select(variable, t, class_1, class_2, class_3, class_4, class_5, class_6, class_7, class_8, class_9, class_10,
-         class_11, class_12, class_13, class_14, class_15, class_16, class_17, class_18, class_19, class_20, 
-         class_21, class_22, class_23, class_24, class_25, class_26, class_27)
 
-# Separate datastes for Concrete and Steel and add historic and future values
-ForTIMER.ce <- ForTIMER %>%
-  subset(variable == "demand_concrete") %>%
-  subset(select=-variable) %>%
-  # Add historic values
-  rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(t_scen-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  # Add end of projection values (i.e. no exogenous change after 2060)
-  rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  arrange(t)
+for (i in scenarios) {
+  for (j in variables) {
+    ForTIMER <- FINAL.abs %>%
+      filter(scenario == i, variable == j) %>%
+      select(-c('unit','variable','scenario')) %>%
+      rename("t" = "year") %>%
+      mutate(IMAGE_region = gsub("^","class_", IMAGE_region)) %>%
+      spread(key = 'IMAGE_region', value = 'value') %>%
+      select(t, class_1, class_2, class_3, class_4, class_5, class_6, class_7, class_8, class_9, class_10,
+             class_11, class_12, class_13, class_14, class_15, class_16, class_17, class_18, class_19, class_20, 
+             class_21, class_22, class_23, class_24, class_25, class_26, class_27) %>%
+      # Add historic values
+      rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+      rbind(c(t_scen-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+      # Add end of projection values (i.e. no exogenous change after 2060)
+      rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
+      arrange(t)
+    
+      openxlsx::write.xlsx(ForTIMER, file = paste0(output_location,DATA_date,"_",i,"_",j,"_demand_changes.xlsx"))
+      
+    }  
+}
 
-ForTIMER.st <- ForTIMER %>%
-  subset(variable == "demand_steel") %>%
-  subset(select=-variable)%>%
-  # Add historic values
-  rbind(c(1970,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  rbind(c(t_scen-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  # Add end of projection values (i.e. no exogenous change after 2060)
-  rbind(c(2061,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)) %>%
-  arrange(t)
-
-# Dataset per 'Scenario' with annual changes 
-dataset_names <- list("concrete" = ForTIMER.ce,
-                      'steel' = ForTIMER.st)
-#export each data frames to separate sheets in same Excel file
-openxlsx::write.xlsx(dataset_names, file = paste0(output_location,"demand_changes.xlsx"))
-  

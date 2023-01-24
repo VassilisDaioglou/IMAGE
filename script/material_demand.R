@@ -52,7 +52,8 @@ FSizeStrip = 9
 FSizeAxis = 8
 FSizeLeg = 9
 
-scenario <- "SSP2_CP"
+scenarios <- c('SSP2_CP','SSP2_CP_26')
+variables <- c('demand_concrete', 'demand_steel')
 
 t_scen <- 2020
 
@@ -66,29 +67,39 @@ RMapping <- data.frame(IMAGE_Region = c(1,2,3,4,5,6,7,8,9,10,
 Active_indicators = c("demand_steel","demand_concrete")
 
 # DATA LOCATIONS
+DATA_date <- '240123'
 DATA_location <- paste0(getwd(),"/data/material_demand/")
-DATA_concrete <- paste0(scenario,"/SSP2_CP_demand_concrete.csv")
-DATA_steel <- paste0(scenario,"/SSP2_CP_demand_steel.csv")
 output_location <- paste0(getwd(),"/output/material_demand/")
+
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
 
 # ---- INPUTS: Data ----
-DATA.concrete = read.csv(paste0(DATA_location, DATA_concrete), header = TRUE)
-DATA.concrete$variable <- "demand_concrete"
+# Make empty dataframe and populate by looping thorugh the datasets which are per 'scenarios' and 'variables'
+columns = c("region","ünit","scenario","variable","year","value")
+DATA = data.frame(matrix(nrow = 0, ncol = length(columns)))
+colnames(DATA) = columns
 
-DATA.steel = read.csv(paste0(DATA_location, DATA_steel), header = TRUE)
-DATA.steel$variable <- "demand_steel"
+for (i in scenarios) {
+  for (j in variables){
+    data_in <- paste0(i,"/",i,"_",j,"_",DATA_date,".csv")
+    data = read.csv(paste0(DATA_location, data_in), header = TRUE)
+    data <- data %>%
+      mutate(scenario = i) %>%
+      mutate(variable = j) %>%
+      gather(key = year, value = value, -region, -unit, -variable, -scenario)
+    DATA = rbind(DATA, data)
+  }
+}
 
-DATA = rbind(DATA.concrete, DATA.steel)
-
-rm(DATA_location, DATA_concrete, DATA_steel, DATA.concrete, DATA.steel)
+rm(DATA_location, DATA_date, 
+   columns, data_in, data,
+   i, j)
 
 #
 # ---- MUNGING ----
 DATA <- DATA %>%
   # Reshape and organise
-  gather(key = year, value = value, -region, -unit, -variable)  %>%
   mutate(year = gsub("X","", year)) %>%
   mutate(year = as.numeric(substr(year, start=1, stop=4))) %>%
   mutate(value = as.numeric(substr(value, start=1, stop=20))) %>%
@@ -101,7 +112,7 @@ DATA <- DATA %>%
 # Determine annual growth rate, per material category ('Indicator')
 growthrate <- DATA %>%
   # First sort so that you have consecutive years for each Scenario-Indicator-Region pair
-  arrange(region, variable, year) %>%
+  arrange(region, variable, scenario, year) %>%
   mutate(diff_year = year - lag(year),                            # Difference in time (just in case there are gaps)
          # Diff_growth = value - lag(value),                        # Difference in route between years
          # Change = 1+(Diff_growth / Diff_year)/value) %>%          # growth rate in percent
@@ -110,7 +121,7 @@ growthrate <- DATA %>%
   subset(select = -c(value, diff_year)) %>%
   subset(!year==t_scen)                                          # Remove start year since these values are irrelevant
   
-growthrate$ID <- paste(growthrate$variable, growthrate$region, growthrate$year, sep="_")
+growthrate$ID <- paste(growthrate$variable, growthrate$region, growthrate$scenario, growthrate$year, sep="_")
 
 # ---- FINAL DATASET GROWTHRATE ----
 FINAL.gr <- growthrate
@@ -125,53 +136,90 @@ FINAL.abs <- DATA
 FINAL.abs$IMAGE_region = RMapping[match(FINAL.abs$region, RMapping$Region_ID), "IMAGE_Region"] 
 FINAL.abs <- FINAL.abs %>% 
   subset(select = -region) %>%
-  arrange(IMAGE_region, variable, year)
+  arrange(IMAGE_region, variable, scenario, year)
 
 #
 # ---- FIGURES ----
-# ---- Fig: Material demand per region ----
-MatDem <- 
-  ggplot(data=FINAL.gr) +
-  geom_line(aes(x=year, y=change, colour = variable), alpha = 1, size = 1) +
-  geom_hline(yintercept=0,size = 0.1, colour='black') +
-  labs(x = "",
-       y = unique(FINAL$Unit),
-       title = "Demand for materials")+
-  ylim(min(FINAL$change) * 0.9, max(FINAL$change) * 1.1) +
-  theme_bw() +
-  theme(plot.title = element_text(size = FSizeTitle, face = "bold"),
-        plot.margin = margin(t = 0.15, r = 0.15, b = 0.15, l = 0.15, "cm"),
-        text = element_text(size=FSizeStrip, face="plain"), 
-        axis.title.x = element_text(size = FSizeAxis),
-        axis.title.y = element_text(size = FSizeAxis),
-        axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), 
-        axis.text.y = element_text(size=FSizeAxis),
-        axis.line = element_line(colour = "black", size = 0.5),
-        strip.background = element_rect(colour = "black", fill = "white", size = 0.5),
-        strip.text.x = element_text(size = FSizeStrip, face="bold"), 
-        strip.text.y = element_text(size = FSizeStrip, face="bold"), 
-        legend.position = "right",
-        legend.box = "vertical", 
-        legend.direction = "vertical", 
-        legend.spacing.x = unit(0.1, 'cm'),
-        legend.spacing.y = unit(0.01,"cm"),
-        panel.grid.minor = element_blank(), 
-        panel.grid.major = element_line(colour="gray80", size = 0.3),
-        panel.border = element_rect(colour = "black", fill=NA, size=0.5),
-        panel.background = element_blank()) +
-  scale_colour_manual(name="",
-                      values=c("midnightblue","goldenrod3"),
-                      breaks=c("demand_concrete","demand_steel"),
-                      labels=c("Concrete","Steel"),
-                      guide="legend") +
-  facet_wrap(IMAGE_region~., scale="free_y")
-MatDem  
+# ---- Fig: Material Growth per region ----
+for (i in variables) {
+  MatGr <- 
+    ggplot(data=subset(FINAL.gr, variable = i)) +
+    geom_line(aes(x=year, y=change, colour = scenario), alpha = 1, size = 1) +
+    geom_hline(yintercept=0,size = 0.1, colour='black') +
+    labs(x = "",
+         y = unique(FINAL.gr$Unit),
+         title = i)+
+    ylim(min(FINAL.gr$change) * 0.9, max(FINAL.gr$change) * 1.05) +
+    theme_bw() +
+    theme(plot.title = element_text(size = FSizeTitle, face = "bold"),
+          plot.margin = margin(t = 0.15, r = 0.15, b = 0.15, l = 0.15, "cm"),
+          text = element_text(size=FSizeStrip, face="plain"), 
+          axis.title.x = element_text(size = FSizeAxis),
+          axis.title.y = element_text(size = FSizeAxis),
+          axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), 
+          axis.text.y = element_text(size=FSizeAxis),
+          axis.line = element_line(colour = "black", size = 0.5),
+          strip.background = element_rect(colour = "black", fill = "white", size = 0.5),
+          strip.text.x = element_text(size = FSizeStrip, face="bold"), 
+          strip.text.y = element_text(size = FSizeStrip, face="bold"), 
+          legend.position = "right",
+          legend.box = "vertical", 
+          legend.direction = "vertical", 
+          legend.spacing.x = unit(0.1, 'cm'),
+          legend.spacing.y = unit(0.01,"cm"),
+          panel.grid.minor = element_blank(), 
+          panel.grid.major = element_line(colour="gray80", size = 0.3),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          panel.background = element_blank()) +
+    facet_wrap(IMAGE_region~., scale="free_y")
+  MatGr  
+  
+  png(file = paste0(getwd(),"/output/material_demand/growthrate_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
+  plot(MatGr)
+  dev.off()
 
-png(file = paste0(getwd(),"/output/material_demand/MaterialDemand.png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
-plot(MatDem)
-dev.off()
-
+}
 #
+# ---- Fig: Material Demand per region ----
+for (i in variables) {
+  MatDem <- 
+    ggplot(data=subset(FINAL.abs, variable == i)) +
+    geom_line(aes(x=year, y=value, colour = scenario), alpha = 1, size = 1) +
+    geom_hline(yintercept=0,size = 0.1, colour='black') +
+    labs(x = "",
+         y = unique(FINAL.abs$Unit),
+         title = i)+
+    #ylim(min(FINAL.abs$value) * 0.9, max(FINAL.abs$value) * 1.05) +
+    theme_bw() +
+    theme(plot.title = element_text(size = FSizeTitle, face = "bold"),
+          plot.margin = margin(t = 0.15, r = 0.15, b = 0.15, l = 0.15, "cm"),
+          text = element_text(size=FSizeStrip, face="plain"), 
+          axis.title.x = element_text(size = FSizeAxis),
+          axis.title.y = element_text(size = FSizeAxis),
+          axis.text.x = element_text(angle=66, size=FSizeAxis, hjust=1), 
+          axis.text.y = element_text(size=FSizeAxis),
+          axis.line = element_line(colour = "black", size = 0.5),
+          strip.background = element_rect(colour = "black", fill = "white", size = 0.5),
+          strip.text.x = element_text(size = FSizeStrip, face="bold"), 
+          strip.text.y = element_text(size = FSizeStrip, face="bold"), 
+          legend.position = "right",
+          legend.box = "vertical", 
+          legend.direction = "vertical", 
+          legend.spacing.x = unit(0.1, 'cm'),
+          legend.spacing.y = unit(0.01,"cm"),
+          panel.grid.minor = element_blank(), 
+          panel.grid.major = element_line(colour="gray80", size = 0.3),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          panel.background = element_blank()) +
+    facet_wrap(IMAGE_region~., scale="free_y")
+  MatDem  
+  
+  png(file = paste0(getwd(),"/output/material_demand/demand_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
+  plot(MatDem)
+  dev.off()
+  
+}
+
 # ---- OUTPUTS ----
 # Make dataframe which can be exported in a format relevant for TIMER
 ForTIMER <- FINAL.abs %>%

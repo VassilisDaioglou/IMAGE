@@ -52,7 +52,8 @@ FSizeStrip = 9
 FSizeAxis = 8
 FSizeLeg = 9
 
-scenarios <- c('SSP2_CP','SSP2_CP_26')
+scenarios <- c('SSP2_CP_RE','SSP2_CP_26_RE',
+               'SSP2_CP','SSP2_CP_26')
 variables <- c('demand_concrete', 'demand_steel')
 
 t_scen <- 2020
@@ -67,7 +68,7 @@ RMapping <- data.frame(IMAGE_Region = c(1,2,3,4,5,6,7,8,9,10,
 Active_indicators = c("demand_steel","demand_concrete")
 
 # DATA LOCATIONS
-DATA_date <- '240123'
+DATA_date <- '150823'
 DATA_location <- paste0(getwd(),"/data/material_demand/")
 output_location <- paste0(getwd(),"/output/material_demand/")
 

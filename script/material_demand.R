@@ -52,8 +52,10 @@ FSizeStrip = 9
 FSizeAxis = 8
 FSizeLeg = 9
 
-scenarios <- c('SSP2_CP_RE','SSP2_CP_26_RE',
-               'SSP2_CP','SSP2_CP_26')
+project <- 'ECEMF_T4_1'
+scenarios <- c('WP4_Base','WP4_Decarb',
+               'WP4_Demand','WP4_Demand_Decarb')
+
 variables <- c('demand_concrete', 'demand_steel')
 
 t_scen <- 2020
@@ -65,12 +67,10 @@ RMapping <- data.frame(IMAGE_Region = c(1,2,3,4,5,6,7,8,9,10,
                                      "WEU","CEU","TUR","UKR","STAN","RUS","ME","INDIA","KOR","CHN",
                                      "SEAS","INDO","JAP","OCE","RSAS","RSAF","World"))
 
-Active_indicators = c("demand_steel","demand_concrete")
-
 # DATA LOCATIONS
-DATA_date <- '150823'
-DATA_location <- paste0(getwd(),"/data/material_demand/")
-output_location <- paste0(getwd(),"/output/material_demand/")
+DATA_date <- '160424'
+DATA_location <- paste0(getwd(),"/data/material_demand/",project,"/")
+output_location <- paste0(getwd(),"/output/material_demand/",project,"/")
 
 # set higher RAM capacity for java (used in clsx package)
 options(java.parameters = "-Xmx8000m")
@@ -83,7 +83,7 @@ colnames(DATA) = columns
 
 for (i in scenarios) {
   for (j in variables){
-    data_in <- paste0(i,"/",i,"_",j,"_",DATA_date,".csv")
+    data_in <- paste0(i,"/",i,"_",j,".csv")
     data = read.csv(paste0(DATA_location, data_in), header = TRUE)
     data <- data %>%
       mutate(scenario = i) %>%
@@ -104,11 +104,15 @@ DATA <- DATA %>%
   mutate(year = gsub("X","", year)) %>%
   mutate(year = as.numeric(substr(year, start=1, stop=4))) %>%
   mutate(value = as.numeric(substr(value, start=1, stop=20))) %>%
+  # Results are in kt/yr, correct to Mt/yr
+  mutate(value = value/1000) %>%
+  mutate(unit = gsub("kt/yr","Mt/yr",unit)) %>%
   # Remove historic data
   subset(year >= t_scen) %>%
   # Remove potential negative numbers
   mutate(value = replace(value, value < 0, 0.0))
-  
+ 
+ 
 # ---- ANNUAL CHANGES ----
 # Determine annual growth rate, per material category ('Indicator')
 growthrate <- DATA %>%
@@ -175,7 +179,7 @@ for (i in variables) {
     facet_wrap(IMAGE_region~., scale="free_y")
   MatGr  
   
-  png(file = paste0(getwd(),"/output/material_demand/growthrate_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
+  png(file = paste0(output_location,"growthrate_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
   plot(MatGr)
   dev.off()
 
@@ -215,7 +219,7 @@ for (i in variables) {
     facet_wrap(IMAGE_region~., scale="free_y")
   MatDem  
   
-  png(file = paste0(getwd(),"/output/material_demand/demand_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
+  png(file = paste0(output_location,"demand_",i,".png"), width = 9*ppi, height = 7*ppi, units = "px", res = ppi)
   plot(MatDem)
   dev.off()
   

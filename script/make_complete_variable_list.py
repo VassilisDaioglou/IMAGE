@@ -4,9 +4,21 @@ based on what is available on the common-definitions repository
 https://github.com/IAMconsortium/common-definitions
 
 It is a concise version of the make_variable_list.py script which has added functionaliy
-- Get limited variable list based on a template
-- Get limited variable definitions based on a template
 
+IMPORTANT:
+This script identifies variable lists based on a local copy of the 
+following fork of the common-definitions repository:
+https://github.com/VassilisDaioglou/common-definitions
+
+Thus, in order to ensure it works appropriately, please ensure that this local
+copy is up-to-date with the appropriate revision of the main branch of this 
+repository.
+
+
+FUTURE IMPROVEMENT:
+Add option to update local copy of variable list within this script.
+
+Vassilis Daioglou - July 2024
 '''
 
 from nomenclature import DataStructureDefinition

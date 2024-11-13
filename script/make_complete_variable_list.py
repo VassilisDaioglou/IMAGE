@@ -45,7 +45,7 @@ def get_complete_variable_list():
     '''
     dsd = DataStructureDefinition(definitions_directory + "/definitions/")
     df = dsd.variable.to_pandas()
-    df = df[['Variable','Unit','Description']]
+    df = df[['Variable','Unit','Description','Tier']]
     return df
 
 '''
